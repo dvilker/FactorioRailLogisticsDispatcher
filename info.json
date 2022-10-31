@@ -1,0 +1,11 @@
+{
+  "name": "yatm",
+  "version": "0.0.4",
+  "title": "Railway Logistics Dispatcher",
+  "author": "Viidi",
+  "contact": "https://vilker.ru/",
+  "homepage": "https://vilker.ru/",
+  "description": "Adds dispatcher entity for fully organized rail logistics.",
+  "factorio_version": "1.1",
+  "dependencies": ["base >= 1.1.46"]
+}
