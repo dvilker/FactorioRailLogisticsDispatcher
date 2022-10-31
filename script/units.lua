@@ -44,7 +44,6 @@ end
 ---@return CountWithUnits
 ---@overload fun (type: string): CountWithUnits
 function nextUnit2(type, current)
-    log("before nextUnit2(" .. var_dump(type) .. ", " .. var_dump(current) .. ")")
     if not current or not current.unit then
         return {
             count = nil,
@@ -52,7 +51,6 @@ function nextUnit2(type, current)
         }
     end
     current.unit = nextUnit(type, current.unit)
-    log("after nextUnit2(" .. var_dump(type) .. ", " .. var_dump(current) .. ")")
     return current
 end
 

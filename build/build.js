@@ -23,7 +23,7 @@ const fileList = [
     'data.lua',
     'data-updates.lua',
     'info.json',
-    'LICENSE.md',
+    'LICENSE',
     'README.md',
     'settings.lua',
 ]
@@ -44,7 +44,11 @@ for (let fn of fileList) {
     if (/^locale\/.*\.cfg$/) {
         prepareLocaleCfg('../' + fn)
     }
-    archive.file('../' + fn, {name: `${archiveName}/${fn}`})
+    if (/\.lua$/) {
+        archive.append(getLuaContent('../' + fn), {name: `${archiveName}/${fn}`})
+    } else {
+        archive.file('../' + fn, {name: `${archiveName}/${fn}`})
+    }
 }
 archive.finalize();
 
@@ -68,4 +72,9 @@ function prepareLocaleCfg(fileName) {
         fs.writeFileSync(fileName, newContents)
         console.log("File updated: ", fileName)
     }
+}
+
+function getLuaContent(fileName) {
+    return fs.readFileSync(fileName).toString("utf8")
+        .replace(/--\[\[DEBUG]]/g, '-- [[DEBUG]]') // Comment --[[DEBUG]]-s
 }

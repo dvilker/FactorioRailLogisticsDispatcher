@@ -232,7 +232,6 @@ end
 function SurClass:_newDelivery(provider, requester, train, contents)
     local availStacks = train.itemCapacity
     local availFluid = train.fluidCapacity
-    log("MAKE CONTENT " .. var_dump(contents) .. " to train " .. var_dump(train.comp) .. " availStacks: " .. var_dump(availStacks) .. " availFluid: " .. var_dump(availFluid))
     requester.lastTickMap = requester.lastTickMap or {}
     ---@type table<string, number>
     local lastMap = requester.lastTickMap
@@ -243,7 +242,6 @@ function SurClass:_newDelivery(provider, requester, train, contents)
         local next
         for name, count in pairs(contents) do
             local nameLastTick = table_size(contents) ~= 1 and lastMap[name] or 0
-            log("nameLastTick: " .. var_dump(nameLastTick) .. " current: " .. var_dump(current) .. " ==: " .. var_dump(current == nameLastTick))
             if current == nameLastTick then
                 local itemProto = game.item_prototypes[name]
                 if itemProto then
@@ -275,8 +273,6 @@ function SurClass:_newDelivery(provider, requester, train, contents)
         end
         current = next
     end
-
-    log("MADE CONTENT " .. var_dump(contents) .. " to train " .. var_dump(train.comp) .. " availStacks: " .. var_dump(availStacks) .. " availFluid: " .. var_dump(availFluid))
 
     if table_size(contents) == 0 then
         return nil
@@ -350,8 +346,6 @@ function SurClass:_findBestTrainForExchange(provider, requester, contents, needC
                 and ((needCargoCells > 0 and trainExample.itemCapacity > 0) or (needFluids > 0 and #trainExample.fluidWagons > 0))
         -- todo filter by networks
         then
-            log("requester.compFlags: " .. var_dump(requester.compFlags) .. ", trainExample.comp: " .. var_dump(trainExample.comp))
-
             local acceptedCells = math.min(needCargoCells, trainExample.itemCapacity)
             local acceptedFluid = math.min(needFluids, #trainExample.fluidWagons) -- todo enhance fluid formula
             local score = acceptedCells * 25000 + acceptedFluid * 40 -- todo  may enhance formula
@@ -530,9 +524,6 @@ function SurClass:removeTrain(trainId)
     if train then
         train.valid = false
         if train.stop then
-            if train.stop.train then
-                log("NIL TRAIN " .. tostring(train.stop.train.uid) .. " at removeTrain/isBidi")
-            end
             train.stop.train = nil
             train.stop:updateVisual()
             train.stop = nil

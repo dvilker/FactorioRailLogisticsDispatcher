@@ -117,7 +117,6 @@ script.on_event(
 local function entityBuilt(event)
     local entity = event.created_entity or event.entity
     if entity and entity.valid then
-        log("PLACED " .. entity.name .. " / " .. entity.unit_number .. " dir:" .. var_dump(directionNames[entity.direction]) .. " pos:" .. var_dump(entity.position) .." tags: "..var_dump(event.tags))
         DispClass.handleBuilt(entity, event.tags and event.tags["yatm"])
     end
 end
@@ -134,7 +133,6 @@ local function entityRemoved(event)
     local entity = event.entity
     if entity and entity.valid then
         if entity.name == "train-stop" or entity.name == "yatm-dispatcher" then
-            log("REMOVED " .. entity.name .. " / " .. entity.unit_number)
             DispClass.handleRemoved(entity)
         elseif entity.train then
             TrainClass.handleRemoved(entity.surface.index, entity.train.id)
@@ -152,7 +150,6 @@ script.on_event(
         ---@param event OnTrainChangedState
         function(event)
             local train = event.train
-            log("TRAIN " .. train.id .. " CHANGE STATE  " .. var_dump(trainStateNames[event.old_state]) .. " -> " .. var_dump(trainStateNames[train.state]))
             if train.state == defines.train_state.wait_station and train.station then
                 TrainClass.handleArrival(train)
             elseif event.old_state == defines.train_state.wait_station then
@@ -166,16 +163,6 @@ script.on_event(
         ---@overload fun (event: EventData)
         ---@param event OnTrainCreated
         function(event)
-            log("Train created at " .. (event.train.station and event.train.station.backer_name or "?"))
-            for k, v in pairs(event.train.carriages) do
-                log(var_dump(k) .. ": " .. var_dump(v.type) .. " D: " .. var_dump(v.direction))
-            end
-            for dir, locos in pairs(event.train.locomotives) do
-                for _, lo in pairs(locos) do
-                    log(var_dump(dir) .. ": " .. var_dump(lo.type))
-                end
-            end
-
             local train = event.train
             if event.old_train_id_1 then
                 TrainClass.handleRemoved(train.front_stock.surface.index, event.old_train_id_1)
@@ -220,7 +207,6 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
     local player = game.players[event.player_index]
     lastBlue = player.blueprint_to_setup
     lastBlueE = player.blueprint_to_setup.get_blueprint_entities()
-    log("on_player_setup_blueprint " .. var_dump(lastBlue) .. var_dump(lastBlueE))
 end)
 
 
@@ -231,12 +217,10 @@ end)
 ---@param blueprint LuaItemStack
 ---@param mapping table<uint, LuaEntity>
 local function dataToBlueprint(blueprint, mapping)
-    log("SAVING")
     for i, entity in pairs(mapping) do
         if entity.valid then
             local disp = global.disps[entity.unit_number]
             if disp then
-                log("SAVED " .. i)
                 blueprint.set_blueprint_entity_tag(i, 'yatm', disp:getSettings())
             end
         end
@@ -251,10 +235,8 @@ script.on_event(
             local player = game.players[event.player_index]
             local cursor = player.cursor_stack
             if cursor and cursor.valid_for_read and cursor.type == 'blueprint' then
-                log("on_player_setup_blueprint 1")
                 dataToBlueprint(cursor, event.mapping.get())
             else
-                log("on_player_setup_blueprint 2")
                 global.blueprintMappings = global.blueprintMappings or {}
                 global.blueprintMappings[player.index] = event.mapping.get()
             end

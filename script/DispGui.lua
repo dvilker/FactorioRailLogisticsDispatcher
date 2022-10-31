@@ -459,7 +459,6 @@ function DispGui:_updateVisibleAndEnabled()
 end
 
 function DispGui:_dataToForm()
-    --log("DATA TO FORM " .. var_dump(self.data))
     local named = self.model.named
     self.selectedButton = nil
     self.selectedItem = nil
@@ -474,7 +473,6 @@ function DispGui:_dataToForm()
             el.locked = true
         end
     end
-    --log("NAMED: " .. var_dump(self.model))
     named[FLAG_flagReverseLocos].state = self.data.flagReverseLocos
     named[FLAG_flagUseSignals].state = self.data.flagUseSignals
     named[FLAG_flagUseEquals].state = self.data.flagUseEquals
@@ -528,9 +526,7 @@ function DispGui:_handleGuiEvent(event)
     local element = --[[---@type LuaGuiElement]]event.element
     local _name = element.tags._name
     local _share = element.tags._share
-    --log("handleGuiEvent " .. var_dump(_name) .. " " .. var_dump(event))
     if not _name and not _share then
-        --log("handleGuiEvent not named " .. var_dump(event))
         return
     end
     local focusTo

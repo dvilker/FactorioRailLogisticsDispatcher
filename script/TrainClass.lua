@@ -95,7 +95,6 @@ function TrainClass:isEnoughFuel(inDepot)
             end
         end
     end
-    log("energy: "..var_dump(energy))
     return false
 end
 

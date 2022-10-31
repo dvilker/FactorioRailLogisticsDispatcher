@@ -133,7 +133,6 @@ end
 
 function StopClass:_updateBidi()
     local signals = self.disp.input.get_merged_signals(defines.circuit_connector_id.constant_combinator)
-    --log("Update bidi " .. self.stopEntity.backer_name .. ": "..var_dump(signals))
     local signalStates = self.signalStates
     for _, signal in pairs(signalStates) do
         signal._request = 0
@@ -200,7 +199,6 @@ function StopClass:_updateBidi()
             end
         end
     end
-    --log(var_dump(self.entity.backer_name) .. ": " .. var_dump(signalStates))
     ---@type table<string, StopSignalState>
     local provide, request
     for k, signal in pairs(signalStates) do
@@ -316,9 +314,6 @@ function StopClass:_turnInserters()
                         swapInserter(ins, false)
                         turnedInserters[ins.unit_number] = ins
                     end
-                    --log("FOUND LOADER")
-                else
-                    --log("MISS LOADER "..var_dump(ins.drop_target and ins.drop_target.name))
                 end
             end
         end
@@ -346,9 +341,7 @@ end
 
 ---@param trainEntity LuaTrain
 function StopClass:trainArrived(trainEntity)
-    log("StopClass:trainArrived")
     if self.isDepot then
-        log("StopClass:trainArrived isDepot")
         local train = self.sur:getOrAddTrain(trainEntity)
         train.stop = self
         self.train = train
@@ -451,7 +444,6 @@ function StopClass:trainArrived(trainEntity)
                     if fluid then
                         out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-F" } }
                     end
-                    log("OUT " .. var_dump(out));
                     (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = out
                 else
                     self.stopEntity.force.print("Поезд приехал на станцию " .. self.stopEntity.backer_name .. " не по расписанию")
@@ -468,7 +460,6 @@ end
 
 ---@param trainEntity LuaTrain
 function StopClass:trainDepart()
-    log("StopClass:trainDepart()")
     if self.isBidi then
         if self.deliveryPoint and self.deliveryPoint.exchangeMul > 0 and self.disp.flagTurnInserters then
             self:_turnInserters()
@@ -478,9 +469,6 @@ function StopClass:trainDepart()
         -- check train contents with point and warning if needed
         self.deliveryPoint = nil
         self.delivery = nil
-        if self.train then
-            log("NIL TRAIN "..tostring(self.train.uid) .." at trainDepart/isBidi")
-        end
         self.train = nil
         train.stop = nil
         if delivery then
@@ -495,18 +483,12 @@ function StopClass:trainDepart()
     elseif self.isClean then
         if self.train then
             self.train:goToDepotOrClean()
-            if self.train then
-                log("NIL TRAIN "..tostring(self.train.uid) .." at trainDepart/isClean")
-            end
             self.train.stop = nil
             self.train = nil
         end
     elseif self.isDepot then
         if self.train then
             self.sur:setTrainFree(self.train, false)
-            if self.train then
-                log("NIL TRAIN "..tostring(self.train.uid) .." at trainDepart/isDepot")
-            end
             self.train.stop = nil
             self.train = nil
         end
@@ -516,32 +498,6 @@ end
 
 function StopClass:updateVisual()
     self.disp:updateVisual()
-    --
-    --if self.disp.input then
-    --    if not self.info then
-    --        self.info = rendering.draw_text{
-    --            text = 'Депо',
-    --            surface = self.stopEntity.surface,
-    --            target = self.stopEntity,
-    --            alignment = "center",
-    --            vertical_alignment = "middle",
-    --            color = {.7,.7,1,1}
-    --        }
-    --    end
-    --    rendering.set_text(self.info, "Очистка")
-    --end
-    --if not self.light then
-    --    self.light = rendering.draw_light {
-    --        sprite = "utility/light_small",
-    --        target = self.stopEntity,
-    --        surface = self.stopEntity.surface,
-    --        color = {255 ,0 ,0, 255},
-    --        only_in_alt_mode = true,
-    --    }
-    --    self.stopEntity.surface.always_day = false
-    --    self.stopEntity.surface.daytime = 0.5
-    --    log("LIGHT: "..var_dump(self.light))
-    --end
 end
 
 function StopClass:settingsUpdated()
@@ -660,7 +616,6 @@ function StopClass:buildTrain()
             target = rail,
             force = self.stopEntity.force,
         }
-        log("BUILD LOCO: " .. tostring(created))
     end
 
 

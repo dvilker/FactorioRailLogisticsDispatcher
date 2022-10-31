@@ -49,10 +49,8 @@ function DispClass:new(dispEntity)
     })
     disp:_createIO()
     local beh = --[[---@type LuaArithmeticCombinatorControlBehavior]] dispEntity.get_control_behavior()
-    log("BUILT WITH PARAMS "..var_dump(beh.parameters))
     local prevUid = beh.parameters.first_constant or 0
     if global.removedSettings[prevUid] then
-        log("Restoring removed settings for "..tostring(prevUid))
         disp:setSettings(global.removedSettings[prevUid])
         global.removedSettings[prevUid] = nil
     end
@@ -102,7 +100,6 @@ function DispClass:_removeIO()
     local nearEntities = self.entity.surface.find_entities_filtered({ position = self.entity.position })
     for _, e in pairs(nearEntities) do
         if e.name == 'yatm-io' or (e.name == 'entity-ghost' and e.ghost_name == 'yatm-io') then
-            log("REMOVE IO " .. tostring(e.unit_number))
             e.destroy()
         end
     end
@@ -126,7 +123,6 @@ function DispClass.handleBuilt(entity, tags)
     if entity.name == "yatm-dispatcher" then
         local disp = DispClass.ofEntity(entity)
         if tags then
-            log("Restoring tags for "..tostring(entity.unit_number))
             disp:setSettings(tags)
         end
     else
@@ -155,7 +151,6 @@ function DispClass.handleRemoved(entity)
             settings._tick = game.tick
             global.removedSettings[entity.unit_number] = settings
             DispClass.cleanupRemovedSettings()
-            log("STORED REMOVED SETTINGS FOR "..tostring(entity.unit_number) ..": "..var_dump(settings))
 
             if disp.stop then
                 disp.stop.sur:removeStop(disp.stop.uid)
@@ -188,7 +183,6 @@ function DispClass.cleanupRemovedSettings()
             end
         end
         global.minRemovedSettingsTick = minTick
-        log("[YATM] Clean removed settings. Size: " .. tostring(oldSize) .. " -> " .. tostring(table_size(global.removedSettings)))
     end
 end
 
@@ -403,7 +397,6 @@ function DispClass:updateVisual()
     local beh = (--[[---@type LuaArithmeticCombinatorControlBehavior]] self.entity.get_control_behavior())
     if color ~= beh.parameters.operation or self.uid ~= beh.parameters.first_constant then
         beh.parameters = { first_constant = self.uid, operation = color }
-        log("UPDAGE PARAMA "..var_dump(beh.parameters))
     end
 
 

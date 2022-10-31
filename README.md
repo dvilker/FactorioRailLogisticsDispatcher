@@ -49,6 +49,8 @@ or clone the repository and upload as your own mod.
 Please keep English localization up to date. Russian I take over.
 Other languages, if necessary, please place a separate mod.
 
+Use `build/build.js` for make mod-zip file and for processing some files (locale/*.cfg). 
+
 ## Contributors
 
 1. As long as it's just me
