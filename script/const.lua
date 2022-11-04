@@ -3,6 +3,7 @@ ST_MODE_OFF = 0
 ST_MODE_BIDI = 3
 ST_MODE_DEPOT = 4
 ST_MODE_CLEAN = 5
+ST_MODE_FUEL = 6
 
 ---@type table<ST_MODE, ST_MODE>
 ST_MODES = {
@@ -10,6 +11,7 @@ ST_MODES = {
     [ST_MODE_BIDI] = ST_MODE_BIDI,
     [ST_MODE_DEPOT] = ST_MODE_DEPOT,
     [ST_MODE_CLEAN] = ST_MODE_CLEAN,
+    [ST_MODE_FUEL] = ST_MODE_FUEL,
 }
 
 ---@alias ST_OUT [ST_OUT_*]
@@ -55,6 +57,8 @@ ST_STATE_DELIVERY_LOAD = 32
 ST_STATE_DELIVERY_UNLOAD = 33
 ST_STATE_DELIVERY_NO_PROVIDER = 40
 ST_STATE_DELIVERY_NO_TRAIN = 41
+ST_STATE_DELIVERY_NO_MIN_PROVIDER = 42
+ST_STATE_DELIVERY_NO_COMPAT_PROVIDER = 43
 ---@type table<ST_STATE, { caption: string, signal: string, disp: string }>
 ST_STATES = {
     [ST_STATE_OFF] = { caption = "Выключен", signal = "signal-grey", disp = "+"--[[empty]] },
@@ -72,7 +76,9 @@ ST_STATES = {
     [ST_STATE_DELIVERY_LOAD] = { caption = "Погрузка в поезд", signal = "signal-cyan", disp = "%"--[[L]] },
     [ST_STATE_DELIVERY_UNLOAD] = { caption = "Разгрузка поезда", signal = "signal-cyan", disp = "^"--[[U]] },
     [ST_STATE_DELIVERY_NO_PROVIDER] = { caption = "Нет предложения", signal = "signal-pink", disp = "<<"--[[NP]] },
+    [ST_STATE_DELIVERY_NO_MIN_PROVIDER] = { caption = "Нет минимального предложения", signal = "signal-pink", disp = "<<"--[[NP]] },
     [ST_STATE_DELIVERY_NO_TRAIN] = { caption = "Нет подходящего поезда", signal = "signal-pink", disp = ">>"--[[NT]] },
+    [ST_STATE_DELIVERY_NO_COMPAT_PROVIDER] = { caption = "Нет подходящего предложения", signal = "signal-pink", disp = ">>"--[[NT]] },
 }
 
 ---@type string

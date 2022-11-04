@@ -72,12 +72,11 @@ function TrainClass:isEmpty()
     return self.train.get_item_count() < 0.000001 and self.train.get_fluid_count() < 0.000001
 end
 
----@param inDepot @boolean
 ---@return boolean
 ---@overload fun():boolean
-function TrainClass:isEnoughFuel(inDepot)
+function TrainClass:isEnoughFuel()
     local energy = 0
-    local need = inDepot and minEnergyUseTrainAtDepot or minEnergyUseTrain
+    local need = minEnergyUseTrain
     for _, dir in pairs(self.train.locomotives) do
         for _, loco in pairs(dir) do
             local burner = loco.burner
@@ -98,19 +97,51 @@ function TrainClass:isEnoughFuel(inDepot)
     return false
 end
 
-function TrainClass:goToDepotOrClean()
+
+function TrainClass:depotArrived()
+    local realFree = self:isEnoughFuel() and self:isEmpty()
+    if self.isFree ~= realFree then
+        self.sur:setTrainFree(self, realFree)
+    end
+    if not realFree then
+        if not self:isEmpty() then
+            self:goToClean(true)
+        elseif not self:isEnoughFuel() then
+            self:goToFuel(true)
+        end
+    end
+end
+
+
+function TrainClass:fuelArrived()
+    if #self.train.schedule.records <= 1 then
+        ---@type TrainScheduleRecord[]
+        local records = { }
+        self:_appendFuel(records, self.stop)
+        self:_appendDepot(records, false)
+        self.train.schedule = { current = 1, records = records }
+    end
+end
+
+--- Train delivery ends
+function TrainClass:goToHome()
     if self:isEmpty() then
-        self:goToDepot()
+        if self:isEnoughFuel() then
+            self:goToDepot()
+        else
+            self:goToFuel()
+        end
     else
         self:goToClean()
     end
 end
 
 ---@param stops table<StopUid, StopClass>
+---@return StopClass @nullable
 function TrainClass:_getBestStop(stops)
     ---@type StopClass, number
     local bestStop, bestDistance
-    if stops then
+    if stops and table_size(stops) > 0 then
         local trainPosition = --[[---@type _MapPosition1]]self.train.front_stock.position
         for _, stop in pairs(stops) do
             if isCompatibleNetworks(stop.disp.networks, self.networks) and (stop.compFlags == nil or stop.compFlags[self.comp]) then
@@ -129,7 +160,7 @@ end
 function TrainClass:_findDepotNameInSchedule()
     local schedule = --[[---@type TrainSchedule]]self.train.schedule
     for _, r in pairs(schedule.records) do
-        if r.station then
+        if r.station and r.wait_conditions then
             for _, w in pairs(r.wait_conditions) do
                 if w.type == depotScheduleType and w.ticks == depotScheduleTime then
                     return r.station
@@ -215,8 +246,49 @@ function TrainClass:_appendClean(records, warning)
     return true
 end
 
+---@param currentStop StopClass
+---@param records TrainScheduleRecord[]
+---@overload fun (records: TrainScheduleRecord[])
+function TrainClass:_appendFuel(records, currentStop)
+    local bestStop = currentStop or self:_getBestStop(self.sur.fuelStops)
+    if not bestStop then
+        return false
+    end
+    if not currentStop then
+        records[#records + 1] = {
+            rail = bestStop.stopEntity.connected_rail,
+            rail_direction = bestStop.stopEntity.connected_rail_direction,
+            wait_conditions = { { type = "time", compare_type = "and", ticks = 0, condition = nil } },
+        }
+    end
+    if bestStop.disp.flagUseSignals then
+        records[#records + 1] = {
+            station = bestStop.stopEntity.backer_name,
+            wait_conditions = {
+                {
+                    type = "circuit",
+                    condition = {
+                        first_signal = { type = "virtual", name = "signal-green" },
+                        comparator = ">",
+                        constant = 0,
+                    },
+                    compare_type = "and"
+                }
+            }
+        }
+    else
+        records[#records + 1] = {
+            station = bestStop.stopEntity.backer_name,
+            wait_conditions = {
+                { type = "inactivity", ticks = fuelScheduleTime, compare_type = "and" }
+            }
+        }
+    end
+    return true
+end
+
 function TrainClass:goToDepot()
-    self.sur:setTrainFree(self, self:isEnoughFuel())
+    self.sur:setTrainFree(self, self:isEnoughFuel() and self:isEmpty())
     --local dest = self.train.path_end_stop
     --if dest then
     --    local stop = self.sur:getOrAddStop(dest)
@@ -232,7 +304,9 @@ function TrainClass:goToDepot()
     self.train.schedule = { current = 1, records = records }
 end
 
-function TrainClass:goToClean()
+---@param stayIfNoClean boolean
+---@overload fun()
+function TrainClass:goToClean(stayIfNoClean)
     self.sur:setTrainFree(self, false)
     local dest = self.train.path_end_stop
     if dest then
@@ -245,7 +319,39 @@ function TrainClass:goToClean()
     end
     ---@type TrainScheduleRecord[]
     local records = { }
-    self:_appendClean(records, true)
+    if stayIfNoClean then
+        if not self:_appendClean(records, false) then
+            return
+        end
+    else
+        self:_appendClean(records, true)
+    end
+    self:_appendDepot(records, false)
+    self.train.schedule = { current = 1, records = records }
+end
+
+---@param stayIfNoClean boolean
+---@overload fun()
+function TrainClass:goToFuel(stayIfNoClean)
+    self.sur:setTrainFree(self, false)
+    local dest = self.train.path_end_stop
+    if dest then
+        local stop = self.sur:getOrAddStop(dest)
+        if stop and stop.isFuel
+                and isCompatibleNetworks(stop.disp.networks, self.networks)
+                and (stop.compFlags == nil or stop.compFlags[self.comp]) then
+            return -- already going to clean station
+        end
+    end
+    ---@type TrainScheduleRecord[]
+    local records = { }
+    if stayIfNoClean then
+        if not self:_appendFuel(records) then
+            return
+        end
+    else
+        self:_appendFuel(records)
+    end
     self:_appendDepot(records, false)
     self.train.schedule = { current = 1, records = records }
 end

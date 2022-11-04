@@ -384,7 +384,7 @@ function DispClass:updateVisual()
                 color = DISP_COLOR_WHITE
             end
         else
-            -- clean
+            -- clean or fuel
             if self.stop.train then
                 color = DISP_COLOR_AQUA
             else

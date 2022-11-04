@@ -11,6 +11,7 @@
 ---@field lastUid number
 ---@field removedSettings table<DispUid, RemovedSettings>
 ---@field minRemovedSettingsTick number @nullable
+---@field mem table<number, table>
 
 ---@type global
 global = global

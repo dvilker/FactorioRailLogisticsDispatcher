@@ -20,7 +20,8 @@
     ---@field signalStates table<string, StopSignalState> @ cargo signals with state (item/fluid name -> StopSignalState)
     ---@field isBidi true|nil @ is stop uses for cargo exchange
     ---@field isDepot true|nil @ is stop is depot
-    ---@field isClean true|nil @ is stop is clean stations
+    ---@field isClean true|nil @ is stop is clean station
+    ---@field isFuel true|nil @ is stop is refueling station
     ---@field turnedInserters table<number, LuaEntity> @nullable saved turned inserters
     ---@field deliveries table<DeliveryUid, DeliveryClass> @ active deliveries with this station
     ---@field deliveryChanges table<string, number> @ Expected changes due to deliveries
@@ -129,6 +130,7 @@ function StopClass:_updateMode()
     self.isBidi = mode == ST_MODE_BIDI or nil
     self.isDepot = mode == ST_MODE_DEPOT or nil
     self.isClean = mode == ST_MODE_CLEAN or nil
+    self.isFuel = mode == ST_MODE_FUEL or nil
 end
 
 function StopClass:_updateBidi()
@@ -224,7 +226,10 @@ function StopClass:hasTrainSlot()
     return self.stopEntity.trains_limit == nil or self.stopEntity.trains_limit > table_size(self.deliveries)
 end
 
-function StopClass:update()
+---@param doNotMakeDeliveries boolean
+---@return DeliveryClass @nullable New delivery
+---@overload fun(): DeliveryClass
+function StopClass:update(doNotMakeDeliveries)
     if self._settingsUpdated then
         -- TODO REMOVE WITH FLOAT.LUA REMOVED
         self._settingsUpdated = nil
@@ -242,13 +247,14 @@ function StopClass:update()
         end
     elseif mode == ST_MODE_DEPOT then
         if self.train then
-            if not self.train.isFree and self.train:isEnoughFuel(true) then
+            if not self.train.isFree and self.train:isEnoughFuel() and self.train:isEmpty() then
                 self.sur:setTrainFree(self.train, true)
             end
         end
     elseif mode == ST_MODE_CLEAN then
+    elseif mode == ST_MODE_FUEL then
     end
-    self.sur:updateStop(self)
+    return self.sur:updateStop(self, doNotMakeDeliveries)
 end
 
 function StopClass:_tamp()
@@ -349,12 +355,18 @@ function StopClass:trainArrived(trainEntity)
         if train.delivery then
             self.sur:removeDelivery(train.delivery)
         end
+        train:depotArrived()
         --if self.disp.flagDestroy then
         --    self.sur:removeTrain(trainEntity.id)
         --    train:deconstruct()
         --else
         --    train:goToDepotOrClean()
         --end
+    elseif self.isFuel then
+        local train = self.sur:getOrAddTrain(trainEntity)
+        train.stop = self
+        self.train = train
+        train:fuelArrived()
     elseif self.isBidi then
         self:_restoreInserters(true)
         local train = self.sur:getOrAddTrain(trainEntity, true)
@@ -478,11 +490,21 @@ function StopClass:trainDepart()
             (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = --[[---@type]]nil
         end
         if delivery and (#delivery.points == 0 or delivery.points[#delivery.points].passed) and train then
-            train:goToDepotOrClean()
+            train:goToHome()
         end
     elseif self.isClean then
         if self.train then
-            self.train:goToDepotOrClean()
+            if self.train:isEmpty() then
+                self.train:goToHome()
+            end
+            self.train.stop = nil
+            self.train = nil
+        end
+    elseif self.isFuel then
+        if self.train then
+            if self.train:isEnoughFuel() then
+                self.train:goToHome()
+            end
             self.train.stop = nil
             self.train = nil
         end

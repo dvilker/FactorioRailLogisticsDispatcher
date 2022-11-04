@@ -7,6 +7,7 @@
     ---@field bidiStops table<StopUid, StopClass> @Bidi stops at surface
     ---@field depotStops table<StopUid, StopClass> @Depot stops at surface
     ---@field cleanStops table<StopUid, StopClass> @Clean stops at surface
+    ---@field fuelStops table<StopUid, StopClass> @Refueling stops at surface
     ---@field deliveries table<DeliveryUid, DeliveryClass> @All active deliveries on surface
     ---@field trains table<TrainUid, TrainClass> @All managed trains on surface
     ---@field freeTrains table<TrainType, table<TrainUid, TrainClass>> @Free managed trains on surface
@@ -26,6 +27,7 @@ function SurClass:new(surfaceIndex)
         bidiStops = {},
         depotStops = {},
         cleanStops = {},
+        fuelStops = {},
 
         deliveries = {},
         trains = {},
@@ -91,9 +93,24 @@ function SurClass.restoreMeta(surObs)
 end
 
 function SurClass.tick()
-    global.stopKey = next(global.activeStops, global.stopKey and global.activeStops[global.stopKey] and global.stopKey)
-    if global.stopKey then
-        global.activeStops[global.stopKey]:update()
+    local i = math.max(math.min(table_size(global.activeStops), 1), 32)
+    while i > 0 do
+        i = i - 1
+        global.stopKey = next(global.activeStops, global.stopKey and global.activeStops[global.stopKey] and global.stopKey)
+        if global.stopKey then
+            local stop = global.activeStops[global.stopKey]
+            local j = 32
+            while j > 0 do
+                j = j - 1
+                -- retry if delivery created
+                if not stop:update() then
+                    break
+                end
+            end
+            if stop.isBidi then
+                break
+            end
+        end
     end
 end
 
@@ -110,7 +127,11 @@ function SurClass:remove()
 end
 
 ---@param stop StopClass
-function SurClass:updateStop(stop)
+---@param doNotMakeDeliveries boolean
+---@return DeliveryClass @nullable New delivery
+------@overload fun(stop: StopClass): DeliveryClass
+function SurClass:updateStop(stop, doNotMakeDeliveries)
+    local newDelivery
     local active = table_size(global.activeStops) > 0
     if stop.valid then
         global.activeStops[stop.uid] = (stop.disp.mode ~= ST_MODE_OFF) and stop or nil
@@ -118,6 +139,7 @@ function SurClass:updateStop(stop)
         self.bidiStops[stop.uid] = stop.isBidi and stop or nil
         self.depotStops[stop.uid] = stop.isDepot and stop or nil
         self.cleanStops[stop.uid] = stop.isClean and stop or nil
+        self.fuelStops[stop.uid] = stop.isFuel and stop or nil
 
         if stop.provide then
             for name, _ in pairs(stop.provide) do
@@ -138,8 +160,8 @@ function SurClass:updateStop(stop)
                 end
             end
         end
-        if stop.request then
-            self:_tryToMakeDelivery(stop)
+        if stop.request and not doNotMakeDeliveries then
+            newDelivery = self:_tryToMakeDelivery(stop)
         end
         stop:updateVisual()
     else
@@ -148,6 +170,7 @@ function SurClass:updateStop(stop)
         self.bidiStops[stop.uid] = nil
         self.depotStops[stop.uid] = nil
         self.cleanStops[stop.uid] = nil
+        self.fuelStops[stop.uid] = nil
         stop.provide = nil
         stop.request = nil
         for name, provideStops in pairs(self.provide) do
@@ -166,6 +189,7 @@ function SurClass:updateStop(stop)
     if active ~= (table_size(global.activeStops) > 0) then
         SurClass.updateTimer()
     end
+    return newDelivery
 end
 
 ---@param requester StopClass
@@ -176,11 +200,10 @@ function SurClass:_tryToMakeDelivery(requester)
 
     ---@type StopClass, TrainClass, number, number, table<string, number>
     local bestProvider, bestTrain, bestScore, bestDistance, bestContents
-    local hasAnyProvider = false
     for reqName, reqState in pairs(requester.request) do
+        local hasProvider, hasMinProvide, hasTrain
         local providers = self.provide[reqName]
         if providers then
-            reqState.state = nil
             for _, provider in pairs(providers) do
                 if provider ~= requester
                         and provider.provide
@@ -188,11 +211,13 @@ function SurClass:_tryToMakeDelivery(requester)
                         and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
                         and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
                 then
+                    hasProvider = true
                     local contents, c, f = self:_getNeededExchange(provider, requester)
                     if contents then
-                        hasAnyProvider = true
+                        hasMinProvide = true
                         local train, score, distance = self:_findBestTrainForExchange(provider, requester, contents, c, f)
                         if train then
+                            hasTrain = true
                             if not bestScore or bestScore < score or (bestScore == score and distance < bestDistance) then
                                 bestProvider = provider
                                 bestTrain = train
@@ -200,12 +225,20 @@ function SurClass:_tryToMakeDelivery(requester)
                                 bestDistance = distance
                                 bestContents = contents
                             end
+                        else
                         end
                     end
                 end
             end
-        else
+        end
+        if not hasProvider then
             reqState.state = ST_STATE_DELIVERY_NO_PROVIDER
+        elseif not hasMinProvide then
+            reqState.state = ST_STATE_DELIVERY_NO_MIN_PROVIDER
+        elseif not hasTrain then
+            reqState.state = ST_STATE_DELIVERY_NO_TRAIN
+        else
+            reqState.state = nil
         end
     end
 
@@ -221,7 +254,9 @@ function SurClass:_tryToMakeDelivery(requester)
         self:addDelivery(delivery)
         self:setTrainFree(bestTrain, false)
         bestTrain:gotoToDelivery(delivery)
+        bestProvider:update(true)
     end
+    return delivery
 end
 
 ---@param provider StopClass
@@ -456,7 +491,7 @@ function SurClass:removeDeliveriesBy(trainOrStop)
         if delivery:isRelated(trainOrStop) then
             self:removeDelivery(delivery)
             if delivery.train and delivery.train.valid then
-                delivery.train:goToDepotOrClean()
+                delivery.train:goToHome()
             end
         end
     end

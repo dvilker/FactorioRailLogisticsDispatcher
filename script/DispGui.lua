@@ -155,6 +155,7 @@ function DispGui:_create()
                             } },
                             { type = "flow", direction = "vertical", _style1 = STYLE_MARGIN, _sub = {
                                 { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_DEPOT, caption = { "yatm-gui.mode-depot" }, tooltip = { "yatm-gui.mode-depot-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_FUEL, caption = { "yatm-gui.mode-fuel" }, tooltip = { "yatm-gui.mode-fuel-tt" } },
                                 { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_CLEAN, caption = { "yatm-gui.mode-clean" }, tooltip = { "yatm-gui.mode-clean-tt" } },
                             } },
                         } },
@@ -358,7 +359,7 @@ function DispGui:_updateCounters()
                 label2 = countWithUnitsToString(f)
             end
             local icon = (c or f) and "signal-anything" --[[green]] or "signal-everything" --[[red]]
-            if btn.elem_value.name ~= icon then
+            if (--[[---@type SignalID]]btn.elem_value).name ~= icon then
                 btn.elem_value = { type = "virtual", name = icon }
             end
         else
@@ -385,7 +386,7 @@ end
 
 function DispGui:_updateMemButtons()
     local shares = self.model.shares
-    local forceIndex = self.player.force.index
+    local forceIndex = (--[[---@type LuaForce]]self.player.force).index
     global.mem = global.mem or {}
     global.mem[forceIndex] = global.mem[forceIndex] or {}
 
@@ -439,7 +440,7 @@ function DispGui:_updateVisibleAndEnabled()
     guiSetVisible(shares[EL_ANY_MIN_FLUID], self.selectedButton ~= nil and self.selectedItem == nil)
 
     named[FLAG_flagReverseLocos].visible = false --[[not implemented]] and true
-    named[FLAG_flagUseSignals].visible = data.mode == ST_MODE_BIDI or data.mode == ST_MODE_OFF or data.mode == ST_MODE_CLEAN
+    named[FLAG_flagUseSignals].visible = data.mode == ST_MODE_BIDI or data.mode == ST_MODE_OFF or data.mode == ST_MODE_CLEAN or data.mode == ST_MODE_FUEL
     named[FLAG_flagUseEquals].visible = data.mode == ST_MODE_BIDI
     named[FLAG_flagMute].visible = data.mode ~= ST_MODE_OFF
     named[FLAG_flagBuild].visible = false --[[not implemented]] and data.mode == ST_MODE_DEPOT
@@ -632,7 +633,7 @@ function DispGui:_handleGuiEvent(event)
             self:_dataToForm()
             self:updateStopInfo()
             if self.disp.stop then
-                self.disp.stop.sur:updateStop(self.disp.stop)
+                self.disp.stop:update()
             end
             self.selectedButton = selectedButton
             doUpdateVisible = true
@@ -892,8 +893,9 @@ function DispGui:updateStopInfo()
             end
         end
 
-
-        do
+        local debug --[[DEBUG]] = true
+        if debug then
+            ---@type string[]
             local debugLines = {}
             for name, sig in pairs(stop.signalStates) do
                 local prefix = "[" .. sig.type .."="..sig.name.."] "
@@ -901,14 +903,16 @@ function DispGui:updateStopInfo()
                     debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
                 end
             end
-            for k, v in pairs(stop.deliveryChanges) do
-                local prefix
-                if game.item_prototypes[k] then
-                    prefix = "[item="..k.."] "
-                else
-                    prefix = "[fluid="..k.."] "
+            if stop.deliveryChanges then
+                for k, v in pairs(stop.deliveryChanges) do
+                    local prefix
+                    if game.item_prototypes[k] then
+                        prefix = "[item="..k.."] "
+                    else
+                        prefix = "[fluid="..k.."] "
+                    end
+                    debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(v)
                 end
-                debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(v)
             end
             named[EL_DEBUG].caption = table.concat(debugLines, "\n")
 
