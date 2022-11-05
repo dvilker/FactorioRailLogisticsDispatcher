@@ -22,6 +22,28 @@ function var_dump(var)
     end
 end
 
+function var_dump_light(var, onlyKeys)
+    if type(var) == "table" then
+        local sb = { "{" }
+        for k, v in pairs(var) do
+            if #sb > 1 then
+                sb[#sb + 1] = ", "
+            end
+            sb[#sb + 1] = var_dump_light(k, true)
+            if not onlyKeys then
+                sb[#sb + 1] = ": "
+                sb[#sb + 1] = var_dump_light(v, true)
+            end
+        end
+        sb[#sb + 1] = "}"
+        return table.concat(sb)
+    elseif type(var) == "string" then
+        return '"' .. tostring(var) .. '"'
+    else
+        return tostring(var)
+    end
+end
+
 ---@overload fun(class)
 function instanceClass(class, data)
     if not class._meta then
@@ -117,3 +139,8 @@ function comparableDistance(from, to)
     return (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
 end
 
+---@param name string
+---@return string
+function typeOfName(name)
+    return game.item_prototypes[name] and "item" or "fluid"
+end

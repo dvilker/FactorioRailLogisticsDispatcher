@@ -26,7 +26,6 @@
     ---@field deliveries table<DeliveryUid, DeliveryClass> @ active deliveries with this station
     ---@field deliveryChanges table<string, number> @ Expected changes due to deliveries
     ---@field delivery DeliveryClass @nullable current delivery if train at stop
-    ---@field deliveryPoint DeliveryPoint @nullable current delivery point if train at stop
     ---@field train TrainClass @nullable train at stop
     ---@field provide table<string, StopSignalState> @nullable
     ---@field request table<string, StopSignalState> @nullable
@@ -108,11 +107,19 @@ function StopClass:_updateDeliveryChanges()
     ---@type table<string, number)
     local changes = {}
     for _, delivery in pairs(self.deliveries) do
-        for _, point in pairs(delivery.points) do
-            if point.stop == self and (not point.passed or (delivery == self.delivery and point.exchangeMul == 1)) then
-                for name, ex in pairs(point.exchange) do
-                    changes[name] = (changes[name] or 0) - ex * point.exchangeMul
-                end
+        local mul
+        if delivery.provider == self then
+            if not delivery.providerPassed or delivery == self.delivery then
+                mul = 1
+            end
+        else
+            if not delivery.requesterPassed then
+                mul = -1
+            end
+        end
+        if mul then
+            for name, ex in pairs(delivery.contents) do
+                changes[name] = (changes[name] or 0) - ex * mul
             end
         end
     end
@@ -380,81 +387,38 @@ function StopClass:trainArrived(trainEntity)
                 end
             end
             if delivery then
-                ---@type DeliveryPoint
-                local point
-                for _, p in pairs(delivery.points) do
-                    if not p.passed then
-                        point = p
-                        break
+                local validLocation =
+                    (delivery.provider == self and not delivery.providerPassed)
+                            or (delivery.requester == self and delivery.providerPassed and not delivery.requesterPassed)
+                if validLocation then
+                    if delivery.provider == self then
+                        delivery.providerPassed = true
+                    else
+                        delivery.requesterPassed = true
                     end
-                end
-                if point and point.stop == self then
-                    point.passed = true
-                    self.deliveryPoint = point
                     self.delivery = delivery
                     self.train = train
                     train.stop = self
                     self:_updateDeliveryChanges()
                     local out = --[[---@type ConstantCombinatorParameters[] ]] {}
-                    out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-green" } }
                     if not self.disp.outMode or self.disp.outMode == ST_OUT_NEED_CONTENTS_NEG or self.disp.outMode == ST_OUT_NEED_CONTENTS_POS then
-                        --local totalNeedCargo = 0
-                        --local totalNeedFluid = 0
-                        if point.needContent then
-                            for name, count in pairs(point.needContent) do
-                                ---@type string
-                                local type
-                                if game.item_prototypes[name] then
-                                    type = "item"
-                                    --totalNeedCargo = totalNeedCargo + count
-                                else
-                                    type = "fluid"
-                                    --totalNeedFluid = totalNeedFluid + count
-                                end
-                                out[#out + 1] = { index = #out + 1, count = count * (self.disp.outMode ~= ST_OUT_NEED_CONTENTS_POS and -1 or 1), signal = { type = type, name = name } }
+                        local sign = --[[---@type number]] self.disp.outMode ~= ST_OUT_NEED_CONTENTS_POS and -1 or 1
+                        if delivery.provider == self then
+                            for name, count in pairs(delivery.contents) do
+                                out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
                             end
                         end
-                        --out[#out + 1] = { index = #out + 1, count = totalNeedCargo + totalNeedFluid, signal = { type = "virtual", name = "signal-A" } }
-                        --out[#out + 1] = { index = #out + 1, count = totalNeedCargo, signal = { type = "virtual", name = "signal-C" } }
-                        --out[#out + 1] = { index = #out + 1, count = totalNeedFluid, signal = { type = "virtual", name = "signal-F" } }
                     elseif self.disp.outMode == ST_OUT_EXCHANGE then
-                        if point.exchange then
-                            for name, count in pairs(point.exchange) do
-                                ---@type string
-                                local type
-                                if game.item_prototypes[name] then
-                                    type = "item"
-                                else
-                                    type = "fluid"
-                                end
-                                out[#out + 1] = { index = #out + 1, count = count * point.exchangeMul, signal = { type = type, name = name } }
-                            end
+                        local sign = delivery.provider == self and 1 or -1
+                        for name, count in pairs(delivery.contents) do
+                            out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
                         end
                     end
-                    local load = false
-                    local unload = false
-                    local fluid = false
-                    if point.exchange then
-                        for name, count in pairs(point.exchange) do
-                            local sign = count * point.exchangeMul
-                            if sign > 0 then
-                                load = true
-                            elseif sign < 0 then
-                                unload = true
-                            end
-                            if game.fluid_prototypes[name] then
-                                fluid = true
-                            end
-                        end
-                    end
-                    if load then
+                    if delivery.provider == self then
                         out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-L" } }
                     end
-                    if unload then
+                    if delivery.requester == self then
                         out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-U" } }
-                    end
-                    if fluid then
-                        out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-F" } }
                     end
                     (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = out
                 else
@@ -473,13 +437,12 @@ end
 ---@param trainEntity LuaTrain
 function StopClass:trainDepart()
     if self.isBidi then
-        if self.deliveryPoint and self.deliveryPoint.exchangeMul > 0 and self.disp.flagTurnInserters then
+        if self.delivery and self.delivery.provider == self and self.disp.flagTurnInserters then
             self:_turnInserters()
         end
         local delivery = self.delivery
         local train = self.train
         -- check train contents with point and warning if needed
-        self.deliveryPoint = nil
         self.delivery = nil
         self.train = nil
         train.stop = nil
@@ -489,7 +452,7 @@ function StopClass:trainDepart()
         if self.disp.output.valid then
             (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = --[[---@type]]nil
         end
-        if delivery and (#delivery.points == 0 or delivery.points[#delivery.points].passed) and train then
+        if delivery and delivery.requesterPassed and train then
             train:goToHome()
         end
     elseif self.isClean then

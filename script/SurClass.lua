@@ -315,20 +315,9 @@ function SurClass:_newDelivery(provider, requester, train, contents)
 
     local delivery = DeliveryClass:new()
     delivery.train = train
-    delivery.points[#delivery.points + 1] = {
-        stop = provider,
-        needContent = contents,
-        exchangeMul = 1,
-        exchange = contents,
-        passed = false,
-    }
-    delivery.points[#delivery.points + 1] = {
-        stop = requester,
-        needContent = --[[---@type]]nil,
-        exchangeMul = -1,
-        exchange = contents,
-        passed = false,
-    }
+    delivery.provider = provider
+    delivery.requester = requester
+    delivery.contents = contents
     for name, _ in pairs(contents) do
         requester.lastTickMap[name] = game.tick
     end
@@ -480,9 +469,9 @@ end
 
 ---@param delivery DeliveryClass
 function SurClass:addDelivery(delivery)
-    for _, point in pairs(delivery.points) do
-        point.stop:addDeliveryToStop(delivery)
-    end
+    self.deliveries[delivery.uid] = delivery
+    delivery.provider:addDeliveryToStop(delivery)
+    delivery.requester:addDeliveryToStop(delivery)
 end
 
 ---@param trainOrStop TrainClass|StopClass
@@ -503,9 +492,9 @@ function SurClass:removeDelivery(delivery)
         delivery.train:removeDeliveryFromTrain(delivery)
     end
     self.deliveries[delivery.uid] = nil
-    for _, point in pairs(delivery.points) do
-        point.stop:removeDeliveryFromStop(delivery)
-    end
+    log("REMOVE DELIVERY "..var_dump_light(delivery))
+    delivery.provider:removeDeliveryFromStop(delivery)
+    delivery.requester:removeDeliveryFromStop(delivery)
 end
 
 ---@param stopEntity LuaEntity

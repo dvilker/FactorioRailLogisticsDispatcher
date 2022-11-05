@@ -7,7 +7,7 @@ minEnergyUseTrainAtDepot = 400000000
 depotScheduleType = --[[---@type string]] "time"
 depotScheduleTime = --[[---@type number]] 0
 
-correctScheduleAtProvider = true
+correctDeliveries = true
 
 
 --

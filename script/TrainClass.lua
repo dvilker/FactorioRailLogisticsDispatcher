@@ -362,10 +362,11 @@ function TrainClass:gotoToDelivery(delivery)
     self.delivery = delivery
     ---@type TrainScheduleRecord[]
     local records = { }
-    for _, point in pairs(delivery.points) do
+    for p = 1, 2 do
+        local stop = p == 1 and delivery.provider or delivery.requester
         ---@type WaitCondition[]
         local conditions = { }
-        if point.stop.disp.flagUseSignals then
+        if stop.disp.flagUseSignals then
             conditions[#conditions + 1] = {
                 type = "circuit",
                 condition = {
@@ -376,21 +377,9 @@ function TrainClass:gotoToDelivery(delivery)
                 compare_type = "and",
             }
         else
-            if point.needContent then
-                for name, count in pairs(point.needContent) do
-                    local comparator
-                    if point.stop.disp.flagUseEquals then
-                        comparator = "="
-                    else
-                        local diff = (point.exchange[name] or 0) * point.exchangeMul
-                        if diff > 0 then
-                            comparator = ">="
-                        elseif diff < 0 then
-                            comparator = "<="
-                        else
-                            comparator = "="
-                        end
-                    end
+            if p == 1 then
+                for name, count in pairs(delivery.contents) do
+                    local comparator = stop.disp.flagUseEquals and "=" or ">="
                     if game.item_prototypes[name] then
                         conditions[#conditions + 1] = {
                             type = "item_count",
@@ -420,15 +409,14 @@ function TrainClass:gotoToDelivery(delivery)
             end
         end
         records[#records + 1] = {
-            rail = point.stop.stopEntity.connected_rail,
-            rail_direction = point.stop.stopEntity.connected_rail_direction,
+            rail = stop.stopEntity.connected_rail,
+            rail_direction = stop.stopEntity.connected_rail_direction,
             wait_conditions = { { type = "time", compare_type = "and", ticks = 0, condition = nil } },
         }
         records[#records + 1] = {
-            station = point.stop.stopEntity.backer_name,
+            station = stop.stopEntity.backer_name,
             wait_conditions = conditions
         }
-
     end
     self:_appendDepot(records, false)
     self.train.schedule = { current = 1, records = records }

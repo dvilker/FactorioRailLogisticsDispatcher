@@ -870,20 +870,24 @@ function DispGui:updateStopInfo()
                 rowModel = guiAddRow(self.model, EL_DELIVERIES_TABLE)
                 self.deliveryRows[uid] = rowModel
             end
-            for i, point in pairs(delivery.points) do
+            do
                 ---@type string[]
                 local text = {}
-                text[#text + 1] = point.stop.stopEntity.backer_name
-                if point.needContent then
-                    for name, count in pairs(point.needContent) do
-                        if game.item_prototypes[name] then
-                            text[#text + 1] = "\n    [item=" .. name .. "] " .. util.format_number(count, false)
-                        else
-                            text[#text + 1] = "\n    [fluid=" .. name .. "] " .. util.format_number(count, false)
-                        end
+                text[#text + 1] = delivery.provider.stopEntity.backer_name
+                for name, count in pairs(delivery.contents) do
+                    if game.item_prototypes[name] then
+                        text[#text + 1] = "\n    [item=" .. name .. "] " .. util.format_number(count, false)
+                    else
+                        text[#text + 1] = "\n    [fluid=" .. name .. "] " .. util.format_number(count, false)
                     end
                 end
-                rowModel.cells[i].caption = table.concat(text)
+                rowModel.cells[1].caption = table.concat(text)
+            end
+            do
+                ---@type string[]
+                local text = {}
+                text[#text + 1] = delivery.provider.stopEntity.backer_name
+                rowModel.cells[2].caption = table.concat(text)
             end
             rowModel.cells[3].caption = util.formattime(game.tick - (delivery.startTick or 0))
         end
