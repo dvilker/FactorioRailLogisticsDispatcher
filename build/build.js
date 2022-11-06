@@ -1,7 +1,6 @@
 const archiveName = 'Yatm'
 
 const fileList = [
-    'gfx/disp.png',
     'locale/ru/locale.cfg',
 
     'script/compositions.lua',

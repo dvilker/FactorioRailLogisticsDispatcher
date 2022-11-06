@@ -39,9 +39,6 @@ do
             icon = data.raw["item"]["train-stop"].icon,
             icon_size = data.raw["item"]["train-stop"].icon_size,
             icon_mipmaps = data.raw["item"]["train-stop"].icon_mipmaps,
-            --tint = v.tint,
-            --scale = .3,
-            --shift = v.shift,
         },
         {
             icon = data.raw["item"]["small-lamp"].icon,
@@ -49,7 +46,6 @@ do
             icon_mipmaps = data.raw["item"]["small-lamp"].icon_mipmaps,
             scale = .35,
             shift = { -5, 9 }
-            --tint = { r = 1, g = 1, b = 1, a = 1 },
         },
     }
     item.order = data.raw["item"]["train-stop"].order
@@ -65,56 +61,46 @@ do
     entity.collision_box = { { -0.25, -0.25 }, { 0.25, 0.25 } }
     entity.energy_source = { type = "void" }
     local function sprite(x)
-        return {
-            layers = {
-                {
-                    filename = "__yatm__/gfx/disp.png",
-                    priority = "high",
-                    width = 42,
-                    height = 35,
-                    x = x * 42,
-                    frame_count = 1,
-                    axially_symmetrical = false,
-                    direction_count = 1,
-                    --shift = util.by_pixel(0, 3),
-                    hr_version = {
-                        filename = "__yatm__/gfx/hr-disp.png",
-                        priority = "high",
-                        width = 84,
-                        x = x * 84,
-                        height = 70,
-                        frame_count = 1,
-                        axially_symmetrical = false,
-                        direction_count = 1,
-                        --shift = util.by_pixel(0.25, 3),
-                        scale = 0.5
-                    }
-                },
-                {
-                    filename = "__base__/graphics/entity/small-lamp/lamp-shadow.png",
-                    priority = "high",
-                    width = 38,
-                    height = 24,
-                    frame_count = 1,
-                    axially_symmetrical = false,
-                    direction_count = 1,
-                    --shift = util.by_pixel(4, 5),
-                    draw_as_shadow = true,
-                    hr_version = {
-                        filename = "__base__/graphics/entity/small-lamp/hr-lamp-shadow.png",
-                        priority = "high",
-                        width = 76,
-                        height = 47,
-                        frame_count = 1,
-                        axially_symmetrical = false,
-                        direction_count = 1,
-                        --shift = util.by_pixel(4, 4.75),
-                        draw_as_shadow = true,
-                        scale = 0.5
-                    }
-                }
+        local s = table.deepcopy(data.raw["lamp"]["small-lamp"].picture_off)
+        s.layers[#s.layers + 1] = {
+            filename = "__base__/graphics/entity/small-electric-pole/small-electric-pole.png",
+            priority = "high",
+            width = 6,
+            height = 8,
+            x = 13,
+            y = 10,
+            shift = {(x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33},
+            hr_version = {
+                filename = "__base__/graphics/entity/small-electric-pole/hr-small-electric-pole.png",
+                priority = "high",
+                width = 10,
+                height = 16,
+                x = 28,
+                y = 24,
+                shift = {(x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33},
+                scale = 0.5
             }
         }
+        s.layers[#s.layers + 1] = {
+            filename = "__base__/graphics/entity/small-electric-pole/small-electric-pole.png",
+            priority = "high",
+            width = 6,
+            height = 8,
+            x = 13,
+            y = 10,
+            shift = {(x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33},
+            hr_version = {
+                filename = "__base__/graphics/entity/small-electric-pole/hr-small-electric-pole.png",
+                priority = "high",
+                width = 10,
+                height = 16,
+                x = 28,
+                y = 24,
+                shift = {(x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33},
+                scale = 0.5
+            }
+        }
+        return s
     end
     entity.sprites = {
         north = sprite(0),
@@ -125,11 +111,11 @@ do
     entity.input_connection_bounding_box = { { -0.5, 0 }, { 0.5, 0.5 } }
     entity.output_connection_bounding_box = { { -0.5, -0.5 }, { 0.5, 0 } }
     -- 84 70
-    local left = -22 / 84
-    local right = 20 / 84
-    local top = -29 / 70
-    local bottom = -2 / 70
-    local shadowDx = 2 / 84
+    local left = -.33
+    local right = .33
+    local top = -.33
+    local bottom = .12
+    local shadowDx = 2 / 83
     local shadowDy = -17 / 70
     function connection(wLeft, wTop)
         return {
@@ -159,25 +145,13 @@ do
     entity.multiply_symbol_sprites = empty4
 
     local function colorLight(tint)
-        local light = {
-            filename = "__base__/graphics/entity/small-lamp/lamp-light.png",
-            priority = "high",
-            width = 46,
-            height = 40,
-            shift = util.by_pixel(0, -7),
-            draw_as_glow = true,
-            tint = tint,
-            hr_version = {
-                filename = "__base__/graphics/entity/small-lamp/hr-lamp-light.png",
-                priority = "high",
-                width = 90,
-                height = 78,
-                shift = util.by_pixel(0, -7),
-                draw_as_glow = true,
-                tint = tint,
-                scale = 0.5
-            }
-        }
+        local light = table.deepcopy(data.raw["lamp"]["small-lamp"].picture_on)
+        light.draw_as_glow = true
+        light.tint = tint
+        light.priority = "extra-high"
+        light.hr_version.draw_as_glow = true
+        light.hr_version.tint = tint
+        light.hr_version.priority = "extra-high"
         return {
             north = light,
             east = light,
