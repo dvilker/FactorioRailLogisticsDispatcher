@@ -164,9 +164,6 @@ do
             priority = "high",
             width = 46,
             height = 40,
-            frame_count = 1,
-            axially_symmetrical = false,
-            direction_count = 1,
             shift = util.by_pixel(0, -7),
             draw_as_glow = true,
             tint = tint,
@@ -175,9 +172,6 @@ do
                 priority = "high",
                 width = 90,
                 height = 78,
-                frame_count = 1,
-                axially_symmetrical = false,
-                direction_count = 1,
                 shift = util.by_pixel(0, -7),
                 draw_as_glow = true,
                 tint = tint,
@@ -201,7 +195,7 @@ do
     entity.right_shift_symbol_sprites = colorLight { r = 1, g = 1, b = 1 }
     entity.and_symbol_sprites = colorLight { r = 0, g = .5, b = 0 }
     entity.or_symbol_sprites = colorLight { r = .5, g = .5, b = 0 }
-    --entity.xor_symbol_sprites = colorLight {r = .5, g = .5, b = .5}
+    entity.xor_symbol_sprites = colorLight {r = 1, g = .25, b = .18}
 
     local recipe = table.deepcopy(data.raw["recipe"]["arithmetic-combinator"])
     recipe.name = name

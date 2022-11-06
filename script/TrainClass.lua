@@ -357,7 +357,9 @@ function TrainClass:goToFuel(stayIfNoClean)
 end
 
 ---@param delivery DeliveryClass
-function TrainClass:gotoToDelivery(delivery)
+---@param isCorrection boolean
+function TrainClass:gotoToDelivery(delivery, isCorrection)
+    local current = isCorrection and self.train.schedule.current or 1
     delivery.train = self
     self.delivery = delivery
     ---@type TrainScheduleRecord[]
@@ -419,7 +421,7 @@ function TrainClass:gotoToDelivery(delivery)
         }
     end
     self:_appendDepot(records, false)
-    self.train.schedule = { current = 1, records = records }
+    self.train.schedule = { current = current, records = records }
 end
 
 ---@param surUid SurUid

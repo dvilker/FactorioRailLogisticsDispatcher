@@ -126,6 +126,62 @@ function SurClass:remove()
     SurClass.updateTimer()
 end
 
+---@param requester StopClass
+function SurClass:correctDeliveriesAtStop(requester)
+    if requester.request then
+        for _, delivery in pairs(requester.deliveries) do
+            -- todo cache fully loaded delivery flag
+            if delivery.requester == requester and (not delivery.providerPassed or correctScheduleAndAtProvider) and delivery.provider.provide then
+                local train = delivery.train
+                local prevContents = delivery.contents
+                local newContents, _, _ = self:_getNeededExchange(delivery.provider, requester, true, prevContents)
+                if newContents then
+                    for name, oldCount in pairs(prevContents) do
+                        local newCount = newContents[name]
+                        if not newCount or newCount < oldCount then
+                            newContents[name] = oldCount
+                        end
+                    end
+                    if self:_newDelivery(delivery.provider, requester, train, newContents, delivery) then
+                        newContents = delivery.contents
+                        local changed = table_size(prevContents) == table_size(newContents)
+                        if not changed then
+                            for name, oldCount in pairs(prevContents) do
+                                local newCount = newContents[name]
+                                if oldCount ~= newCount then
+                                    changed = true
+                                    break
+                                end
+                            end
+                        end
+                        if not changed then
+                            for name, newCount in pairs(newContents) do
+                                local oldCount = prevContents[name]
+                                if oldCount ~= newCount then
+                                    changed = true
+                                    break
+                                end
+                            end
+                        end
+                        if changed then
+                            delivery.requester:_updateDeliveryChanges()
+                            delivery.requester:update(true) --todo check to need this
+                            delivery.provider:_updateDeliveryChanges()
+                            delivery.provider:update(true) --todo check to need this
+                            train:gotoToDelivery(delivery, true)
+                            if delivery.provider.train then
+                                delivery.provider:updateOutputPort()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+
 ---@param stop StopClass
 ---@param doNotMakeDeliveries boolean
 ---@return DeliveryClass @nullable New delivery
@@ -160,8 +216,13 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
                 end
             end
         end
-        if stop.request and not doNotMakeDeliveries then
-            newDelivery = self:_tryToMakeDelivery(stop)
+        if not doNotMakeDeliveries then
+            if correctScheduleBeforeProvider then
+                self:correctDeliveriesAtStop(stop)
+            end
+            if stop.request then
+                newDelivery = self:_tryToMakeDelivery(stop)
+            end
         end
         stop:updateVisual()
     else
@@ -198,62 +259,77 @@ function SurClass:_tryToMakeDelivery(requester)
         return nil
     end
 
-    ---@type StopClass, TrainClass, number, number, table<string, number>
-    local bestProvider, bestTrain, bestScore, bestDistance, bestContents
+    ---@type StopClass, TrainClass, number, number, table<string, number>, number
+    local bestProvider, bestTrain, bestScore, bestDistance, bestContents, errorMask
     for reqName, reqState in pairs(requester.request) do
-        local hasProvider, hasMinProvide, hasTrain
-        local providers = self.provide[reqName]
-        if providers then
-            for _, provider in pairs(providers) do
-                if provider ~= requester
-                        and provider.provide
-                        and provider:hasTrainSlot()
-                        and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
-                        and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
-                then
-                    hasProvider = true
-                    local contents, c, f = self:_getNeededExchange(provider, requester)
-                    if contents then
-                        hasMinProvide = true
-                        local train, score, distance = self:_findBestTrainForExchange(provider, requester, contents, c, f)
-                        if train then
-                            hasTrain = true
-                            if not bestScore or bestScore < score or (bestScore == score and distance < bestDistance) then
-                                bestProvider = provider
-                                bestTrain = train
-                                bestScore = score
-                                bestDistance = distance
-                                bestContents = contents
+        ---@type LocalisedString
+        local newError
+        if reqState._request > 0 then
+            local hasProvider, hasMinProvide, hasTrain
+            local providers = self.provide[reqName]
+            if providers then
+                for _, provider in pairs(providers) do
+                    if provider ~= requester
+                            and provider.provide
+                            and provider.provide[reqName] and provider.provide[reqName]._provide > 0
+                            and provider:hasTrainSlot()
+                            and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
+                            and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
+                    then
+                        hasProvider = true
+                        local contents, c, f = self:_getNeededExchange(provider, requester, false, nil)
+                        if contents then
+                            hasMinProvide = true
+                            local train, score, distance = self:_findBestTrainForExchange(provider, requester, contents, c, f)
+                            if train then
+                                hasTrain = true
+                                if not bestScore or bestScore < score or (bestScore == score and distance < bestDistance) then
+                                    bestProvider = provider
+                                    bestTrain = train
+                                    bestScore = score
+                                    bestDistance = distance
+                                    bestContents = contents
+                                end
+                            else
                             end
-                        else
                         end
                     end
                 end
             end
+            if not hasProvider then
+                newError = E_NO_PROVIDER
+            elseif not hasMinProvide then
+                newError = E_NO_MIN_PROVIDER
+            elseif not hasTrain then
+                newError = E_NO_TRAIN
+            end
         end
-        if not hasProvider then
-            reqState.state = ST_STATE_DELIVERY_NO_PROVIDER
-        elseif not hasMinProvide then
-            reqState.state = ST_STATE_DELIVERY_NO_MIN_PROVIDER
-        elseif not hasTrain then
-            reqState.state = ST_STATE_DELIVERY_NO_TRAIN
-        else
-            reqState.state = nil
+        if newError then
+            errorMask = errorMask or 0
+            errorMask = bit32.bor(errorMask, bit32.lshift(1, reqState.index or 0))
         end
+        if reqState.error ~= newError then
+            reqState.error = newError
+            reqState.errorTick = game.tick
+        end
+    end
+    if requester.errorMask ~= errorMask then
+        requester.errorMask = errorMask
+        requester:updateOutputPort()
     end
 
     if not bestProvider then
-        for _, reqState in pairs(requester.request) do
-            reqState.state = reqState.state or ST_STATE_DELIVERY_NO_TRAIN
-        end
+        --for _, reqState in pairs(requester.request) do
+        --    reqState.state = reqState.state or ST_STATE_DELIVERY_NO_TRAIN
+        --end
         return nil
     end
 
-    local delivery = self:_newDelivery(bestProvider, requester, bestTrain, bestContents)
+    local delivery = self:_newDelivery(bestProvider, requester, bestTrain, bestContents, nil)
     if delivery then
         self:addDelivery(delivery)
         self:setTrainFree(bestTrain, false)
-        bestTrain:gotoToDelivery(delivery)
+        bestTrain:gotoToDelivery(delivery, false)
         bestProvider:update(true)
     end
     return delivery
@@ -263,11 +339,12 @@ end
 ---@param requester StopClass
 ---@param train TrainClass
 ---@param contents table<string, number>
+---@param existsDelivery DeliveryClass
 ---@return DeliveryClass @nullable
-function SurClass:_newDelivery(provider, requester, train, contents)
+function SurClass:_newDelivery(provider, requester, train, contents, existsDelivery)
     local availStacks = train.itemCapacity
     local availFluid = train.fluidCapacity
-    requester.lastTickMap = requester.lastTickMap or {}
+    requester.lastTickMap = requester.lastTickMap or {} -- todo remove
     ---@type table<string, number>
     local lastMap = requester.lastTickMap
     ---@type number
@@ -313,7 +390,7 @@ function SurClass:_newDelivery(provider, requester, train, contents)
         return nil
     end
 
-    local delivery = DeliveryClass:new()
+    local delivery = existsDelivery or DeliveryClass:new()
     delivery.train = train
     delivery.provider = provider
     delivery.requester = requester
@@ -326,28 +403,38 @@ end
 
 ---@param provider StopClass
 ---@param requester StopClass
+---@param ignoreMin boolean
+---@param updatingContents table<string, number>
 ---@return table<string, number>, number, number @ contents, cargo stacks, fluids count
-function SurClass:_getNeededExchange(provider, requester)
+function SurClass:_getNeededExchange(provider, requester, ignoreMin, updatingContents)
     ---@type table<string, number>
     local contents
     local needCargoCells = 0
     local needFluids = 0
     for name, reqSig in pairs(requester.request) do
-        local provSig = provider.provide[name]
-        if provSig then
-            local commonMin = math.max(reqSig._min, provSig._min)
-            if reqSig._request >= commonMin and provSig._provide >= commonMin then
-                contents = contents or {}
-                local count = math.min(reqSig._request, provSig._provide)
-                contents[name] = count
-                if provSig.type == "item" then
-                    needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
+        if not updatingContents or updatingContents[name] then
+            local provSig = provider.provide[name]
+            if provSig then
+                local valid
+                if ignoreMin then
+                    valid = reqSig._count < 0 and provSig._count > 0
                 else
-                    needFluids = needFluids + count
+                    local commonMin = math.max(reqSig._min, provSig._min)
+                    valid = reqSig._request >= commonMin and provSig._provide >= commonMin
                 end
-                --if not provider.disp.flagAllowMulti or not requester.disp.flagAllowMulti then
-                --    break
-                --end
+                if valid then
+                    contents = contents or {}
+                    local count = ignoreMin and math.min(-reqSig._count, provSig._count) or math.min(reqSig._request, provSig._provide)
+                    if updatingContents then
+                        count = count + updatingContents[name]
+                    end
+                    contents[name] = count
+                    if provSig.type == "item" then
+                        needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
+                    else
+                        needFluids = needFluids + count
+                    end
+                end
             end
         end
     end
@@ -492,7 +579,6 @@ function SurClass:removeDelivery(delivery)
         delivery.train:removeDeliveryFromTrain(delivery)
     end
     self.deliveries[delivery.uid] = nil
-    log("REMOVE DELIVERY "..var_dump_light(delivery))
     delivery.provider:removeDeliveryFromStop(delivery)
     delivery.requester:removeDeliveryFromStop(delivery)
 end

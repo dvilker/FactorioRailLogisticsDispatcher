@@ -1,9 +1,12 @@
 ---@shape StopSignalState: DispSignal
-    ---@field state ST_STATE
+    ---@field index number
+    ---@field error LocalisedString @nullable
+    ---@field errorTick number @nullable
     ---@field dynamic boolean @nullable Added by signal to input combinator
     ---@field _min number @ Result of minimum
-    ---@field _provide number @ Simple provide value. >=0
-    ---@field _request number @ Simple request value. >=0
+    ---@field _provide number @ Simple provide value. >=0. Zero if < _min
+    ---@field _request number @ Simple request value. >=0. Zero if < _min
+    ---@field _count number @ Simple signal value. No filtered by _min. For request < 0. For provide > 0
     ---@field _used boolean @nullable
 
 ---@alias StopUid number
@@ -15,8 +18,6 @@
     ---@field stopEntity LuaEntity @ train stop entity
     ---@field sur SurClass @ surface of stop
     ---@field prevMode ST_MODE @ for mode change detection
-    ---@field state ST_STATE @ current simple state (deprecated?)
-    ---@field message string|nil @ message for state (deprecated?)
     ---@field signalStates table<string, StopSignalState> @ cargo signals with state (item/fluid name -> StopSignalState)
     ---@field isBidi true|nil @ is stop uses for cargo exchange
     ---@field isDepot true|nil @ is stop is depot
@@ -29,6 +30,7 @@
     ---@field train TrainClass @nullable train at stop
     ---@field provide table<string, StopSignalState> @nullable
     ---@field request table<string, StopSignalState> @nullable
+    ---@field errorMask number @nullable any of request has error
     ---@field lastTickMap table<string, number> @ tick of last delivery for each item or fluid
     ---@field compFlags TrainCompositionFlags @nullable Map of compatible traion compositions or nil if any
     ---@field train TrainClass|nil @ train at stop
@@ -47,7 +49,6 @@ function StopClass:new(stopEntity, disp, sur)
         disp = disp,
         stopEntity = stopEntity,
         sur = sur,
-        state = ST_STATE_OFF,
         signalStates = { },
         deliveries = { },
         lastTickMap = { },
@@ -82,6 +83,36 @@ function StopClass:updateInputPort()
         end
         (--[[---@type LuaConstantCombinatorControlBehavior]] port.get_control_behavior()).parameters = params
     end
+end
+
+function StopClass:updateOutputPort()
+    local out = --[[---@type ConstantCombinatorParameters[] ]] {}
+    local delivery = self.delivery
+    if delivery then
+        if not self.disp.outMode or self.disp.outMode == ST_OUT_NEED_CONTENTS_NEG or self.disp.outMode == ST_OUT_NEED_CONTENTS_POS then
+            local sign = --[[---@type number]] self.disp.outMode ~= ST_OUT_NEED_CONTENTS_POS and -1 or 1
+            if delivery.provider == self then
+                for name, count in pairs(delivery.contents) do
+                    out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
+                end
+            end
+        elseif self.disp.outMode == ST_OUT_EXCHANGE then
+            local sign = delivery.provider == self and 1 or -1
+            for name, count in pairs(delivery.contents) do
+                out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
+            end
+        end
+        if delivery.provider == self then
+            out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-L" } }
+        end
+        if delivery.requester == self then
+            out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-U" } }
+        end
+    end
+    if self.errorMask then
+        out[#out + 1] = { index = #out + 1, count = self.errorMask, signal = { type = "virtual", name = "signal-E" } }
+    end
+    (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = out
 end
 
 function StopClass:addDeliveryToStop(delivery)
@@ -160,14 +191,17 @@ function StopClass:_updateBidi()
                     ss = {
                         type = sig.signal.type,
                         name = sig.signal.name,
+                        index = 0,
                         request = nil, -- only by signal
                         min = nil, -- fills later
-                        state = ST_STATE_DELIVERY_NO,
+                        error = nil,
+                        errorTick = nil,
                         dynamic = true,
                         _used = true,
                         _min = 0, -- fills later
                         _request = 0, -- fills later
                         _provide = 0, -- fills later
+                        _count = 0, -- fills later
                     }
                     signalStates[sig.signal.name] = ss
                 end
@@ -215,10 +249,10 @@ function StopClass:_updateBidi()
             signalStates[k] = nil
         else
             signal._used = nil
-            if signal._provide > 0 then
+            if signal._count > 0 then
                 provide = provide or {}
                 provide[signal.name] = signal
-            elseif signal._request > 0 then
+            elseif signal._count < 0 then
                 request = request or {}
                 request[signal.name] = signal
             end
@@ -400,27 +434,7 @@ function StopClass:trainArrived(trainEntity)
                     self.train = train
                     train.stop = self
                     self:_updateDeliveryChanges()
-                    local out = --[[---@type ConstantCombinatorParameters[] ]] {}
-                    if not self.disp.outMode or self.disp.outMode == ST_OUT_NEED_CONTENTS_NEG or self.disp.outMode == ST_OUT_NEED_CONTENTS_POS then
-                        local sign = --[[---@type number]] self.disp.outMode ~= ST_OUT_NEED_CONTENTS_POS and -1 or 1
-                        if delivery.provider == self then
-                            for name, count in pairs(delivery.contents) do
-                                out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
-                            end
-                        end
-                    elseif self.disp.outMode == ST_OUT_EXCHANGE then
-                        local sign = delivery.provider == self and 1 or -1
-                        for name, count in pairs(delivery.contents) do
-                            out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
-                        end
-                    end
-                    if delivery.provider == self then
-                        out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-L" } }
-                    end
-                    if delivery.requester == self then
-                        out[#out + 1] = { index = #out + 1, count = 1, signal = { type = "virtual", name = "signal-U" } }
-                    end
-                    (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = out
+                    self:updateOutputPort()
                 else
                     self.stopEntity.force.print("Поезд приехал на станцию " .. self.stopEntity.backer_name .. " не по расписанию")
                 end
@@ -489,10 +503,11 @@ function StopClass:settingsUpdated()
     ---@type table<string, StopSignalState>
     local signalStates = {}
     if self.disp.signals then
-        for _, sig in pairs(self.disp.signals) do
+        for index, sig in pairs(self.disp.signals) do
             signalStates[sig.name] = --[[---@type StopSignalState]]{
                 type = sig.type,
                 name = sig.name,
+                index = index,
                 request = sig.request,
                 min = sig.min,
                 _min = unitCalc(sig.min, sig.name) or 0,

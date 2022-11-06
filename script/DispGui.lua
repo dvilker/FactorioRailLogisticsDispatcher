@@ -277,36 +277,37 @@ function DispGui:_create()
                             } },
                         } }
                     } },
-                    { type = "frame", style = "entity_frame", _style1 = { vertically_stretchable = true }, direction = "vertical", _share = TAB_STATUS, _sub = {
-                        { type = "label", caption = "Запросы и проедложение", style = "caption_label" },
-                        { type = "table", column_count = 4, _name = EL_IO_TABLE, vertical_centering = false, _style1 = { width = 400 },
-                          draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                            { type = "label", caption = "", style = "heading_3_label" },
-                            { type = "label", caption = "Кол-во", style = "heading_3_label", _style1 = { minimal_width = 80, horizontal_align = "right" } },
-                            { type = "label", caption = "В пути", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                            { type = "label", caption = "", style = "heading_3_label", },
-                        }, _row = {
-                            { type = "label", caption = "" },
-                            { type = "label", caption = "", _style1 = { minimal_width = 80, horizontal_align = "right" } },
-                            { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                            { type = "label", caption = "" },
+                    { type = "scroll-pane", style = "scroll_pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "always", _style1 = { vertically_stretchable = true, padding = 6 }, direction = "vertical", _share = TAB_STATUS, _sub = {
+                        { type = "flow", direction = "vertical", _style1 = { vertically_stretchable = true, vertical_spacing = 8 }, _sub = {
+                            { type = "label", caption = "[color=" .. table.concat(REQUEST_COLOR, ',') .. "]Запросы−[/color] и [color=" .. table.concat(PROVIDE_COLOR, ',') .. "]предложения+[/color]", style = "caption_label" },
+                            { type = "table", column_count = 4, _name = EL_IO_TABLE, vertical_centering = false, _style1 = { width = 400 },
+                              draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
+                                { type = "label", caption = "", style = "heading_3_label" },
+                                { type = "label", caption = "Кол-во", style = "heading_3_label", _style1 = { minimal_width = 80, horizontal_align = "right" } },
+                                { type = "label", caption = "В пути", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "", style = "heading_3_label", },
+                            }, _row = {
+                                { type = "label", caption = "" },
+                                { type = "label", caption = "", _style1 = { minimal_width = 80, horizontal_align = "right" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "" },
+                            } },
+                            { type = "line" },
+                            { type = "label", caption = "Доставки", style = "caption_label" },
+                            { type = "table", column_count = 3, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
+                              draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
+                                { type = "label", caption = "Точка А", style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = "Точка Б", style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = "Время", style = "heading_3_label" },
+                            }, _row = {
+                                { type = "label", caption = "", _style1 = { single_line = false } },
+                                { type = "label", caption = "", _style1 = { single_line = false } },
+                                { type = "label", caption = "" },
+                            } },
+                            { type = "line" },
+                            { type = "label", caption = "Отладка", style = "caption_label" },
+                            { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false } },
                         } },
-                        { type = "line" },
-                        { type = "label", caption = "Доставки", style = "caption_label" },
-                        { type = "table", column_count = 3, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
-                          draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                            { type = "label", caption = "Точка А", style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                            { type = "label", caption = "Точка Б", style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                            { type = "label", caption = "Время", style = "heading_3_label" },
-                        }, _row = {
-                            { type = "label", caption = "", _style1 = { single_line = false } },
-                            { type = "label", caption = "", _style1 = { single_line = false } },
-                            { type = "label", caption = "" },
-                        } },
-                         { type = "line" },
-                        { type = "label", caption = "Отладка", style = "caption_label" },
-                        { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false } },
-
                     } }
                 } },
                 --[[   { type = "flow", direction = "horizontal", style = "dialog_buttons_horizontal_flow", _name = DIV_BUTTONS, _sub = {
@@ -634,6 +635,8 @@ function DispGui:_handleGuiEvent(event)
             self:updateStopInfo()
             if self.disp.stop then
                 self.disp.stop:update()
+                self.disp.stop:updateInputPort()
+                self.disp.stop:updateOutputPort()
             end
             self.selectedButton = selectedButton
             doUpdateVisible = true
@@ -842,26 +845,36 @@ function DispGui:updateStopInfo()
             end
         end
         for name, rowModel in pairs(self.ioRows) do
-            ---@type string
+            ---@type LocalisedString
             local state
-            if stop.request and stop.request[name] then
-                rowModel.cells[2].caption = '−' .. util.format_number(stop.request[name]._request, false) .. "[item=logistic-chest-requester]"
-                local s = stop.request[name].state
-                state = ST_STATES[s] and ST_STATES[s].caption
-                rowModel.cells[2].style.font_color = REQUEST_COLOR
-            elseif stop.provide and stop.provide[name] then
-                rowModel.cells[2].caption = util.format_number(stop.provide[name]._provide, false) .. "[item=logistic-chest-passive-provider]"
-                rowModel.cells[2].style.font_color = PROVIDE_COLOR
+            local request = stop.request and stop.request[name]
+            if request then
+                rowModel.cells[2].caption = '−' .. util.format_number(-request._count, false)
+                if request.error and request.errorTick then
+                    state = { "", request.error, " ", util.formattime(game.tick - (request.errorTick or 0)) }
+                else
+                    state = request.error
+                end
+                rowModel.cells[2].style.font_color = request._request > 0 and REQUEST_COLOR or UNDER_MIN_COLOR
+                rowModel.cells[2].style.font = request._request > 0 and 'default-bold' or 'default'
             else
-                rowModel.cells[2].caption = "-"
-                rowModel.cells[2].style.font_color = nil
+                local provide = stop.provide and stop.provide[name]
+                if provide then
+                    rowModel.cells[2].caption = '+' .. util.format_number(provide._count, false)
+                    rowModel.cells[2].style.font_color = provide._provide > 0 and PROVIDE_COLOR or UNDER_MIN_COLOR
+                    rowModel.cells[2].style.font = provide._provide > 0 and 'default-bold' or 'default'
+                else
+                    rowModel.cells[2].caption = "-"
+                    rowModel.cells[2].style.font_color = UNDER_MIN_COLOR
+                    rowModel.cells[2].style.font = 'default'
+                end
             end
             if stop.deliveryChanges[name] then
                 rowModel.cells[3].caption = util.format_number(stop.deliveryChanges[name], false)
             else
                 rowModel.cells[3].caption = "-"
             end
-            rowModel.cells[4].caption = state or "?"
+            rowModel.cells[4].caption = state or ""
         end
 
         for uid, delivery in pairs(stop.deliveries) do
@@ -874,6 +887,9 @@ function DispGui:updateStopInfo()
                 ---@type string[]
                 local text = {}
                 text[#text + 1] = delivery.provider.stopEntity.backer_name
+                if delivery.providerPassed then
+                    text[#text + 1] = "."
+                end
                 for name, count in pairs(delivery.contents) do
                     if game.item_prototypes[name] then
                         text[#text + 1] = "\n    [item=" .. name .. "] " .. util.format_number(count, false)
@@ -886,7 +902,10 @@ function DispGui:updateStopInfo()
             do
                 ---@type string[]
                 local text = {}
-                text[#text + 1] = delivery.provider.stopEntity.backer_name
+                text[#text + 1] = delivery.requester.stopEntity.backer_name
+                if delivery.requesterPassed then
+                    text[#text + 1] = "."
+                end
                 rowModel.cells[2].caption = table.concat(text)
             end
             rowModel.cells[3].caption = util.formattime(game.tick - (delivery.startTick or 0))
@@ -902,7 +921,7 @@ function DispGui:updateStopInfo()
             ---@type string[]
             local debugLines = {}
             for name, sig in pairs(stop.signalStates) do
-                local prefix = "[" .. sig.type .."="..sig.name.."] "
+                local prefix = "[" .. sig.type .. "=" .. sig.name .. "] "
                 for k, v in pairs(sig) do
                     debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
                 end
@@ -911,9 +930,9 @@ function DispGui:updateStopInfo()
                 for k, v in pairs(stop.deliveryChanges) do
                     local prefix
                     if game.item_prototypes[k] then
-                        prefix = "[item="..k.."] "
+                        prefix = "[item=" .. k .. "] "
                     else
-                        prefix = "[fluid="..k.."] "
+                        prefix = "[fluid=" .. k .. "] "
                     end
                     debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(v)
                 end

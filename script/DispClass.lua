@@ -361,8 +361,10 @@ function DispClass:updateVisual()
     end
     ---@type string
     local color
+    local notWorking
     if self.stop then
         if self.mode == ST_MODE_BIDI then
+            notWorking = self.stop.errorMask
             if self.stop.train then
                 color = DISP_COLOR_AQUA
             elseif table_size(self.stop.deliveries) > 0 then
@@ -397,6 +399,23 @@ function DispClass:updateVisual()
     local beh = (--[[---@type LuaArithmeticCombinatorControlBehavior]] self.entity.get_control_behavior())
     if color ~= beh.parameters.operation or self.uid ~= beh.parameters.first_constant then
         beh.parameters = { first_constant = self.uid, operation = color }
+    end
+
+    if notWorking then
+        if not self._nws then
+            self._nws = rendering.draw_sprite {
+                sprite = "utility/status_not_working",
+                target = self.entity,
+                surface = self.entity.surface,
+                y_scale = .8,
+                target_offset = { 0, -.33 }
+            }
+        end
+    else
+        if self._nws then
+            rendering.destroy(self._nws)
+            self._nws = nil
+        end
     end
 
 

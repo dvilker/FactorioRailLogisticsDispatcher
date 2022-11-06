@@ -9,4 +9,5 @@ depotScheduleTime = --[[---@type number]] 0
 
 fuelScheduleTime = --[[---@type number]] 120
 
-correctScheduleAtProvider = true
+correctScheduleBeforeProvider = true
+correctScheduleAndAtProvider = true
