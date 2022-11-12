@@ -407,8 +407,10 @@ function DispClass:updateVisual()
                 sprite = "utility/status_not_working",
                 target = self.entity,
                 surface = self.entity.surface,
-                y_scale = .8,
-                target_offset = { 0, -.33 }
+                x_scale = .6,
+                y_scale = .45,
+                target_offset = { 0, -.3 },
+                render_layer = "light-effect",
             }
         end
     else
