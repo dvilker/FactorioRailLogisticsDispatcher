@@ -1,3 +1,9 @@
+---@shape StopStatPerCargo
+    ---@field provided number @nullable
+    ---@field received number @nullable
+    ---@field deliveries number @nullable
+    ---@field lastTick number @nullable
+
 ---@shape StopSignalState: DispSignal
     ---@field index number
     ---@field error LocalisedString @nullable
@@ -24,13 +30,19 @@
     ---@field isClean true|nil @ is stop is clean station
     ---@field isFuel true|nil @ is stop is refueling station
     ---@field turnedInserters table<number, LuaEntity> @nullable saved turned inserters
+    ---@field inserters table<number, LuaEntity> @nullable inserters thats load or unload cargo wagons
     ---@field deliveries table<DeliveryUid, DeliveryClass> @ active deliveries with this station
     ---@field deliveryChanges table<string, number> @ Expected changes due to deliveries
     ---@field delivery DeliveryClass @nullable current delivery if train at stop
     ---@field train TrainClass @nullable train at stop
+    ---@field trainItemContents table<string, number> @nullable contents of arrived train
+    ---@field trainFluidContents table<string, number> @nullable contents of arrived train
     ---@field provide table<string, StopSignalState> @nullable
     ---@field request table<string, StopSignalState> @nullable
+    ---@field stat table<string, StopStatPerCargo> @nullable Statistics per cargo
+    ---@field statTrains number @nullable Count of all trains (only registered)
     ---@field errorMask number @nullable any of request has error
+    ---@field errorMaskInvalid boolean @nullable need to update error mask
     ---@field lastTickMap table<string, number> @ tick of last delivery for each item or fluid
     ---@field compFlags TrainCompositionFlags @nullable Map of compatible traion compositions or nil if any
     ---@field train TrainClass|nil @ train at stop
@@ -55,7 +67,7 @@ function StopClass:new(stopEntity, disp, sur)
     })
     stop:settingsUpdated()
     rendering.draw_line {
-        color = { 1, 1, 0},
+        color = { 1, 1, 0 },
         width = 2,
         from = disp.entity,
         to = stopEntity,
@@ -177,9 +189,18 @@ function StopClass:_updateBidi()
     for _, signal in pairs(signalStates) do
         signal._request = 0
         signal._provide = 0
+        signal._count = 0
     end
     if signals then
         local trainContents = self.train and self.train.train.get_contents()
+        if countingInsertersContent and self.train and self.inserters then
+            for _, ins in pairs(self.inserters) do
+                if ins.valid and ins.held_stack.count > 0 then
+                    local name = ins.held_stack.name
+                    trainContents[name] = (trainContents[name] or 0) + ins.held_stack.count
+                end
+            end
+        end
         local trainFluidContents = self.train and self.train.train.get_fluid_contents()
         local bothWires = true
         for _, sig in pairs(signals) do
@@ -217,6 +238,8 @@ function StopClass:_updateBidi()
                     end
                 end
                 self.deliveryChanges = self.deliveryChanges or {} -- todo remove line
+                --[[DEBUG]] ss._sig_count = sig.count
+                --[[DEBUG]] ss._train_count = trainContents and trainContents[ss.name]
                 sig.count = sig.count + (self.deliveryChanges[ss.name] or 0) -- correct by already delivering
                 if trainContents then
                     sig.count = sig.count + (trainContents[ss.name] or 0)
@@ -246,12 +269,19 @@ function StopClass:_updateBidi()
     local provide, request
     for k, signal in pairs(signalStates) do
         if signal.dynamic and not signal._used then
+            if signal.error then
+                self.errorMaskInvalid = true
+            end
             signalStates[k] = nil
         else
             signal._used = nil
             if signal._count > 0 then
                 provide = provide or {}
                 provide[signal.name] = signal
+                if signal.error then
+                    signal.error = nil
+                    self.errorMaskInvalid = true
+                end
             elseif signal._count < 0 then
                 request = request or {}
                 request[signal.name] = signal
@@ -386,6 +416,31 @@ function StopClass:_restoreInserters(forced)
     end
 end
 
+---@param train LuaTrain
+function StopClass:_fetchInserters(train)
+    local inserters
+    train.manual_mode = true
+    for _, car in pairs(train.cargo_wagons) do
+        local inses = car.surface.find_entities_filtered({
+            type = "inserter",
+            position = car.position,
+            radius = 7,
+        })
+        for _, ins in pairs(inses) do
+            if ins.valid then
+                ins.pickup_target = car -- just invalidate ins.pickup_target, not setup
+                ins.drop_target = car -- just invalidate ins.drop_target, not setup
+                if ins.pickup_target == car or ins.drop_target == car then
+                    inserters = inserters or {}
+                    inserters[ins.unit_number] = ins
+                end
+            end
+        end
+    end
+    train.manual_mode = false
+    self.inserters = inserters
+end
+
 ---@param trainEntity LuaTrain
 function StopClass:trainArrived(trainEntity)
     if self.isDepot then
@@ -410,6 +465,7 @@ function StopClass:trainArrived(trainEntity)
         train:fuelArrived()
     elseif self.isBidi then
         self:_restoreInserters(true)
+        self:_fetchInserters(trainEntity)
         local train = self.sur:getOrAddTrain(trainEntity, true)
         if train and train.delivery then
             ---@type DeliveryClass
@@ -421,9 +477,8 @@ function StopClass:trainArrived(trainEntity)
                 end
             end
             if delivery then
-                local validLocation =
-                    (delivery.provider == self and not delivery.providerPassed)
-                            or (delivery.requester == self and delivery.providerPassed and not delivery.requesterPassed)
+                local validLocation = (delivery.provider == self and not delivery.providerPassed)
+                        or (delivery.requester == self and delivery.providerPassed and not delivery.requesterPassed)
                 if validLocation then
                     if delivery.provider == self then
                         delivery.providerPassed = true
@@ -433,6 +488,8 @@ function StopClass:trainArrived(trainEntity)
                     self.delivery = delivery
                     self.train = train
                     train.stop = self
+                    self.trainItemContents = train.train.get_contents()
+                    self.trainFluidContents = train.train.get_fluid_contents()
                     self:_updateDeliveryChanges()
                     self:updateOutputPort()
                 else
@@ -466,6 +523,44 @@ function StopClass:trainDepart()
         if self.disp.output.valid then
             (--[[---@type LuaConstantCombinatorControlBehavior]] self.disp.output.get_control_behavior()).parameters = --[[---@type]]nil
         end
+        for i = 1, 2 do
+            local arrContents = i == 1 and self.trainItemContents or self.trainFluidContents
+            local depContents = i == 1 and train.train.get_contents() or train.train.get_fluid_contents()
+            if arrContents and table_size(arrContents) == 0 then
+                arrContents = nil
+            end
+            if depContents and table_size(depContents) == 0 then
+                depContents = nil
+            end
+            if arrContents and depContents then
+                for name, depCount in pairs(depContents) do
+                    arrContents[name] = (arrContents[name] or 0) - depCount
+                end
+            elseif depContents then
+                arrContents = depContents
+                for name, count in pairs(arrContents) do
+                    arrContents[name] = -count
+                end
+            end
+            if arrContents then
+                self.stat = self.stat or {}
+                for name, count in pairs(arrContents) do
+                    self.stat[name] = self.stat[name] or {}
+                    local stat = self.stat[name]
+                    if count >= 0 then
+                        stat.received = (stat.received or 0) + count
+                    else
+                        stat.provided = (stat.provided or 0) - count
+                    end
+                    stat.deliveries = (stat.deliveries or 0) + 1
+                    stat.lastTick = game.tick
+                end
+            end
+        end
+        self.trainItemContents = nil
+        self.trainFluidContents = nil
+        self.statTrains = (self.statTrains or 0) + 1
+
         if delivery and delivery.requesterPassed and train then
             train:goToHome()
         end
@@ -476,6 +571,7 @@ function StopClass:trainDepart()
             end
             self.train.stop = nil
             self.train = nil
+            self.statTrains = (self.statTrains or 0) + 1
         end
     elseif self.isFuel then
         if self.train then
@@ -484,12 +580,14 @@ function StopClass:trainDepart()
             end
             self.train.stop = nil
             self.train = nil
+            self.statTrains = (self.statTrains or 0) + 1
         end
     elseif self.isDepot then
         if self.train then
             self.sur:setTrainFree(self.train, false)
             self.train.stop = nil
             self.train = nil
+            self.statTrains = (self.statTrains or 0) + 1
         end
     end
     self:updateVisual()
@@ -515,7 +613,7 @@ function StopClass:settingsUpdated()
         end
     end
     self.signalStates = signalStates
-    self.compFlags = compositionsToFlags(parseTrainCompositions( self.disp.comps))
+    self.compFlags = compositionsToFlags(parseTrainCompositions(self.disp.comps))
     self:updateInputPort()
 
     --if self.disp.flagBuild then -- debug
@@ -532,17 +630,17 @@ function StopClass:buildTrain()
     ---@type defines__rail_direction
     local railDirection = self.stopEntity.connected_rail_direction
     if railDirection == defines.rail_direction.front then
-        railDirection  = defines.rail_direction.back
+        railDirection = defines.rail_direction.back
     else
-        railDirection  = defines.rail_direction.front
+        railDirection = defines.rail_direction.front
     end
 
     local trailType = {
         "locomotive", "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon",
-        "locomotive",  "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon",
-        "locomotive",  "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon",
+        "locomotive", "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon",
+        "locomotive", "cargo-wagon", "cargo-wagon", "cargo-wagon", "cargo-wagon",
     }
-    local railDirs  = {
+    local railDirs = {
         defines.rail_connection_direction.straight,
         defines.rail_connection_direction.left,
         defines.rail_connection_direction.right,
@@ -559,16 +657,16 @@ function StopClass:buildTrain()
             if r then
                 railDirection = newRailDirection
                 if railDirection == defines.rail_direction.front then
-                    railDirection  = defines.rail_direction.back
+                    railDirection = defines.rail_direction.back
                 else
-                    railDirection  = defines.rail_direction.front
+                    railDirection = defines.rail_direction.front
                 end
                 rendering.draw_text({
                     surface = r.surface,
                     text = tostring(index),
-                    color = {1,0,0},
+                    color = { 1, 0, 0 },
                     target = rail,
-                    target_offset = { index / 16, index / 16}
+                    target_offset = { index / 16, index / 16 }
                 })
                 index = index + 1
                 rail = r

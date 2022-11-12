@@ -47,6 +47,9 @@ local EL_ANY_MIN_FLUID_UNIT = 3204
 
 local EL_IO_TABLE = 5005
 local EL_DELIVERIES_TABLE = 5006
+local EL_CARGO_STAT_TABLE = 5007
+
+local EL_STAT_TRAINS = 6001
 
 local EL_CLOSE = 9000
 local EL_COMMIT = 9001
@@ -59,6 +62,7 @@ local EL_ROLLBACK = 9002
     ---@field model GuiModel
     ---@field ioRows table<string, GuiModel>
     ---@field deliveryRows table<DeliveryUid, GuiModel>
+    ---@field statRows table<string, GuiModel>
     ---@field data DispSettings
     ---@field selectedButton number @nullable
     ---@field selectedItem DispSignal @nullable
@@ -112,6 +116,7 @@ function DispGui:open(player, dispEntity)
         data = disp:getSettings(),
         ioRows = {},
         deliveryRows = {},
+        statRows = {},
     })
     gui.model = gui:_create()
     gui:_dataToForm()
@@ -283,12 +288,12 @@ function DispGui:_create()
                             { type = "table", column_count = 4, _name = EL_IO_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
                                 { type = "label", caption = "", style = "heading_3_label" },
-                                { type = "label", caption = "Кол-во", style = "heading_3_label", _style1 = { minimal_width = 80, horizontal_align = "right" } },
+                                { type = "label", caption = "Кол-во", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "В пути", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", style = "heading_3_label", },
                             }, _row = {
                                 { type = "label", caption = "" },
-                                { type = "label", caption = "", _style1 = { minimal_width = 80, horizontal_align = "right" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "" },
                             } },
@@ -303,6 +308,24 @@ function DispGui:_create()
                                 { type = "label", caption = "", _style1 = { single_line = false } },
                                 { type = "label", caption = "", _style1 = { single_line = false } },
                                 { type = "label", caption = "" },
+                            } },
+                            { type = "line" },
+                            { type = "flow", direction = "horizontal", _sub = {
+                                { type = "label", caption = "Статистика", style = "caption_label" },
+                                { type = "empty-widget", _style1 = { horizontally_stretchable = "on" } },
+                                { type = "label", caption = "Поездов: 0", _name = EL_STAT_TRAINS },
+                            } },
+                            { type = "table", column_count = 4, _name = EL_CARGO_STAT_TABLE, vertical_centering = false, _style1 = { width = 400 },
+                              draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
+                                { type = "label", caption = "Доставок", style = "heading_3_label", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = "Отправлено", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "Получено", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "Последняя", style = "heading_3_label" },
+                            }, _row = {
+                                { type = "label", caption = "", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70 } },
                             } },
                             { type = "line" },
                             { type = "label", caption = "Отладка", style = "caption_label" },
@@ -916,25 +939,54 @@ function DispGui:updateStopInfo()
             end
         end
 
+        if stop.stat then
+            for name, stat in pairs(stop.stat) do
+                local rowModel = self.statRows[name]
+                if not rowModel then
+                    rowModel = guiAddRow(self.model, EL_CARGO_STAT_TABLE)
+                    self.statRows[name] = rowModel
+                end
+                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] "..(stat.deliveries and util.format_number(stat.deliveries, false) or "?")
+                rowModel.cells[2].caption = stat.provided and util.format_number(stat.provided, true) or "-"
+                rowModel.cells[3].caption = stat.received and util.format_number(stat.received, true) or "-"
+                rowModel.cells[4].caption = stat.lastTick and util.formattime(game.tick - stat.lastTick) or "-"
+            end
+        end
+        for name, row in pairs(self.statRows) do
+            if not stop.stat or not stop.stat[name] then
+                guiRemoveRow(row)
+            end
+        end
+
+        named[EL_STAT_TRAINS].caption = "Поездов: " .. util.format_number(stop.statTrains or 0, false)
+
         local debug --[[DEBUG]] = true
         if debug then
             ---@type string[]
             local debugLines = {}
+            if stop.inserters then
+                debugLines[#debugLines + 1] = "Inserters: " .. tostring(table_size(stop.inserters))
+            end
             for name, sig in pairs(stop.signalStates) do
                 local prefix = "[" .. sig.type .. "=" .. sig.name .. "] "
                 for k, v in pairs(sig) do
                     debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
                 end
+                if stop.deliveryChanges[name] then
+                    debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(stop.deliveryChanges[name])
+                end
             end
             if stop.deliveryChanges then
-                for k, v in pairs(stop.deliveryChanges) do
-                    local prefix
-                    if game.item_prototypes[k] then
-                        prefix = "[item=" .. k .. "] "
-                    else
-                        prefix = "[fluid=" .. k .. "] "
+                for name, v in pairs(stop.deliveryChanges) do
+                    if not stop.signalStates[name] then
+                        local prefix
+                        if game.item_prototypes[name] then
+                            prefix = "[item=" .. name .. "] "
+                        else
+                            prefix = "[fluid=" .. name .. "] "
+                        end
+                        debugLines[#debugLines + 1] = prefix .. "!DC=" .. tostring(v)
                     end
-                    debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(v)
                 end
             end
             named[EL_DEBUG].caption = table.concat(debugLines, "\n")

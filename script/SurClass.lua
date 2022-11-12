@@ -131,7 +131,9 @@ function SurClass:correctDeliveriesAtStop(requester)
     if requester.request then
         for _, delivery in pairs(requester.deliveries) do
             -- todo cache fully loaded delivery flag
-            if delivery.requester == requester and (not delivery.providerPassed or correctScheduleAndAtProvider) and delivery.provider.provide then
+            if delivery.requester == requester
+                    and (not delivery.providerPassed or (correctScheduleAndAtProvider and delivery.provider.train))
+                    and delivery.provider.provide then
                 local train = delivery.train
                 local prevContents = delivery.contents
                 local newContents, _, _ = self:_getNeededExchange(delivery.provider, requester, true, prevContents)
@@ -224,6 +226,22 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
                 newDelivery = self:_tryToMakeDelivery(stop)
             end
         end
+        if stop.errorMaskInvalid then
+            stop.errorMaskInvalid = nil
+            local errorMask
+            if stop.request then
+                for _, reqState in pairs(stop.request) do
+                    if reqState.error then
+                        errorMask = errorMask or 0
+                        errorMask = bit32.bor(errorMask, bit32.lshift(1, reqState.index or 0))
+                    end
+                end
+            end
+            if stop.errorMask ~= errorMask then
+                stop.errorMask = errorMask
+                stop:updateOutputPort()
+            end
+        end
         stop:updateVisual()
     else
         global.activeStops[stop.uid] = nil
@@ -314,6 +332,7 @@ function SurClass:_tryToMakeDelivery(requester)
         end
     end
     if requester.errorMask ~= errorMask then
+        requester.errorMaskInvalid = nil
         requester.errorMask = errorMask
         requester:updateOutputPort()
     end
@@ -411,28 +430,30 @@ function SurClass:_getNeededExchange(provider, requester, ignoreMin, updatingCon
     local contents
     local needCargoCells = 0
     local needFluids = 0
-    for name, reqSig in pairs(requester.request) do
-        if not updatingContents or updatingContents[name] then
-            local provSig = provider.provide[name]
-            if provSig then
-                local valid
-                if ignoreMin then
-                    valid = reqSig._count < 0 and provSig._count > 0
-                else
-                    local commonMin = math.max(reqSig._min, provSig._min)
-                    valid = reqSig._request >= commonMin and provSig._provide >= commonMin
-                end
-                if valid then
-                    contents = contents or {}
-                    local count = ignoreMin and math.min(-reqSig._count, provSig._count) or math.min(reqSig._request, provSig._provide)
-                    if updatingContents then
-                        count = count + updatingContents[name]
-                    end
-                    contents[name] = count
-                    if provSig.type == "item" then
-                        needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
+    if requester.request then
+        for name, reqSig in pairs(requester.request) do
+            if not updatingContents or updatingContents[name] then
+                local provSig = provider.provide[name]
+                if provSig then
+                    local valid
+                    if ignoreMin then
+                        valid = reqSig._count < 0 and provSig._count > 0
                     else
-                        needFluids = needFluids + count
+                        local commonMin = math.max(reqSig._min, provSig._min)
+                        valid = reqSig._request >= commonMin and provSig._provide >= commonMin
+                    end
+                    if valid then
+                        contents = contents or {}
+                        local count = ignoreMin and math.min(-reqSig._count, provSig._count) or math.min(reqSig._request, provSig._provide)
+                        if updatingContents then
+                            count = count + updatingContents[name]
+                        end
+                        contents[name] = count
+                        if provSig.type == "item" then
+                            needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
+                        else
+                            needFluids = needFluids + count
+                        end
                     end
                 end
             end

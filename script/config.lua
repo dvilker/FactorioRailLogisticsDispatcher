@@ -11,3 +11,5 @@ fuelScheduleTime = --[[---@type number]] 120
 
 correctScheduleBeforeProvider = true
 correctScheduleAndAtProvider = true
+
+countingInsertersContent = true
