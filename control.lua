@@ -3,6 +3,7 @@ if script.active_mods["gvv"] then
 end
 
 require("__core__.lualib.util")
+require "script.informatron"
 require "script.utils"
 require "script.units"
 require "script.networks"
@@ -258,4 +259,14 @@ script.on_event(
         end
 )
 
-
+remote.add_interface(
+        "yatm",
+            --[[---@type]]{
+            informatron_menu = function(data)
+                return informatronMenu(data.player_index)
+            end,
+            informatron_page_content = function(data)
+                return informatronPageContent(data.page_name, data.player_index, data.element)
+            end,
+        }
+)

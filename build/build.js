@@ -3,6 +3,7 @@ const archiveName = 'Yatm'
 const fileList = [
     'locale/ru/locale.cfg',
 
+    'script/informatron.lua',
     'script/compositions.lua',
     'script/config.lua',
     'script/const.lua',
@@ -60,7 +61,7 @@ function prepareLocaleCfg(fileName) {
         let line = contents[i];
         let r = /^#from:(.*)$/.exec(line)
         if (r) {
-            newValue = fs.readFileSync(fileName.replace(/[^/]+$/, '') + r[1]).toString("utf8").replace(/\n+/g, r => "\\n".repeat(r.length - 1) || " ")
+            newValue = fs.readFileSync(fileName.replace(/[^/]+$/, '') + r[1]).toString("utf8").replace(/\n/g, "\\n")
         } else if (newValue) {
             contents[i] = line.replace(/^([^=]+)=.*$/, (_, n) => n + "=" + newValue)
             newValue = null

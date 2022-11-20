@@ -232,17 +232,17 @@ function DispGui:_create()
                             { type = "flow", direction = "vertical", _sub = (function()
                                 ---@type GuiDef[]
                                 local sub = {
-                                    { type = "checkbox", _name = FLAG_flagMute, caption = { "yatm-gui.flagMute" }, tooltip = { "yatm-gui.flagMute-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = { "yatm-gui.flagUseSignals" }, tooltip = { "yatm-gui.flagUseSignals-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = { "yatm-gui.flagUseEquals" }, tooltip = { "yatm-gui.flagUseEquals-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagTamp, caption = { "yatm-gui.flagTamp" }, tooltip = { "yatm-gui.flagTamp-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "yatm-gui.flagTurnInserters" }, tooltip = { "yatm-gui.flagTurnInserters-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "yatm-gui.flagReverseLocos" }, tooltip = { "yatm-gui.flagReverseLocos-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "yatm-gui.flagAllowMulti" }, tooltip = { "yatm-gui.flagAllowMulti-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowLoadToNotEmpty, caption = { "yatm-gui.flagAllowLoadToNotEmpty" }, tooltip = { "yatm-gui.flagAllowLoadToNotEmpty-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowPartUnload, caption = { "yatm-gui.flagAllowPartUnload" }, tooltip = { "yatm-gui.flagAllowPartUnload-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagBuild, caption = { "yatm-gui.flagBuild" }, tooltip = { "yatm-gui.flagBuild-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = { "yatm-gui.flagDestroy" }, tooltip = { "yatm-gui.flagDestroy-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagMute, caption = { "yatm-gui.cb-flagMute" }, tooltip = { "yatm-gui.cb-flagMute-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = { "yatm-gui.cb-flagUseSignals" }, tooltip = { "yatm-gui.cb-flagUseSignals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = { "yatm-gui.cb-flagUseEquals" }, tooltip = { "yatm-gui.cb-flagUseEquals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTamp, caption = { "yatm-gui.cb-flagTamp" }, tooltip = { "yatm-gui.cb-flagTamp-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "yatm-gui.cb-flagTurnInserters" }, tooltip = { "yatm-gui.cb-flagTurnInserters-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "yatm-gui.cb-flagReverseLocos" }, tooltip = { "yatm-gui.cb-flagReverseLocos-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "yatm-gui.cb-flagAllowMulti" }, tooltip = { "yatm-gui.cb-flagAllowMulti-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowLoadToNotEmpty, caption = { "yatm-gui.cb-flagAllowLoadToNotEmpty" }, tooltip = { "yatm-gui.cb-flagAllowLoadToNotEmpty-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowPartUnload, caption = { "yatm-gui.cb-flagAllowPartUnload" }, tooltip = { "yatm-gui.cb-flagAllowPartUnload-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagBuild, caption = { "yatm-gui.cb-flagBuild" }, tooltip = { "yatm-gui.cb-flagBuild-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = { "yatm-gui.cb-flagDestroy" }, tooltip = { "yatm-gui.cb-flagDestroy-tt" } },
                                 }
                                 for value, data in pairs(ST_OUTS) do
                                     sub[#sub + 1] = { type = "radiobutton", state = false, _share = OPT_OUT_MODE, _value = value, caption = data.caption, tooltip = data.tooltip }
