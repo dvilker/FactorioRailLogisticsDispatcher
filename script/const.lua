@@ -21,9 +21,9 @@ ST_OUT_EXCHANGE = 3
 
 ---@type table<ST_OUT, { caption: LocalisedString, tooltip: LocalisedString | nil }>
 ST_OUTS = {
-    [ST_OUT_NEED_CONTENTS_NEG] = { caption = "Выводить требуемое содержимое (−)", tooltip = "На выходном порту будет отображено требуемое для отправки содержимое поезда со знаком минус. Например, на станции снабжения будет отражен загружаемый груз (со знаком минус). А на станции запроса - пусто - в поезде ничего не должно оставаться." },
-    [ST_OUT_NEED_CONTENTS_POS] = { caption = "Выводить требуемое содержимое (+)", tooltip = "На выходном порту будет отображено требуемое для отправки содержимое поезда. Например, на станции снабжения будет отражен загружаемый груз. А на станции запроса - пусто - в поезде ничего не должно оставаться." },
-    [ST_OUT_EXCHANGE] = { caption = "Выводить требуемый обмен", tooltip = "На выходном порту будет отображен груз, который необходимо погрузить (>0) или выгрузить (<0) для отправки поезда. Например, на станции снабжения будет отражен загружаемый груз со знаком плюс. А на станции запроса - то же, но со знаком минус." },
+    [ST_OUT_NEED_CONTENTS_NEG] = { caption = {"yatm-gui.out-need-neg"}, tooltip = {"yatm-gui.out-need-neg-tt"} },
+    [ST_OUT_NEED_CONTENTS_POS] = { caption = {"yatm-gui.out-need-pos"}, tooltip = {"yatm-gui.out-need-pos-tt"} },
+    [ST_OUT_EXCHANGE] = { caption = {"yatm-gui.out-exchange"}, tooltip = {"yatm-gui.out-exchange-tt"} },
 }
 
 PROVIDE_COLOR = { 0xed, 0x6e, 0x6e }

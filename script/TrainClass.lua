@@ -185,7 +185,7 @@ function TrainClass:_appendDepot(records, warning, forcedDepotName)
         local bestStop = self:_getBestStop(self.sur.depotStops)
         if not bestStop then
             if warning then
-                self.train.front_stock.player.print("Поезд не может найти депо")
+                self.train.front_stock.force.print({"err-depot-not-found", self.train.id})
             end
             return false
         end
@@ -211,7 +211,7 @@ function TrainClass:_appendClean(records, warning)
     local bestStop = self:_getBestStop(self.sur.cleanStops)
     if not bestStop then
         if warning then
-            self.train.front_stock.force.print("Поезд не может найти станцию очистки")
+            self.train.front_stock.force.print({"err-clean-not-found", self.train.id})
         end
         return false
     end

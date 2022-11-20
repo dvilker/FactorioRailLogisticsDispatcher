@@ -1,6 +1,6 @@
 dispatcherSignalSlotCount = 30
 defaultNetworks = 1
-minEnergyUseTrain = 100000000
+minEnergyUseTrain = 100000000 -- 100 MJ
 --minEnergyUseTrainAtDepot = 400000000
 
 

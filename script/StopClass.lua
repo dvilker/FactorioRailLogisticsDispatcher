@@ -374,7 +374,7 @@ end
 
 function StopClass:_turnInserters()
     local train = self.train.train
-    train.manual_mode = true
+    --train.manual_mode = true
     local turnedInserters = self.turnedInserters
     for _, car in pairs(train.carriages) do
         local inserters = car.surface.find_entities_filtered({
@@ -384,8 +384,8 @@ function StopClass:_turnInserters()
         })
         for _, ins in pairs(inserters) do
             if ins.valid then
-                ins.drop_target = car -- invalidate ins.drop_target
-                if ins.drop_target == car and ins.held_stack.count > 0 then
+                local entityAtPos = car.surface.find_entity(car.name, ins.drop_position)
+                if entityAtPos == car and ins.held_stack.count > 0 then
                     turnedInserters = turnedInserters or {}
                     if not turnedInserters[ins.unit_number] then
                         swapInserter(ins, false)
@@ -396,7 +396,7 @@ function StopClass:_turnInserters()
         end
     end
     self.turnedInserters = turnedInserters
-    train.manual_mode = false
+    --train.manual_mode = false
 end
 
 ---@param forced boolean
@@ -419,7 +419,7 @@ end
 ---@param train LuaTrain
 function StopClass:_fetchInserters(train)
     local inserters
-    train.manual_mode = true
+--    train.manual_mode = true
     for _, car in pairs(train.cargo_wagons) do
         local inses = car.surface.find_entities_filtered({
             type = "inserter",
@@ -428,16 +428,14 @@ function StopClass:_fetchInserters(train)
         })
         for _, ins in pairs(inses) do
             if ins.valid then
-                ins.pickup_target = car -- just invalidate ins.pickup_target, not setup
-                ins.drop_target = car -- just invalidate ins.drop_target, not setup
-                if ins.pickup_target == car or ins.drop_target == car then
+                if car.surface.find_entity(car.name, ins.drop_position) == car or car.surface.find_entity(car.name, ins.pickup_position) == car then
                     inserters = inserters or {}
                     inserters[ins.unit_number] = ins
                 end
             end
         end
     end
-    train.manual_mode = false
+--    train.manual_mode = false
     self.inserters = inserters
 end
 
@@ -493,13 +491,13 @@ function StopClass:trainArrived(trainEntity)
                     self:_updateDeliveryChanges()
                     self:updateOutputPort()
                 else
-                    self.stopEntity.force.print("Поезд приехал на станцию " .. self.stopEntity.backer_name .. " не по расписанию")
+                    self.stopEntity.force.print({"yatm.err-train-not-by-schedule", train.train.id, self.stopEntity.unit_number})
                 end
             else
-                self.stopEntity.force.print("Поезд с непонятно доставкой на станции " .. self.stopEntity.backer_name)
+                self.stopEntity.force.print({"err-unknown-delivery", train.train.id, self.stopEntity.unit_number})
             end
         else
-            self.stopEntity.force.print("Непонятный поезд на станции " .. self.stopEntity.backer_name)
+            self.stopEntity.force.print({"err-unknown-train", train.train.id, self.stopEntity.unit_number})
         end
     end
     self:updateVisual()

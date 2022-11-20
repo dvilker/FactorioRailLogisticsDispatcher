@@ -16,12 +16,6 @@ require "script.StopClass"
 require "script.SurClass"
 require "script.TrainClass"
 require "script.DispGui"
---require "script.dispatcherConst"
---require "script.dispatcher"
---require "script.dispatcherEntity"
---require "script.dispatcherGui"
---require "script.stationConst"
---require "script.stationGui"
 
 script.on_init(function()
     global.surObs = global.surObs or {}
@@ -29,6 +23,7 @@ script.on_init(function()
     global.disps = global.disps or {}
     global.guis = global.guis or {}
     global.removedSettings = global.removedSettings or {}
+    global.mem = global.mem or {}
     SurClass.updateTimer()
 end)
 
@@ -38,6 +33,7 @@ script.on_configuration_changed(function()
     global.disps = global.disps or {}
     global.guis = global.guis or {}
     global.removedSettings = global.removedSettings or {}
+    global.mem = global.mem or {}
 end)
 
 script.on_load(function()

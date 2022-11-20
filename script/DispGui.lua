@@ -52,7 +52,7 @@ local EL_CARGO_STAT_TABLE = 5007
 local EL_STAT_TRAINS = 6001
 
 local EL_CLOSE = 9000
-local EL_COMMIT = 9001
+local EL_APPLY = 9001
 local EL_ROLLBACK = 9002
 
 ---@class DispGui
@@ -147,8 +147,8 @@ function DispGui:_create()
                 { type = "flow", _sub = {
                     { type = "label", style = "frame_title", caption = { "yatm-gui.window-title" }, _dragTarget = "" },
                     { type = "empty-widget", style = "yatm_draggable_space_header", _dragTarget = "" },
-                    { type = "button", caption = "Отменить", style = "yatm_frame_button", _name = EL_ROLLBACK },
-                    { type = "button", caption = "Применить", style = "yatm_frame_button", _name = EL_COMMIT },
+                    { type = "button", caption = { "yatm-gui.rollback" }, style = "yatm_frame_button", _name = EL_ROLLBACK },
+                    { type = "button", caption = { "yatm-gui.apply" }, style = "yatm_frame_button", _name = EL_APPLY },
                     { type = "sprite-button", _name = EL_CLOSE, style = "close_button", sprite = "utility/close_white", hovered_sprite = "utility/close_black" },
                 } },
                 { type = "flow", direction = "horizontal", _name = DIV_TABS, _sub = {
@@ -213,13 +213,13 @@ function DispGui:_create()
                                             { type = "button", _name = EL_ANY_MIN_FLUID_UNIT, style = "yatm_unit" },
                                         } },
                                     } },
-                                    { type = "label", caption = "Передавайте на входной терминал текущее содержимое станции.", _style1 = { single_line = false } },
+                                    { type = "label", caption = { "yatm-gui.connect-tip" }, _style1 = { single_line = false } },
                                     { type = "flow", direction = "horizontal", _sub = (
                                             function()
                                                 ---@type GuiDef[]
                                                 local buttons = {}
                                                 for i = 1, 8 do
-                                                    buttons[#buttons + 1] = { type = "button", _share = EL_ITEM_MEM_BUTTON, _value = i, style = "yatm_mem", caption = "m" .. tostring(i), tooltip = "Слот памяти настроек" }
+                                                    buttons[#buttons + 1] = { type = "button", _share = EL_ITEM_MEM_BUTTON, _value = i, style = "yatm_mem", caption = "m" .. tostring(i), tooltip = { "yatm-gui.mem-tt" } }
                                                 end
                                                 return buttons
                                             end)()
@@ -232,17 +232,17 @@ function DispGui:_create()
                             { type = "flow", direction = "vertical", _sub = (function()
                                 ---@type GuiDef[]
                                 local sub = {
-                                    { type = "checkbox", _name = FLAG_flagMute, caption = "Не сообщать об ошибках", tooltip = "Не сообщать, если запрос не может быть удовлетворен. Как по причине отсутствия подходящего поезда, так и по причине отсутствия снабжения." },
-                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = "Сигнальный режим", tooltip = "Формировать для этой станции расписание на основе сигналов ([virtual-signal=signal-green]/[virtual-signal=signal-red]). Не забудьте подключить станцию." },
-                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = "Равенства в расписании", tooltip = "По умолчанию в расписаниях используется нестрогое сравнение (>=). Эта опция включает строгое сравнение (=). Это может быть полезно для более точных загрузок." },
-                                    { type = "checkbox", _name = FLAG_flagTamp, caption = "Трамбовать при погрузке", tooltip = "При составной погрузке может так получиться, что последняя пачка какого-то груза окажется разбитой на разные вагоны. Эта опция сместит груз в один вагон — утрамбует." },
-                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = "Разворачивать манипуляторы", tooltip = "Иногда, при отправке поезда, в манипуляторах что-то может остаться. Эта опция временно развернет манипуляторы с грузом при отправке поезда, чтобы положить предмет обратно в сундук." },
-                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = "Разворачивать локомотивы", tooltip = "Разворачивает локомотивы на этой станции при отправке поезда." },
-                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = "Составные доставки", tooltip = "Разрешить провозить несколько видов груза в одном поезде." },
-                                    { type = "checkbox", _name = FLAG_flagAllowLoadToNotEmpty, caption = "Загрузка в непустой", tooltip = "Разрешить погрузку в уже частично заполненный поезд. Это позволит поезду загружаться на нескольких станциях." },
-                                    { type = "checkbox", _name = FLAG_flagAllowPartUnload, caption = "Частичная разгрузка", tooltip = "Разрешить частичную разгрузку. Это позволит поезду разгружаться не нескольких станциях." },
-                                    { type = "checkbox", _name = FLAG_flagBuild, caption = "Строить составы", tooltip = "Если не будет подходящего свободного поезда, в этом депо будет размещен план строительства поезда. Понадобятся строительные дроны, чтобы его построить." },
-                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = "Разбирать составы", tooltip = "Если в депо поезд будет слишком долго простаивать, он будет помечен для разбора. Потребуются дроны, чтобы его разобрать." },
+                                    { type = "checkbox", _name = FLAG_flagMute, caption = { "yatm-gui.flagMute" }, tooltip = { "yatm-gui.flagMute-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = { "yatm-gui.flagUseSignals" }, tooltip = { "yatm-gui.flagUseSignals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = { "yatm-gui.flagUseEquals" }, tooltip = { "yatm-gui.flagUseEquals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTamp, caption = { "yatm-gui.flagTamp" }, tooltip = { "yatm-gui.flagTamp-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "yatm-gui.flagTurnInserters" }, tooltip = { "yatm-gui.flagTurnInserters-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "yatm-gui.flagReverseLocos" }, tooltip = { "yatm-gui.flagReverseLocos-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "yatm-gui.flagAllowMulti" }, tooltip = { "yatm-gui.flagAllowMulti-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowLoadToNotEmpty, caption = { "yatm-gui.flagAllowLoadToNotEmpty" }, tooltip = { "yatm-gui.flagAllowLoadToNotEmpty-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowPartUnload, caption = { "yatm-gui.flagAllowPartUnload" }, tooltip = { "yatm-gui.flagAllowPartUnload-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagBuild, caption = { "yatm-gui.flagBuild" }, tooltip = { "yatm-gui.flagBuild-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = { "yatm-gui.flagDestroy" }, tooltip = { "yatm-gui.flagDestroy-tt" } },
                                 }
                                 for value, data in pairs(ST_OUTS) do
                                     sub[#sub + 1] = { type = "radiobutton", state = false, _share = OPT_OUT_MODE, _value = value, caption = data.caption, tooltip = data.tooltip }
@@ -252,9 +252,9 @@ function DispGui:_create()
                             { type = "flow", direction = "vertical", _name = DIV_COMMON, _sub = {
                                 { type = "line" },
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
-                                    { type = "label", caption = "Сети:" },
+                                    { type = "label", caption = { "yatm-gui.nets" } },
                                     { type = "textfield", _name = EL_NETWORKS, text = "1", numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                    { type = "label", caption = "Типы поездов:" },
+                                    { type = "label", caption = { "yatm-gui.comps" } },
                                     { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "yatm-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
                                     --[[{ type = "flow", direction = "horizontal", _sub = {
                                         { type = "sprite-button", _share = EL_COMPS_BUTTON, _value = ", ", sprite = nil }
@@ -284,12 +284,12 @@ function DispGui:_create()
                     } },
                     { type = "scroll-pane", style = "scroll_pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "always", _style1 = { vertically_stretchable = true, padding = 6 }, direction = "vertical", _share = TAB_STATUS, _sub = {
                         { type = "flow", direction = "vertical", _style1 = { vertically_stretchable = true, vertical_spacing = 8 }, _sub = {
-                            { type = "label", caption = "[color=" .. table.concat(REQUEST_COLOR, ',') .. "]Запросы−[/color] и [color=" .. table.concat(PROVIDE_COLOR, ',') .. "]предложения+[/color]", style = "caption_label" },
+                            { type = "label", caption = { "yatm-gui.req-prov-head", table.concat(REQUEST_COLOR, ','), table.concat(PROVIDE_COLOR, ',') }, style = "caption_label" },
                             { type = "table", column_count = 4, _name = EL_IO_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
                                 { type = "label", caption = "", style = "heading_3_label" },
-                                { type = "label", caption = "Кол-во", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = "В пути", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "yatm-gui.req-prov-count" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "yatm-gui.req-prov-on-way" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", style = "heading_3_label", },
                             }, _row = {
                                 { type = "label", caption = "" },
@@ -298,12 +298,12 @@ function DispGui:_create()
                                 { type = "label", caption = "" },
                             } },
                             { type = "line" },
-                            { type = "label", caption = "Доставки", style = "caption_label" },
+                            { type = "label", caption = { "yatm-gui.deliveries-head" }, style = "caption_label" },
                             { type = "table", column_count = 3, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                                { type = "label", caption = "Точка А", style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                                { type = "label", caption = "Точка Б", style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                                { type = "label", caption = "Время", style = "heading_3_label" },
+                                { type = "label", caption = { "yatm-gui.deliveries-from" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = { "yatm-gui.deliveries-to" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = { "yatm-gui.deliveries-time" }, style = "heading_3_label" },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { single_line = false } },
                                 { type = "label", caption = "", _style1 = { single_line = false } },
@@ -311,33 +311,28 @@ function DispGui:_create()
                             } },
                             { type = "line" },
                             { type = "flow", direction = "horizontal", _sub = {
-                                { type = "label", caption = "Статистика", style = "caption_label" },
+                                { type = "label", caption = { "yatm-gui.stat-head" }, style = "caption_label" },
                                 { type = "empty-widget", _style1 = { horizontally_stretchable = "on" } },
-                                { type = "label", caption = "Поездов: 0", _name = EL_STAT_TRAINS },
+                                { type = "label", caption = { "yatm-gui.stat-trains", 0 }, _name = EL_STAT_TRAINS },
                             } },
                             { type = "table", column_count = 4, _name = EL_CARGO_STAT_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                                { type = "label", caption = "Доставок", style = "heading_3_label", _style1 = { minimal_width = 70 } },
-                                { type = "label", caption = "Отправлено", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = "Получено", style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = "Последняя", style = "heading_3_label" },
+                                { type = "label", caption = { "yatm-gui.stat-count" }, style = "heading_3_label", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = { "yatm-gui.stat-sent" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "yatm-gui.stat-recv" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "yatm-gui.stat-lastTime" }, style = "heading_3_label" },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { minimal_width = 70 } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70 } },
                             } },
-                            { type = "line" },
-                            { type = "label", caption = "Отладка", style = "caption_label" },
-                            { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false } },
+                            --[[DEBUG]] { type = "line" },
+                            --[[DEBUG]] { type = "label", caption = "Debug", style = "caption_label" },
+                            --[[DEBUG]] { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false } },
                         } },
                     } }
                 } },
-                --[[   { type = "flow", direction = "horizontal", style = "dialog_buttons_horizontal_flow", _name = DIV_BUTTONS, _sub = {
-                       { type = "button", caption = "Отменить", style = "back_button", _name = EL_ROLLBACK },
-                       { type = "empty-widget", style = "draggable_space", _style1 = { horizontally_stretchable = true, vertically_stretchable = true } },
-                       { type = "button", caption = "Применить", style = "confirm_button", _name = EL_COMMIT },
-                   } },]]
             } }
     )
 end
@@ -411,13 +406,12 @@ end
 function DispGui:_updateMemButtons()
     local shares = self.model.shares
     local forceIndex = (--[[---@type LuaForce]]self.player.force).index
-    global.mem = global.mem or {}
     global.mem[forceIndex] = global.mem[forceIndex] or {}
 
     if self.selectedItem then
-        global.mem[forceIndex].item = global.mem[forceIndex].item or {}
+        global.mem[forceIndex][self.selectedItem.type] = global.mem[forceIndex][self.selectedItem.type] or {}
         for _, el in pairs(shares[EL_ITEM_MEM_BUTTON]) do
-            local v = global.mem[forceIndex].item[el.tags._value]
+            local v = global.mem[forceIndex][self.selectedItem.type][el.tags._value]
             el.style = v and "yatm_mem_active" or "yatm_mem"
             if v then
                 el.tooltip = { "", { "yatm-gui.mem-item-tt" }, {
@@ -564,19 +558,18 @@ function DispGui:_handleGuiEvent(event)
         -- click
         if _share == EL_ITEM_MEM_BUTTON then
             local forceIndex = self.player.force.index
-            global.mem = global.mem or {}
             global.mem[forceIndex] = global.mem[forceIndex] or {}
             if self.selectedItem then
-                global.mem[forceIndex].item = global.mem[forceIndex].item or {}
+                global.mem[forceIndex][self.selectedItem.type] = global.mem[forceIndex][self.selectedItem.type] or {}
                 if event.button == defines.mouse_button_type.left then
                     if event.control or event.alt or event.shift then
-                        global.mem[forceIndex].item[element.tags._value] = {
+                        global.mem[forceIndex][self.selectedItem.type][element.tags._value] = {
                             request = validCountWithUnits(copyCountWithUnits(self.selectedItem.request), true),
                             min = validCountWithUnits(copyCountWithUnits(self.selectedItem.min), true)
                         }
                         doUpdateMemButtons = true
                     else
-                        local mem = global.mem[forceIndex].item[element.tags._value]
+                        local mem = global.mem[forceIndex][self.selectedItem.type][element.tags._value]
                         if mem then
                             self.selectedItem.request = copyCountWithUnits(mem.request)
                             self.selectedItem.min = copyCountWithUnits(mem.min)
@@ -585,7 +578,7 @@ function DispGui:_handleGuiEvent(event)
                         end
                     end
                 elseif event.button == defines.mouse_button_type.right then
-                    global.mem[forceIndex].item[element.tags._value] = nil
+                    global.mem[forceIndex][self.selectedItem.type][element.tags._value] = nil
                     doUpdateMemButtons = true
                 end
             else
@@ -607,7 +600,7 @@ function DispGui:_handleGuiEvent(event)
                         end
                     end
                 elseif event.button == defines.mouse_button_type.right then
-                    global.mem[forceIndex].item[element.tags._value] = nil
+                    global.mem[forceIndex][self.selectedItem.type][element.tags._value] = nil
                     doUpdateMemButtons = true
                 end
             end
@@ -649,7 +642,7 @@ function DispGui:_handleGuiEvent(event)
             end
         elseif _name == EL_CLOSE then
             self:close()
-        elseif _name == EL_COMMIT then
+        elseif _name == EL_APPLY then
             local selectedButton = self.selectedButton
             self:_normalizeData()
             self.disp:setSettings(self.data)
@@ -844,11 +837,7 @@ function DispGui:updateStopInfo()
         local function registerName(self, name)
             if not self.ioRows[name] then
                 local rowModel = guiAddRow(self.model, EL_IO_TABLE)
-                if game.item_prototypes[name] then
-                    rowModel.cells[1].caption = "[item=" .. name .. "]"
-                else
-                    rowModel.cells[1].caption = "[fluid=" .. name .. "]"
-                end
+                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "]"
                 self.ioRows[name] = rowModel
             end
         end
@@ -914,11 +903,7 @@ function DispGui:updateStopInfo()
                     text[#text + 1] = "."
                 end
                 for name, count in pairs(delivery.contents) do
-                    if game.item_prototypes[name] then
-                        text[#text + 1] = "\n    [item=" .. name .. "] " .. util.format_number(count, false)
-                    else
-                        text[#text + 1] = "\n    [fluid=" .. name .. "] " .. util.format_number(count, false)
-                    end
+                    text[#text + 1] = "\n    [" .. typeOfName(name) .. "=" .. name .. "] " .. util.format_number(count, false)
                 end
                 rowModel.cells[1].caption = table.concat(text)
             end
@@ -946,7 +931,7 @@ function DispGui:updateStopInfo()
                     rowModel = guiAddRow(self.model, EL_CARGO_STAT_TABLE)
                     self.statRows[name] = rowModel
                 end
-                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] "..(stat.deliveries and util.format_number(stat.deliveries, false) or "?")
+                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] " .. (stat.deliveries and util.format_number(stat.deliveries, false) or "?")
                 rowModel.cells[2].caption = stat.provided and util.format_number(stat.provided, true) or "-"
                 rowModel.cells[3].caption = stat.received and util.format_number(stat.received, true) or "-"
                 rowModel.cells[4].caption = stat.lastTick and util.formattime(game.tick - stat.lastTick) or "-"
@@ -958,7 +943,7 @@ function DispGui:updateStopInfo()
             end
         end
 
-        named[EL_STAT_TRAINS].caption = "Поездов: " .. util.format_number(stop.statTrains or 0, false)
+        named[EL_STAT_TRAINS].caption = { "yatm-gui.stat-trains", util.format_number(stop.statTrains or 0, false) }
 
         local debug --[[DEBUG]] = true
         if debug then
@@ -972,7 +957,7 @@ function DispGui:updateStopInfo()
                 for k, v in pairs(sig) do
                     debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
                 end
-                if stop.deliveryChanges[name] then
+                if stop.deliveryChanges and stop.deliveryChanges[name] then
                     debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(stop.deliveryChanges[name])
                 end
             end
@@ -980,19 +965,13 @@ function DispGui:updateStopInfo()
                 for name, v in pairs(stop.deliveryChanges) do
                     if not stop.signalStates[name] then
                         local prefix
-                        if game.item_prototypes[name] then
-                            prefix = "[item=" .. name .. "] "
-                        else
-                            prefix = "[fluid=" .. name .. "] "
-                        end
+                        prefix = "["..typeOfName(name).."=" .. name .. "] "
                         debugLines[#debugLines + 1] = prefix .. "!DC=" .. tostring(v)
                     end
                 end
             end
             named[EL_DEBUG].caption = table.concat(debugLines, "\n")
-
         end
     end
-    --named[TAB_STATUS].badge_text = (stop and table_size(stop.deliveries) > 0) and tostring(table_size(stop.deliveries)) or ''
 end
 
