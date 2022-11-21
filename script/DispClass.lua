@@ -13,10 +13,8 @@
     ---@field flagUseEquals true|nil @ settings: use strict equals in schedule for this stop
     ---@field flagAllowMulti true|nil @ settings: allow compound deliveries
     ---@field flagReverseLocos true|nil @ settings: revers locomotives when train departures
-    ---@field flagBuild true|nil @ settings: revers locomotives when train departures
-    ---@field flagDestroy true|nil @ settings: revers locomotives when train departures
-    ---@field flagAllowLoadToNotEmpty true|nil @ settings: revers locomotives when train departures
-    ---@field flagAllowPartUnload true|nil @ settings: revers locomotives when train departures
+    ---@field flagBuild true|nil @ settings:
+    ---@field flagDestroy true|nil @ settings:
     ---@field outMode ST_OUT @ variant of signals in output port
     ---@field signals table<number, DispSignal> @ settings: cargo signals (index of button -> StopSignal)
     ---@field otherCargoMin CountWithUnits @nullable
@@ -238,8 +236,6 @@ function DispClass:getSettings()
         flagReverseLocos = self.flagReverseLocos,
         flagBuild = self.flagBuild,
         flagDestroy = self.flagDestroy,
-        flagAllowLoadToNotEmpty = self.flagAllowLoadToNotEmpty,
-        flagAllowPartUnload = self.flagAllowPartUnload,
         outMode = self.outMode,
         signals = util.copy(self.signals),
         otherCargoMin = util.copy(self.otherCargoMin),
@@ -295,12 +291,6 @@ function DispClass:setSettings(source)
         end
         if source.flagDestroy == nil or type(source.flagDestroy) == "boolean" then
             self.flagDestroy = source.flagDestroy or nil
-        end
-        if source.flagAllowLoadToNotEmpty == nil or type(source.flagAllowLoadToNotEmpty) == "boolean" then
-            self.flagAllowLoadToNotEmpty = source.flagAllowLoadToNotEmpty or nil
-        end
-        if source.flagAllowPartUnload == nil or type(source.flagAllowPartUnload) == "boolean" then
-            self.flagAllowPartUnload = source.flagAllowPartUnload or nil
         end
         if source.otherCargoMin == nil or validCountWithUnits(source.otherCargoMin) then
             self.otherCargoMin = source.otherCargoMin

@@ -21,8 +21,6 @@ local FLAG_flagUseEquals = 2006
 local FLAG_flagTamp = 2007
 local FLAG_flagTurnInserters = 2008
 local FLAG_flagAllowMulti = 2009
-local FLAG_flagAllowLoadToNotEmpty = 2010
-local FLAG_flagAllowPartUnload = 2011
 local OPT_OUT_MODE = 2012
 
 local EL_MODE = 3001
@@ -121,7 +119,7 @@ function DispGui:open(player, dispEntity)
         statRows = {},
         depotStatRows = {},
     })
-    gui.model = gui:_create()
+    gui.model = gui:_create(disp.stop and disp.stop.stopEntity.backer_name or "?")
     gui:_dataToForm()
     disp.gui = gui
     global.guis[player.index] = gui
@@ -169,15 +167,16 @@ function DispGui:close()
     end
 end
 
+---@param name LocalisedString
 ---@return GuiModel
-function DispGui:_create()
+function DispGui:_create(name)
     local STYLE_MARGIN = { left_margin = 12 }
     return createGuiModel(
             self.player.gui.screen,
             { namedTag = ST_TAG },
             { type = "frame", name = ST_TAG, direction = "vertical", auto_center = true, _style1 = { minimal_height = 600 }, _sub = {
                 { type = "flow", _sub = {
-                    { type = "label", style = "frame_title", caption = { "yatm-gui.window-title" }, _dragTarget = "" },
+                    { type = "label", style = "frame_title", caption = { "yatm-gui.window-title", name }, _dragTarget = "" },
                     { type = "empty-widget", style = "yatm_draggable_space_header", _dragTarget = "" },
                     { type = "button", caption = { "yatm-gui.rollback" }, style = "yatm_frame_button", _name = EL_ROLLBACK },
                     { type = "button", caption = { "yatm-gui.apply" }, style = "yatm_frame_button", _name = EL_APPLY },
@@ -271,8 +270,6 @@ function DispGui:_create()
                                     { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "yatm-gui.cb-flagTurnInserters" }, tooltip = { "yatm-gui.cb-flagTurnInserters-tt" } },
                                     { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "yatm-gui.cb-flagReverseLocos" }, tooltip = { "yatm-gui.cb-flagReverseLocos-tt" } },
                                     { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "yatm-gui.cb-flagAllowMulti" }, tooltip = { "yatm-gui.cb-flagAllowMulti-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowLoadToNotEmpty, caption = { "yatm-gui.cb-flagAllowLoadToNotEmpty" }, tooltip = { "yatm-gui.cb-flagAllowLoadToNotEmpty-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowPartUnload, caption = { "yatm-gui.cb-flagAllowPartUnload" }, tooltip = { "yatm-gui.cb-flagAllowPartUnload-tt" } },
                                     { type = "checkbox", _name = FLAG_flagBuild, caption = { "yatm-gui.cb-flagBuild" }, tooltip = { "yatm-gui.cb-flagBuild-tt" } },
                                     { type = "checkbox", _name = FLAG_flagDestroy, caption = { "yatm-gui.cb-flagDestroy" }, tooltip = { "yatm-gui.cb-flagDestroy-tt" } },
                                 }
@@ -391,8 +388,6 @@ function DispGui:_normalizeData()
     data.flagTamp = data.flagTamp --[[and named[FLAG_flagTamp].visible]] or nil
     data.flagTurnInserters = data.flagTurnInserters --[[and named[FLAG_flagTurnInserters].visible]] or nil
     data.flagAllowMulti = data.flagAllowMulti --[[and named[FLAG_flagAllowMulti].visible]] or nil
-    data.flagAllowLoadToNotEmpty = data.flagAllowLoadToNotEmpty --[[and named[FLAG_flagAllowLoadToNotEmpty].visible]] or nil
-    data.flagAllowPartUnload = data.flagAllowPartUnload --[[and named[FLAG_flagAllowPartUnload].visible]] or nil
 
     data.otherCargoMin = validCountWithUnits(data.otherCargoMin, true)
     data.otherFluidMin = validCountWithUnits(data.otherFluidMin, true)
@@ -508,8 +503,6 @@ function DispGui:_updateVisibleAndEnabled()
     named[FLAG_flagTamp].visible = data.mode == ST_MODE_BIDI
     named[FLAG_flagTurnInserters].visible = data.mode == ST_MODE_BIDI
     named[FLAG_flagAllowMulti].visible = data.mode == ST_MODE_BIDI
-    named[FLAG_flagAllowLoadToNotEmpty].visible = false --[[not implemented]] and data.mode == ST_MODE_BIDI
-    named[FLAG_flagAllowPartUnload].visible = false --[[not implemented]] and data.mode == ST_MODE_BIDI
     guiSetVisible(shares[OPT_OUT_MODE], data.mode == ST_MODE_BIDI)
 
     guiSetVisible(shares[EL_NETWORKS], data.mode ~= ST_MODE_OFF)
@@ -546,8 +539,6 @@ function DispGui:_dataToForm()
     named[FLAG_flagTamp].state = self.data.flagTamp
     named[FLAG_flagTurnInserters].state = self.data.flagTurnInserters
     named[FLAG_flagAllowMulti].state = self.data.flagAllowMulti
-    named[FLAG_flagAllowLoadToNotEmpty].state = self.data.flagAllowLoadToNotEmpty
-    named[FLAG_flagAllowPartUnload].state = self.data.flagAllowPartUnload
     guiSetRadiobutton(self.model, OPT_OUT_MODE, self.data.outMode or ST_OUT_NEED_CONTENTS_NEG)
 
     named[EL_NETWORKS].text = tostring(self.data.networks or defaultNetworks)
@@ -813,10 +804,6 @@ function DispGui:_handleGuiEvent(event)
             self.data.flagTurnInserters = element.state or nil
         elseif _name == FLAG_flagAllowMulti then
             self.data.flagAllowMulti = element.state or nil
-        elseif _name == FLAG_flagAllowLoadToNotEmpty then
-            self.data.flagAllowLoadToNotEmpty = element.state or nil
-        elseif _name == FLAG_flagAllowPartUnload then
-            self.data.flagAllowPartUnload = element.state or nil
         end
     end
     if doUpdateElemButtons then

@@ -117,7 +117,6 @@ trainStateNames = {
 ---@param restore boolean | nil
 ---@overload fun(inserter: LuaEntity)
 function swapInserter(inserter, restore)
-    --[[DEBUG]]log("Inside count " .. inserter.held_stack.count .. " restore " .. var_dump(restore))
     local swap = inserter.pickup_position
     inserter.pickup_position = inserter.drop_position
     inserter.drop_position = swap

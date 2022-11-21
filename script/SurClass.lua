@@ -115,7 +115,10 @@ function SurClass.tick()
 end
 
 function SurClass.updateTimer()
-    script.on_nth_tick(5, (global.activeStops and table_size(global.activeStops) > 0 and SurClass.tick) or nil)
+    script.on_nth_tick(nil)
+    if global.activeStops and table_size(global.activeStops) > 0 then
+        script.on_nth_tick(updateTicks, SurClass.tick)
+    end
 end
 
 function SurClass:remove()

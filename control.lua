@@ -25,6 +25,7 @@ script.on_init(function()
     global.guis = global.guis or {}
     global.removedSettings = global.removedSettings or {}
     global.mem = global.mem or {}
+    updateConfig()
     SurClass.updateTimer()
 end)
 
@@ -35,6 +36,7 @@ script.on_configuration_changed(function()
     global.guis = global.guis or {}
     global.removedSettings = global.removedSettings or {}
     global.mem = global.mem or {}
+    updateConfig()
 end)
 
 script.on_load(function()
@@ -50,6 +52,7 @@ script.on_load(function()
     end
     SurClass.restoreMeta(global.surObs)
     SurClass.updateTimer()
+    updateConfig()
 end)
 
 script.on_event(
@@ -62,6 +65,15 @@ script.on_event(
                 sur:remove()
 
             end
+        end
+)
+
+script.on_event(
+        defines.events.on_runtime_mod_setting_changed,
+        ---@overload fun (event: EventData)
+        ---@param event OnRuntimeModSettingChanged
+        function(event)
+            updateConfig()
         end
 )
 

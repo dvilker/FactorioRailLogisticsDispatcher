@@ -1,4 +1,4 @@
-# Railway Logistics Dispatcher factorio mod
+# Rail Logistics Dispatcher factorio mod
 
 Adds dispatcher entity for fully organized rail logistics.
 

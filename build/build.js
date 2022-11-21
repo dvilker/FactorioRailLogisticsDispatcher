@@ -1,7 +1,8 @@
 const archiveName = 'Yatm'
 
 const fileList = [
-    'locale/ru/locale.cfg',
+    'locale/ru/ru.cfg',
+    'locale/en/en.cfg',
 
     'script/informatron.lua',
     'script/compositions.lua',
