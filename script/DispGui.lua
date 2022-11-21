@@ -48,6 +48,7 @@ local EL_ANY_MIN_FLUID_UNIT = 3204
 local EL_IO_TABLE = 5005
 local EL_DELIVERIES_TABLE = 5006
 local EL_CARGO_STAT_TABLE = 5007
+local EL_DEPOT_STAT_TABLE = 5008
 
 local EL_STAT_TRAINS = 6001
 
@@ -63,6 +64,7 @@ local EL_ROLLBACK = 9002
     ---@field ioRows table<string, GuiModel>
     ---@field deliveryRows table<DeliveryUid, GuiModel>
     ---@field statRows table<string, GuiModel>
+    ---@field depotStatRows table<string, GuiModel>
     ---@field data DispSettings
     ---@field selectedButton number @nullable
     ---@field selectedItem DispSignal @nullable
@@ -117,6 +119,7 @@ function DispGui:open(player, dispEntity)
         ioRows = {},
         deliveryRows = {},
         statRows = {},
+        depotStatRows = {},
     })
     gui.model = gui:_create()
     gui:_dataToForm()
@@ -135,6 +138,35 @@ function DispGui:close()
     self.model.root.destroy()
     self.disp.gui = nil
     self.disp:setSettings(self.data)
+
+    if self.disp.stop then
+        if self.disp.mode == ST_MODE_BIDI then
+            local hasConnection = false
+            for _, def in pairs(self.disp.entity.circuit_connection_definitions) do
+                if def.source_circuit_id == defines.circuit_connector_id.combinator_input
+                        and def.target_entity ~= self.disp.input
+                then
+                    hasConnection = true
+                    break
+                end
+            end
+            if not hasConnection then
+                self.disp.entity.surface.create_entity {
+                    type = "flying-text",
+                    name = "tutorial-flying-text",
+                    position = self.disp.entity.position,
+                    text = { "yatm.err-not-input-connected" },
+                }
+            end
+        end
+    else
+        self.disp.entity.surface.create_entity {
+            type = "flying-text",
+            name = "tutorial-flying-text",
+            position = self.disp.entity.position,
+            text = { "yatm.err-no-station" },
+        }
+    end
 end
 
 ---@return GuiModel
@@ -252,9 +284,9 @@ function DispGui:_create()
                             { type = "flow", direction = "vertical", _name = DIV_COMMON, _sub = {
                                 { type = "line" },
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
-                                    { type = "label", caption = { "yatm-gui.nets" } },
-                                    { type = "textfield", _name = EL_NETWORKS, text = "1", numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                    { type = "label", caption = { "yatm-gui.comps" } },
+                                    { type = "label", caption = { "yatm-gui.nets" }, tooltip = { "yatm-gui.nets-tt" } },
+                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "yatm-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "label", caption = { "yatm-gui.comps" }, tooltip = { "yatm-gui.comps-tt" } },
                                     { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "yatm-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
                                     --[[{ type = "flow", direction = "horizontal", _sub = {
                                         { type = "sprite-button", _share = EL_COMPS_BUTTON, _value = ", ", sprite = nil }
@@ -326,6 +358,16 @@ function DispGui:_create()
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70 } },
+                            } },
+                            { type = "table", column_count = 3, _name = EL_DEPOT_STAT_TABLE, vertical_centering = false, _style1 = { width = 400 },
+                              draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
+                                { type = "label", caption = "", style = "heading_3_label", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = { "yatm-gui.stat-depot-trains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "yatm-gui.stat-depot-freeTrains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                            }, _row = {
+                                { type = "label", caption = "", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                             } },
                             --[[DEBUG]] { type = "line" },
                             --[[DEBUG]] { type = "label", caption = "Debug", style = "caption_label" },
@@ -473,6 +515,9 @@ function DispGui:_updateVisibleAndEnabled()
     guiSetVisible(shares[EL_NETWORKS], data.mode ~= ST_MODE_OFF)
     guiSetVisible(shares[EL_COMPS], data.mode ~= ST_MODE_OFF)
     -- guiSetVisible(shares[EL_COMPS_BUTTONS], data.mode ~= ST_MODE_OFF)
+
+    named[EL_CARGO_STAT_TABLE].visible = data.mode == ST_MODE_BIDI
+    named[EL_DEPOT_STAT_TABLE].visible = data.mode ~= ST_MODE_BIDI
 
     self:_updateCounters()
 end
@@ -924,26 +969,58 @@ function DispGui:updateStopInfo()
             end
         end
 
-        if stop.stat then
-            for name, stat in pairs(stop.stat) do
-                local rowModel = self.statRows[name]
-                if not rowModel then
-                    rowModel = guiAddRow(self.model, EL_CARGO_STAT_TABLE)
-                    self.statRows[name] = rowModel
-                end
-                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] " .. (stat.deliveries and util.format_number(stat.deliveries, false) or "?")
-                rowModel.cells[2].caption = stat.provided and util.format_number(stat.provided, true) or "-"
-                rowModel.cells[3].caption = stat.received and util.format_number(stat.received, true) or "-"
-                rowModel.cells[4].caption = stat.lastTick and util.formattime(game.tick - stat.lastTick) or "-"
-            end
-        end
-        for name, row in pairs(self.statRows) do
-            if not stop.stat or not stop.stat[name] then
-                guiRemoveRow(row)
-            end
-        end
-
         named[EL_STAT_TRAINS].caption = { "yatm-gui.stat-trains", util.format_number(stop.statTrains or 0, false) }
+
+        if stop.isBidi then
+            if stop.stat then
+                for name, stat in pairs(stop.stat) do
+                    local rowModel = self.statRows[name]
+                    if not rowModel then
+                        rowModel = guiAddRow(self.model, EL_CARGO_STAT_TABLE)
+                        self.statRows[name] = rowModel
+                    end
+                    rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] " .. (stat.deliveries and util.format_number(stat.deliveries, false) or "?")
+                    rowModel.cells[2].caption = stat.provided and util.format_number(stat.provided, true) or "-"
+                    rowModel.cells[3].caption = stat.received and util.format_number(stat.received, true) or "-"
+                    rowModel.cells[4].caption = stat.lastTick and util.formattime(game.tick - stat.lastTick) or "-"
+                end
+            end
+            for name, row in pairs(self.statRows) do
+                if not stop.stat or not stop.stat[name] then
+                    guiRemoveRow(row)
+                end
+            end
+        else
+            ---@type table<LocalisedString, {count: number, free: number}>
+            local stats = {}
+            for _, train in pairs(stop.sur.trains) do
+                local name = TrainClass.trainTypeToStr(train.trainType)
+                if isCompatibleNetworks(stop.disp.networks, train.networks)
+                        and ((not stop.compFlags) or stop.compFlags[train.comp])
+                then
+                    stats[name] = stats[name] or { count = 0, free = 0 }
+                    stats[name].count = stats[name].count + 1
+                    if train.isFree then
+                        stats[name].free = stats[name].free + 1
+                    end
+                end
+            end
+            for name, stat in pairs(stats) do
+                local rowModel = self.depotStatRows[name]
+                if not rowModel then
+                    rowModel = guiAddRow(self.model, EL_DEPOT_STAT_TABLE)
+                    self.depotStatRows[name] = rowModel
+                end
+                rowModel.cells[1].caption = name
+                rowModel.cells[2].caption = stat.count
+                rowModel.cells[3].caption = stat.free
+            end
+            for name, row in pairs(self.depotStatRows) do
+                if not stats[name] then
+                    guiRemoveRow(row)
+                end
+            end
+        end
 
         local debug --[[DEBUG]] = true
         if debug then
@@ -965,7 +1042,7 @@ function DispGui:updateStopInfo()
                 for name, v in pairs(stop.deliveryChanges) do
                     if not stop.signalStates[name] then
                         local prefix
-                        prefix = "["..typeOfName(name).."=" .. name .. "] "
+                        prefix = "[" .. typeOfName(name) .. "=" .. name .. "] "
                         debugLines[#debugLines + 1] = prefix .. "!DC=" .. tostring(v)
                     end
                 end

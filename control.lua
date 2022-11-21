@@ -136,9 +136,9 @@ local function entityRemoved(event)
         end
     end
 end
-script.on_event(defines.events.on_pre_player_mined_item, entityRemoved)
+script.on_event(defines.events.on_player_mined_entity, entityRemoved)
 script.on_event(defines.events.on_entity_died, entityRemoved)
-script.on_event(defines.events.on_robot_pre_mined, entityRemoved)
+script.on_event(defines.events.on_robot_mined, entityRemoved)
 script.on_event(defines.events.script_raised_destroy, entityRemoved)
 
 script.on_event(

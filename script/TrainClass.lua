@@ -497,3 +497,13 @@ function TrainClass:assignDepot()
     self:_appendDepot(records, false, self.stop.stopEntity.backer_name)
     self.train.schedule = { current = 1, records = records }
 end
+
+---@param trainType TrainType
+---@return LocalisedString
+function TrainClass.trainTypeToStr(trainType)
+    -- locomotive/cargo-wagon*2
+    local r = string.gsub(string.gsub(string.gsub(trainType, "[^/*]*[a-zA-Z][^/*]*", function(name)
+        return "[entity=" .. name .. "]"
+    end), "/", ""), "*", "×")
+    return r
+end

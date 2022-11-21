@@ -28,7 +28,7 @@ end
 do
     local name = 'yatm-dispatcher'
 
-    local item = table.deepcopy(data.raw["item"]["arithmetic-combinator"])
+    local item = table.deepcopy(data.raw["item"]["train-stop"])
     item.name = name
     item.place_result = name
     item.icon = data.raw["item"]["small-lamp"].icon
@@ -39,6 +39,7 @@ do
             icon = data.raw["item"]["train-stop"].icon,
             icon_size = data.raw["item"]["train-stop"].icon_size,
             icon_mipmaps = data.raw["item"]["train-stop"].icon_mipmaps,
+            scale = .7,
         },
         {
             icon = data.raw["item"]["small-lamp"].icon,
@@ -48,7 +49,7 @@ do
             shift = { -5, 9 }
         },
     }
-    item.order = data.raw["item"]["train-stop"].order
+    item.order = "a[train-system]-f[yatm-dispatcher]"
     item.subgroup = data.raw["item"]["train-stop"].subgroup
 
     local entity = table.deepcopy(data.raw["arithmetic-combinator"]["arithmetic-combinator"])
@@ -69,7 +70,7 @@ do
             height = 8,
             x = 13,
             y = 10,
-            shift = {(x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33},
+            shift = { (x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33 },
             hr_version = {
                 filename = "__base__/graphics/entity/small-electric-pole/hr-small-electric-pole.png",
                 priority = "high",
@@ -77,7 +78,7 @@ do
                 height = 16,
                 x = 28,
                 y = 24,
-                shift = {(x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33},
+                shift = { (x == 2 or x == 3) and .33 or -.33, (x == 0 or x == 3) and .12 or -.33 },
                 scale = 0.5
             }
         }
@@ -88,7 +89,7 @@ do
             height = 8,
             x = 13,
             y = 10,
-            shift = {(x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33},
+            shift = { (x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33 },
             hr_version = {
                 filename = "__base__/graphics/entity/small-electric-pole/hr-small-electric-pole.png",
                 priority = "high",
@@ -96,7 +97,7 @@ do
                 height = 16,
                 x = 28,
                 y = 24,
-                shift = {(x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33},
+                shift = { (x == 1 or x == 2) and .33 or -.33, (x == 2 or x == 3) and .12 or -.33 },
                 scale = 0.5
             }
         }
@@ -169,20 +170,40 @@ do
     entity.right_shift_symbol_sprites = colorLight { r = 1, g = 1, b = 1 }
     entity.and_symbol_sprites = colorLight { r = 0, g = .5, b = 0 }
     entity.or_symbol_sprites = colorLight { r = .5, g = .5, b = 0 }
-    entity.xor_symbol_sprites = colorLight {r = 1, g = .25, b = .18}
+    entity.xor_symbol_sprites = colorLight { r = 1, g = .25, b = .18 }
 
-    local recipe = table.deepcopy(data.raw["recipe"]["arithmetic-combinator"])
+    local recipe = table.deepcopy(data.raw["recipe"]["train-stop"])
     recipe.name = name
     recipe.result = name
     recipe.icons = item.icons
     recipe.ingredients = {
-        { "electronic-circuit", 10 },
-        { "copper-cable", 4 },
+        { "advanced-circuit", 1 },
+        { "copper-cable", 2 },
         { "small-lamp", 1 },
     }
-    recipe.enabled = true
+    recipe.enabled = false
 
-    data:extend { item, entity, recipe }
+    local tech = {
+        type = "technology",
+        name = name,
+        icon = item.icon,
+        icon_size = item.icon_size,
+        icon_mipmaps = item.icon_mipmaps,
+        icons = item.icons,
+        prerequisites = { "automated-rail-transportation", "circuit-network", "advanced-electronics" },
+        effects = { { type = "unlock-recipe", recipe = name } },
+        unit = {
+            count = 100,
+            time = 30,
+            ingredients = {
+                { "automation-science-pack", 1 },
+                { "logistic-science-pack", 1 },
+            },
+        },
+        order = "c-g-c"
+    }
+
+    data:extend { item, entity, recipe, tech }
 end
 
 data:extend {

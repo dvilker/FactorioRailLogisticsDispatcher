@@ -628,7 +628,6 @@ function SurClass:removeStop(uid)
     local stop = self.stops[uid]
     if stop then
         stop.valid = false
-        self.mode = ST_MODE_OFF
         self:updateStop(stop)
     end
 end

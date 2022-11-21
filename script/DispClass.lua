@@ -164,7 +164,7 @@ function DispClass.handleRemoved(entity)
             radius = 2,
         })
         for _, disp in pairs(disps) do
-            global.disps[disp.unit_number]:_findStop()
+            global.disps[disp.unit_number]:_findStop(entity)
         end
     end
 end
@@ -186,9 +186,11 @@ function DispClass.cleanupRemovedSettings()
     end
 end
 
-function DispClass:_findStop()
+---@param excludedStop LuaEntity
+---@overload fun()
+function DispClass:_findStop(excludedStop)
     if self.stop then
-        if self.stop.stopEntity.valid then
+        if self.stop.stopEntity.valid and self.stop.stopEntity ~= excludedStop then
             return
         else
             self.stop.sur:removeStop(self.stop.uid)
@@ -203,7 +205,7 @@ function DispClass:_findStop()
         radius = 2,
     })
     for _, stopEntity in pairs(stops) do
-        if stopEntity.valid then
+        if stopEntity.valid and stopEntity ~= excludedStop then
             if not sur or not sur.stops[stopEntity.unit_number] then
                 sur = sur or SurClass.ofEntity(self.entity)
                 local stop = sur:getOrAddStop(stopEntity, self)
@@ -211,6 +213,14 @@ function DispClass:_findStop()
                 break
             end
         end
+    end
+    if not self.stop then
+        self.entity.surface.create_entity {
+            type = "flying-text",
+            name = "tutorial-flying-text",
+            position = self.entity.position,
+            text = { "yatm.err-no-station" },
+        }
     end
     self:updateVisual()
 end

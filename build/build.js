@@ -33,6 +33,7 @@ const archiver = require('archiver');
 
 const output = fs.createWriteStream(`out/${archiveName}.zip`);
 const archive = archiver('zip');
+const parsedTxtFiles = {}
 
 archive.on('error', function (err) {
     throw err;
@@ -52,6 +53,38 @@ for (let fn of fileList) {
 }
 archive.finalize();
 
+function parseTxtFile(fileName) {
+    if (parsedTxtFiles.hasOwnProperty(fileName)) {
+        return parsedTxtFiles[fileName]
+    }
+    let parsed = {}
+    let lines = fs.readFileSync(fileName).toString("utf8").split(/\n/g)
+    let head = null
+    for (let line of lines) {
+        let r = /^#####\s*([^#]+)$/.exec(line)
+        if (r) {
+            head = r[1].trim()
+        } else if (head) {
+            if (!parsed[head]) {
+                parsed[head] = line.trim()
+            } else {
+                parsed[head] = parsed[head] + "\n" + line.trim()
+            }
+        }
+    }
+    for (let key in parsed) {
+        if (parsed.hasOwnProperty(key)) {
+            parsed[key] = parsed[key].trim().replace(/\n/g, "\\n")
+        }
+    }
+    for (let key in parsed) {
+        if (parsed.hasOwnProperty(key)) {
+            parsed[key] = parsed[key].replace(/##([^#]+)##/g, (_, r) => parsed[r])
+        }
+    }
+    parsedTxtFiles[fileName] = parsed
+    return parsed
+}
 
 function prepareLocaleCfg(fileName) {
     let oldContents = fs.readFileSync(fileName).toString("utf8")
@@ -59,9 +92,9 @@ function prepareLocaleCfg(fileName) {
     let newValue = null
     for (let i = 0; i < contents.length; i++) {
         let line = contents[i];
-        let r = /^#from:(.*)$/.exec(line)
+        let r = /^#from:(.*)#(.*)$/.exec(line)
         if (r) {
-            newValue = fs.readFileSync(fileName.replace(/[^/]+$/, '') + r[1]).toString("utf8").replace(/\n/g, "\\n")
+            newValue = (parseTxtFile(fileName.replace(/[^/]+$/, '') + r[1])[r[2]] || "?").replace(/\n/g, "\\n")
         } else if (newValue) {
             contents[i] = line.replace(/^([^=]+)=.*$/, (_, n) => n + "=" + newValue)
             newValue = null
