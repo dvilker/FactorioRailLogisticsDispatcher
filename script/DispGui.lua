@@ -497,7 +497,7 @@ function DispGui:_updateVisibleAndEnabled()
     named[FLAG_flagReverseLocos].visible = false --[[not implemented]] and true
     named[FLAG_flagUseSignals].visible = data.mode == ST_MODE_BIDI or data.mode == ST_MODE_OFF or data.mode == ST_MODE_CLEAN or data.mode == ST_MODE_FUEL
     named[FLAG_flagUseEquals].visible = data.mode == ST_MODE_BIDI
-    named[FLAG_flagMute].visible = data.mode ~= ST_MODE_OFF
+    named[FLAG_flagMute].visible = false --[[not implemented]] and data.mode ~= ST_MODE_OFF
     named[FLAG_flagBuild].visible = false --[[not implemented]] and data.mode == ST_MODE_DEPOT
     named[FLAG_flagDestroy].visible = false --[[not implemented]] and data.mode == ST_MODE_DEPOT
     named[FLAG_flagTamp].visible = data.mode == ST_MODE_BIDI
