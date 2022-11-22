@@ -2,7 +2,7 @@
 data:extend({
   {
     type = "int-setting",
-    name = "yatm-dispatcherSignalSlotCount",
+    name = "viirld-dispatcherSignalSlotCount",
     order = "aa",
     setting_type = "startup",
     default_value = 30,
@@ -11,7 +11,7 @@ data:extend({
   },
   {
     type = "int-setting",
-    name = "yatm-minEnergyUseTrain",
+    name = "viirld-minEnergyUseTrain",
     order = "ab",
     setting_type = "runtime-global",
     default_value = 100,
@@ -19,7 +19,7 @@ data:extend({
   },
   {
     type = "int-setting",
-    name = "yatm-fuelScheduleTime",
+    name = "viirld-fuelScheduleTime",
     order = "ac",
     setting_type = "runtime-global",
     default_value = 120,
@@ -27,28 +27,28 @@ data:extend({
   },
   {
     type = "bool-setting",
-    name = "yatm-correctScheduleBeforeProvider",
+    name = "viirld-correctScheduleBeforeProvider",
     order = "ad",
     setting_type = "runtime-global",
     default_value = true
   },
   {
     type = "bool-setting",
-    name = "yatm-correctScheduleAndAtProvider",
+    name = "viirld-correctScheduleAndAtProvider",
     order = "ae",
     setting_type = "runtime-global",
     default_value = true
   },
   {
     type = "bool-setting",
-    name = "yatm-countingInsertersContent",
+    name = "viirld-countingInsertersContent",
     order = "af",
     setting_type = "runtime-global",
     default_value = true
   },
   {
     type = "int-setting",
-    name = "yatm-updateTicks",
+    name = "viirld-updateTicks",
     order = "ag",
     setting_type = "runtime-global",
     default_value = 2,

@@ -126,11 +126,11 @@ script.on_event(
 local function entityBuilt(event)
     local entity = event.created_entity or event.entity
     if entity and entity.valid then
-        DispClass.handleBuilt(entity, event.tags and event.tags["yatm"])
+        DispClass.handleBuilt(entity, event.tags and event.tags["viirld"])
     end
 end
 
-local stopFilter = { { filter = "name", name = "train-stop" }, { filter = "name", name = "yatm-dispatcher" } }
+local stopFilter = { { filter = "name", name = "train-stop" }, { filter = "name", name = "viirld-dispatcher" } }
 
 script.on_event(defines.events.on_built_entity, entityBuilt, --[[---@type ]]stopFilter)
 script.on_event(defines.events.on_robot_built_entity, entityBuilt, --[[---@type ]]stopFilter)
@@ -141,7 +141,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
 local function entityRemoved(event)
     local entity = event.entity
     if entity and entity.valid then
-        if entity.name == "train-stop" or entity.name == "yatm-dispatcher" then
+        if entity.name == "train-stop" or entity.name == "viirld-dispatcher" then
             DispClass.handleRemoved(entity)
         elseif entity.train then
             TrainClass.handleRemoved(entity.surface.index, entity.train.id)
@@ -196,7 +196,7 @@ script.on_event(
         ---@overload fun (event: EventData)
         ---@param event OnPlayerRotatedEntity
         function(event)
-            if event.entity.valid and event.entity.name == 'yatm-dispatcher' then
+            if event.entity.valid and event.entity.name == 'viirld-dispatcher' then
                 if event.entity.direction == defines.direction.north then
                     event.entity.direction = defines.direction.west
                 elseif event.entity.direction == defines.direction.south then
@@ -230,7 +230,7 @@ local function dataToBlueprint(blueprint, mapping)
         if entity.valid then
             local disp = global.disps[entity.unit_number]
             if disp then
-                blueprint.set_blueprint_entity_tag(i, 'yatm', disp:getSettings())
+                blueprint.set_blueprint_entity_tag(i, 'viirld', disp:getSettings())
             end
         end
     end
@@ -272,7 +272,7 @@ script.on_event(
 )
 
 remote.add_interface(
-        "yatm",
+        "viirld",
             --[[---@type]]{
             informatron_menu = function(data)
                 return informatronMenu(data.player_index)

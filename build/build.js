@@ -1,4 +1,4 @@
-const archiveName = 'Yatm'
+const archiveName = 'Viirld'
 
 const fileList = [
     'locale/ru/ru.cfg',

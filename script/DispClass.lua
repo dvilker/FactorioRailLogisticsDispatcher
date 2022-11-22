@@ -60,12 +60,12 @@ end
 function DispClass:_createIO()
     local entity = self.entity
     local input = entity.surface.create_entity {
-        name = "yatm-io",
+        name = "viirld-io",
         position = entity.position,
         force = entity.force
     }
     local output = entity.surface.create_entity {
-        name = "yatm-io",
+        name = "viirld-io",
         position = entity.position,
         force = entity.force
     }
@@ -97,7 +97,7 @@ end
 function DispClass:_removeIO()
     local nearEntities = self.entity.surface.find_entities_filtered({ position = self.entity.position })
     for _, e in pairs(nearEntities) do
-        if e.name == 'yatm-io' or (e.name == 'entity-ghost' and e.ghost_name == 'yatm-io') then
+        if e.name == 'viirld-io' or (e.name == 'entity-ghost' and e.ghost_name == 'viirld-io') then
             e.destroy()
         end
     end
@@ -118,7 +118,7 @@ end
 ---@param entity LuaEntity
 ---@param tags table
 function DispClass.handleBuilt(entity, tags)
-    if entity.name == "yatm-dispatcher" then
+    if entity.name == "viirld-dispatcher" then
         local disp = DispClass.ofEntity(entity)
         if tags then
             disp:setSettings(tags)
@@ -126,7 +126,7 @@ function DispClass.handleBuilt(entity, tags)
     else
         -- stop built
         local disps = entity.surface.find_entities_filtered({
-            name = "yatm-dispatcher",
+            name = "viirld-dispatcher",
             position = entity.position,
             radius = 2,
         })
@@ -138,7 +138,7 @@ end
 
 ---@param entity LuaEntity
 function DispClass.handleRemoved(entity)
-    if entity.name == "yatm-dispatcher" then
+    if entity.name == "viirld-dispatcher" then
         local disp = global.disps[entity.unit_number]
         if disp then
             disp:_removeIO()
@@ -157,7 +157,7 @@ function DispClass.handleRemoved(entity)
     else
         -- stop removed
         local disps = entity.surface.find_entities_filtered({
-            name = "yatm-dispatcher",
+            name = "viirld-dispatcher",
             position = entity.position,
             radius = 2,
         })
@@ -217,7 +217,7 @@ function DispClass:_findStop(excludedStop)
             type = "flying-text",
             name = "tutorial-flying-text",
             position = self.entity.position,
-            text = { "yatm.err-no-station" },
+            text = { "viirld.err-no-station" },
         }
     end
     self:updateVisual()
@@ -438,9 +438,9 @@ end
 ---@param fromEntity LuaEntity
 ---@param toEntity LuaEntity
 function DispClass.handlePaste(fromEntity, toEntity)
-    if toEntity.name == "yatm-dispatcher" then
+    if toEntity.name == "viirld-dispatcher" then
         local to = DispClass.ofEntity(toEntity)
-        if fromEntity.name == "yatm-dispatcher" then
+        if fromEntity.name == "viirld-dispatcher" then
             local from = DispClass.ofEntity(fromEntity)
             to:setSettings(from:getSettings())
         end

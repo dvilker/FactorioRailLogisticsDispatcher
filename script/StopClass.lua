@@ -491,13 +491,13 @@ function StopClass:trainArrived(trainEntity)
                     self:_updateDeliveryChanges()
                     self:updateOutputPort()
                 else
-                    self.stopEntity.force.print({"yatm.err-train-not-by-schedule", trainEntity.id, self.stopEntity.unit_number})
+                    self.stopEntity.force.print({"viirld.err-train-not-by-schedule", trainEntity.id, self.stopEntity.unit_number})
                 end
             else
-                self.stopEntity.force.print({"yatm.err-unknown-delivery", trainEntity.id, self.stopEntity.unit_number})
+                self.stopEntity.force.print({"viirld.err-unknown-delivery", trainEntity.id, self.stopEntity.unit_number})
             end
         else
-            self.stopEntity.force.print({"yatm.err-unknown-train", trainEntity.id, self.stopEntity.unit_number})
+            self.stopEntity.force.print({"viirld.err-unknown-train", trainEntity.id, self.stopEntity.unit_number})
         end
     end
     self:updateVisual()

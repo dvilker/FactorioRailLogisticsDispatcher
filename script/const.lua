@@ -21,21 +21,21 @@ ST_OUT_EXCHANGE = 3
 
 ---@type table<ST_OUT, { caption: LocalisedString, tooltip: LocalisedString | nil }>
 ST_OUTS = {
-    [ST_OUT_NEED_CONTENTS_NEG] = { caption = {"yatm-gui.out-need-neg"}, tooltip = {"yatm-gui.out-need-neg-tt"} },
-    [ST_OUT_NEED_CONTENTS_POS] = { caption = {"yatm-gui.out-need-pos"}, tooltip = {"yatm-gui.out-need-pos-tt"} },
-    [ST_OUT_EXCHANGE] = { caption = {"yatm-gui.out-exchange"}, tooltip = {"yatm-gui.out-exchange-tt"} },
+    [ST_OUT_NEED_CONTENTS_NEG] = { caption = {"viirld-gui.out-need-neg"}, tooltip = {"viirld-gui.out-need-neg-tt"} },
+    [ST_OUT_NEED_CONTENTS_POS] = { caption = {"viirld-gui.out-need-pos"}, tooltip = {"viirld-gui.out-need-pos-tt"} },
+    [ST_OUT_EXCHANGE] = { caption = {"viirld-gui.out-exchange"}, tooltip = {"viirld-gui.out-exchange-tt"} },
 }
 
 PROVIDE_COLOR = { 0xed, 0x6e, 0x6e }
 REQUEST_COLOR = { 0x69, 0xad, 0xc1 }
 UNDER_MIN_COLOR = { 0xaa, 0xaa, 0xaa }
 
-E_NO_PROVIDER = --[[---@type LocalisedString]] { "yatm-gui.no-provider" }
-E_NO_MIN_PROVIDER = --[[---@type LocalisedString]] { "yatm-gui.no-min-provider" }
-E_NO_TRAIN = --[[---@type LocalisedString]] { "yatm-gui.no-train" }
+E_NO_PROVIDER = --[[---@type LocalisedString]] { "viirld-gui.no-provider" }
+E_NO_MIN_PROVIDER = --[[---@type LocalisedString]] { "viirld-gui.no-min-provider" }
+E_NO_TRAIN = --[[---@type LocalisedString]] { "viirld-gui.no-train" }
 
 ---@type string
-ST_TAG = "yatm"
+ST_TAG = "viirld"
 
 DISP_COLOR_OFF = --[[---@type string]]"*"
 DISP_COLOR_BLUE = --[[---@type string]]"/"

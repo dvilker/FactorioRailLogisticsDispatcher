@@ -142,8 +142,8 @@ function getCountUnits()
         countUnits0 = {}
 
         countUnits0[1] = {
-            caption = { "yatm-units.x1" },
-            tooltip = { "yatm-units.x1-tt" },
+            caption = { "viirld-units.x1" },
+            tooltip = { "viirld-units.x1-tt" },
             item = true,
             fluid = true,
             calc = function(count)
@@ -158,23 +158,23 @@ function getCountUnits()
         --- Cargo
 
         countUnits0[10] = {
-            caption = { "yatm-units.x-stack" },
-            tooltip = { "yatm-units.x-stack-tt" },
+            caption = { "viirld-units.x-stack" },
+            tooltip = { "viirld-units.x-stack-tt" },
             item = true,
             calc = function(count, name)
                 return count * game.item_prototypes[name].stack_size
             end,
             toString = function(count)
                 count = math.floor(count)
-                return { "yatm-units.x-stack-str", util.format_number(count, true) }
+                return { "viirld-units.x-stack-str", util.format_number(count, true) }
             end
         }
 
         if game.entity_prototypes["cargo-wagon"] and game.entity_prototypes["cargo-wagon"].type == "cargo-wagon" then
             local wagonStackCount = game.entity_prototypes["cargo-wagon"].get_inventory_size(defines.inventory.cargo_wagon)
             countUnits0[100] = {
-                caption = { "yatm-units.x-cargo-wagon", "cargo-wagon" },
-                tooltip = { "yatm-units.x-cargo-wagon-tt" },
+                caption = { "viirld-units.x-cargo-wagon", "cargo-wagon" },
+                tooltip = { "viirld-units.x-cargo-wagon-tt" },
                 item = true,
                 float = true,
                 calc = function(count, name)
@@ -182,7 +182,7 @@ function getCountUnits()
                 end,
                 toString = function(count)
                     count = math.floor(count * 100) / 100
-                    return { "yatm-units.x-cargo-wagon-str", util.format_number(count, true) }
+                    return { "viirld-units.x-cargo-wagon-str", util.format_number(count, true) }
                 end
             }
         else
@@ -190,8 +190,8 @@ function getCountUnits()
                 if proto.type == "cargo-wagon" then
                     local wagonStackCount = proto.get_inventory_size(defines.inventory.cargo_wagon)
                     countUnits0[100] = {
-                        caption = { "yatm-units.x-cargo-wagon", proto.name },
-                        tooltip = { "yatm-units.x-cargo-wagon-tt" },
+                        caption = { "viirld-units.x-cargo-wagon", proto.name },
+                        tooltip = { "viirld-units.x-cargo-wagon-tt" },
                         item = true,
                         float = true,
                         calc = function(count, name)
@@ -199,7 +199,7 @@ function getCountUnits()
                         end,
                         toString = function(count)
                             count = math.floor(count * 100) / 100
-                            return { "yatm-units.x-cargo-wagon-str", util.format_number(count, true) }
+                            return { "viirld-units.x-cargo-wagon-str", util.format_number(count, true) }
                         end
                     }
                     break
@@ -212,8 +212,8 @@ function getCountUnits()
         if game.entity_prototypes["fluid-wagon"] and game.entity_prototypes["fluid-wagon"].type == "fluid-wagon" then
             local wagonCapacity = game.entity_prototypes["fluid-wagon"].fluid_capacity
             countUnits0[200] = {
-                caption = { "yatm-units.x-fluid-wagon", "fluid-wagon" },
-                tooltip = { "yatm-units.x-fluid-wagon-tt" },
+                caption = { "viirld-units.x-fluid-wagon", "fluid-wagon" },
+                tooltip = { "viirld-units.x-fluid-wagon-tt" },
                 fluid = true,
                 float = true,
                 calc = function(count, name)
@@ -221,7 +221,7 @@ function getCountUnits()
                 end,
                 toString = function(count)
                     count = math.floor(count * 100) / 100
-                    return { "yatm-units.x-fluid-wagon-str", util.format_number(count, true) }
+                    return { "viirld-units.x-fluid-wagon-str", util.format_number(count, true) }
                 end
             }
         else
@@ -229,8 +229,8 @@ function getCountUnits()
                 if proto.type == "fluid-wagon" then
                     local wagonCapacity = proto.fluid_capacity
                     countUnits0[200] = {
-                        caption = { "yatm-units.x-fluid-wagon", proto.name },
-                        tooltip = { "yatm-units.x-fluid-wagon-tt" },
+                        caption = { "viirld-units.x-fluid-wagon", proto.name },
+                        tooltip = { "viirld-units.x-fluid-wagon-tt" },
                         fluid = true,
                         float = true,
                         calc = function(count, name)
@@ -238,7 +238,7 @@ function getCountUnits()
                         end,
                         toString = function(count)
                             count = math.floor(count * 100) / 100
-                            return { "yatm-units.x-fluid-wagon-str", util.format_number(count, true) }
+                            return { "viirld-units.x-fluid-wagon-str", util.format_number(count, true) }
                         end
                     }
                     break

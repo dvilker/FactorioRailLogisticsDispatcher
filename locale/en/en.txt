@@ -79,7 +79,7 @@ Empty field — any type of train.
 
 ##### informatron
 
-Rail Logistics Dispatcher [item=yatm-dispatcher] — is a small building (looks like a light bulb) that is placed
+Rail Logistics Dispatcher [item=viirld-dispatcher] — is a small building (looks like a light bulb) that is placed
 next to the station.
 
 The dispatcher has two ports (visible in Alt-mode): input and output. With the help of them, the dispatcher receives information about the cargo

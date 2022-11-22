@@ -73,7 +73,7 @@ local preventClose = false
 
 ---@param event OnGuiOpened
 function DispGui.handleGuiOpened(event)
-    if event.entity.name == "yatm-dispatcher" then
+    if event.entity.name == "viirld-dispatcher" then
         local player = --[[---@type LuaPlayer]] game.players[event.player_index]
         ---@type DispGui
         local gui = global.guis[player.index]
@@ -153,7 +153,7 @@ function DispGui:close()
                     type = "flying-text",
                     name = "tutorial-flying-text",
                     position = self.disp.entity.position,
-                    text = { "yatm.err-not-input-connected" },
+                    text = { "viirld.err-not-input-connected" },
                 }
             end
         end
@@ -162,7 +162,7 @@ function DispGui:close()
             type = "flying-text",
             name = "tutorial-flying-text",
             position = self.disp.entity.position,
-            text = { "yatm.err-no-station" },
+            text = { "viirld.err-no-station" },
         }
     end
 end
@@ -176,23 +176,23 @@ function DispGui:_create(name)
             { namedTag = ST_TAG },
             { type = "frame", name = ST_TAG, direction = "vertical", auto_center = true, _style1 = { minimal_height = 600 }, _sub = {
                 { type = "flow", _sub = {
-                    { type = "label", style = "frame_title", caption = { "yatm-gui.window-title", name }, _dragTarget = "" },
-                    { type = "empty-widget", style = "yatm_draggable_space_header", _dragTarget = "" },
-                    { type = "button", caption = { "yatm-gui.rollback" }, style = "yatm_frame_button", _name = EL_ROLLBACK },
-                    { type = "button", caption = { "yatm-gui.apply" }, style = "yatm_frame_button", _name = EL_APPLY },
+                    { type = "label", style = "frame_title", caption = { "viirld-gui.window-title", name }, _dragTarget = "" },
+                    { type = "empty-widget", style = "viirld_draggable_space_header", _dragTarget = "" },
+                    { type = "button", caption = { "viirld-gui.rollback" }, style = "viirld_frame_button", _name = EL_ROLLBACK },
+                    { type = "button", caption = { "viirld-gui.apply" }, style = "viirld_frame_button", _name = EL_APPLY },
                     { type = "sprite-button", _name = EL_CLOSE, style = "close_button", sprite = "utility/close_white", hovered_sprite = "utility/close_black" },
                 } },
                 { type = "flow", direction = "horizontal", _name = DIV_TABS, _sub = {
                     { type = "frame", style = "entity_frame", _style1 = { vertically_stretchable = true }, direction = "vertical", _sub = {
                         { type = "flow", direction = "horizontal", _sub = {
                             { type = "flow", direction = "vertical", _sub = {
-                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_OFF, caption = { "yatm-gui.mode-off" }, tooltip = { "yatm-gui.mode-off-tt" } },
-                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_BIDI, caption = { "yatm-gui.mode-bidi" }, tooltip = { "yatm-gui.mode-bidi-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_OFF, caption = { "viirld-gui.mode-off" }, tooltip = { "viirld-gui.mode-off-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_BIDI, caption = { "viirld-gui.mode-bidi" }, tooltip = { "viirld-gui.mode-bidi-tt" } },
                             } },
                             { type = "flow", direction = "vertical", _style1 = STYLE_MARGIN, _sub = {
-                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_DEPOT, caption = { "yatm-gui.mode-depot" }, tooltip = { "yatm-gui.mode-depot-tt" } },
-                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_FUEL, caption = { "yatm-gui.mode-fuel" }, tooltip = { "yatm-gui.mode-fuel-tt" } },
-                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_CLEAN, caption = { "yatm-gui.mode-clean" }, tooltip = { "yatm-gui.mode-clean-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_DEPOT, caption = { "viirld-gui.mode-depot" }, tooltip = { "viirld-gui.mode-depot-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_FUEL, caption = { "viirld-gui.mode-fuel" }, tooltip = { "viirld-gui.mode-fuel-tt" } },
+                                { type = "radiobutton", state = false, _share = EL_MODE, _value = ST_MODE_CLEAN, caption = { "viirld-gui.mode-clean" }, tooltip = { "viirld-gui.mode-clean-tt" } },
                             } },
                         } },
                         { type = "flow", direction = "vertical", _sub = {
@@ -203,17 +203,17 @@ function DispGui:_create(name)
                                             function()
                                                 ---@type GuiDef[]
                                                 local buttons = {}
-                                                buttons[#buttons + 1] = { type = "choose-elem-button", _share = EL_ITEM_BUTTON, _value = -1, tooltip = { "yatm-gui.item-other-tt" }, style = "yatm_slot_button", elem_type = "signal", elem_value = { type = "virtual", name = "signal-anything" }, locked = true, _sub = {
+                                                buttons[#buttons + 1] = { type = "choose-elem-button", _share = EL_ITEM_BUTTON, _value = -1, tooltip = { "viirld-gui.item-other-tt" }, style = "viirld_slot_button", elem_type = "signal", elem_value = { type = "virtual", name = "signal-anything" }, locked = true, _sub = {
                                                     { type = "flow", direction = "vertical", _style1 = { top_padding = 9 }, ignored_by_interaction = true, _sub = {
-                                                        { type = "label", caption = "R", ignored_by_interaction = true, style = "yatm_count_label" },
-                                                        { type = "label", caption = "M", ignored_by_interaction = true, style = "yatm_count_label" },
+                                                        { type = "label", caption = "R", ignored_by_interaction = true, style = "viirld_count_label" },
+                                                        { type = "label", caption = "M", ignored_by_interaction = true, style = "viirld_count_label" },
                                                     } }
                                                 } }
                                                 for i = 1, dispatcherSignalSlotCount - 1 do
-                                                    buttons[#buttons + 1] = { type = "choose-elem-button", _share = EL_ITEM_BUTTON, _value = i, style = "yatm_slot_button", elem_type = "signal", _sub = {
+                                                    buttons[#buttons + 1] = { type = "choose-elem-button", _share = EL_ITEM_BUTTON, _value = i, style = "viirld_slot_button", elem_type = "signal", _sub = {
                                                         { type = "flow", direction = "vertical", _style1 = { top_padding = 9 }, ignored_by_interaction = true, _sub = {
-                                                            { type = "label", caption = "R", ignored_by_interaction = true, style = "yatm_count_label" },
-                                                            { type = "label", caption = "M", ignored_by_interaction = true, style = "yatm_count_label" },
+                                                            { type = "label", caption = "R", ignored_by_interaction = true, style = "viirld_count_label" },
+                                                            { type = "label", caption = "M", ignored_by_interaction = true, style = "viirld_count_label" },
                                                         } }
                                                     } }
                                                 end
@@ -223,34 +223,34 @@ function DispGui:_create(name)
                                 } },
                                 { type = "flow", direction = "vertical", style = "vertical_flow", _name = DIV_ITEM, _sub = {
                                     { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
-                                        { type = "label", caption = { "yatm-gui.item-request" } },
+                                        { type = "label", caption = { "viirld-gui.item-request" } },
                                         { type = "flow", direction = "horizontal", _sub = {
                                             { type = "textfield", _name = EL_ITEM_REQUEST, text = "1000", numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                            { type = "button", _name = EL_ITEM_REQUEST_UNIT, style = "yatm_unit" },
+                                            { type = "button", _name = EL_ITEM_REQUEST_UNIT, style = "viirld_unit" },
                                         } },
-                                        { type = "label", caption = { "yatm-gui.item-min" }, _name = EL_ITEM_MIN_LABEL, tooltip = { "yatm-gui.item-min-tt" } },
+                                        { type = "label", caption = { "viirld-gui.item-min" }, _name = EL_ITEM_MIN_LABEL, tooltip = { "viirld-gui.item-min-tt" } },
                                         { type = "flow", direction = "horizontal", _sub = {
                                             { type = "textfield", _name = EL_ITEM_MIN, text = "500", numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                            { type = "button", _name = EL_ITEM_MIN_UNIT, style = "yatm_unit" },
+                                            { type = "button", _name = EL_ITEM_MIN_UNIT, style = "viirld_unit" },
                                         } },
-                                        { type = "label", caption = { "yatm-gui.item-other-min-cargo" }, tooltip = { "yatm-gui.item-other-min-cargo-tt" } },
+                                        { type = "label", caption = { "viirld-gui.item-other-min-cargo" }, tooltip = { "viirld-gui.item-other-min-cargo-tt" } },
                                         { type = "flow", direction = "horizontal", _sub = {
                                             { type = "textfield", _name = EL_ANY_MIN_CARGO, text = "500", numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                            { type = "button", _name = EL_ANY_MIN_CARGO_UNIT, style = "yatm_unit" },
+                                            { type = "button", _name = EL_ANY_MIN_CARGO_UNIT, style = "viirld_unit" },
                                         } },
-                                        { type = "label", caption = { "yatm-gui.item-other-min-fluid" }, tooltip = { "yatm-gui.item-other-min-fluid-tt" } },
+                                        { type = "label", caption = { "viirld-gui.item-other-min-fluid" }, tooltip = { "viirld-gui.item-other-min-fluid-tt" } },
                                         { type = "flow", direction = "horizontal", _sub = {
                                             { type = "textfield", _name = EL_ANY_MIN_FLUID, text = "500", numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                            { type = "button", _name = EL_ANY_MIN_FLUID_UNIT, style = "yatm_unit" },
+                                            { type = "button", _name = EL_ANY_MIN_FLUID_UNIT, style = "viirld_unit" },
                                         } },
                                     } },
-                                    { type = "label", caption = { "yatm-gui.connect-tip" }, _style1 = { single_line = false } },
+                                    { type = "label", caption = { "viirld-gui.connect-tip" }, _style1 = { single_line = false } },
                                     { type = "flow", direction = "horizontal", _sub = (
                                             function()
                                                 ---@type GuiDef[]
                                                 local buttons = {}
                                                 for i = 1, 8 do
-                                                    buttons[#buttons + 1] = { type = "button", _share = EL_ITEM_MEM_BUTTON, _value = i, style = "yatm_mem", caption = "m" .. tostring(i), tooltip = { "yatm-gui.mem-tt" } }
+                                                    buttons[#buttons + 1] = { type = "button", _share = EL_ITEM_MEM_BUTTON, _value = i, style = "viirld_mem", caption = "m" .. tostring(i), tooltip = { "viirld-gui.mem-tt" } }
                                                 end
                                                 return buttons
                                             end)()
@@ -263,15 +263,15 @@ function DispGui:_create(name)
                             { type = "flow", direction = "vertical", _sub = (function()
                                 ---@type GuiDef[]
                                 local sub = {
-                                    { type = "checkbox", _name = FLAG_flagMute, caption = { "yatm-gui.cb-flagMute" }, tooltip = { "yatm-gui.cb-flagMute-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = { "yatm-gui.cb-flagUseSignals" }, tooltip = { "yatm-gui.cb-flagUseSignals-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = { "yatm-gui.cb-flagUseEquals" }, tooltip = { "yatm-gui.cb-flagUseEquals-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagTamp, caption = { "yatm-gui.cb-flagTamp" }, tooltip = { "yatm-gui.cb-flagTamp-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "yatm-gui.cb-flagTurnInserters" }, tooltip = { "yatm-gui.cb-flagTurnInserters-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "yatm-gui.cb-flagReverseLocos" }, tooltip = { "yatm-gui.cb-flagReverseLocos-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "yatm-gui.cb-flagAllowMulti" }, tooltip = { "yatm-gui.cb-flagAllowMulti-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagBuild, caption = { "yatm-gui.cb-flagBuild" }, tooltip = { "yatm-gui.cb-flagBuild-tt" } },
-                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = { "yatm-gui.cb-flagDestroy" }, tooltip = { "yatm-gui.cb-flagDestroy-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagMute, caption = { "viirld-gui.cb-flagMute" }, tooltip = { "viirld-gui.cb-flagMute-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseSignals, caption = { "viirld-gui.cb-flagUseSignals" }, tooltip = { "viirld-gui.cb-flagUseSignals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagUseEquals, caption = { "viirld-gui.cb-flagUseEquals" }, tooltip = { "viirld-gui.cb-flagUseEquals-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTamp, caption = { "viirld-gui.cb-flagTamp" }, tooltip = { "viirld-gui.cb-flagTamp-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagTurnInserters, caption = { "viirld-gui.cb-flagTurnInserters" }, tooltip = { "viirld-gui.cb-flagTurnInserters-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagReverseLocos, caption = { "viirld-gui.cb-flagReverseLocos" }, tooltip = { "viirld-gui.cb-flagReverseLocos-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagAllowMulti, caption = { "viirld-gui.cb-flagAllowMulti" }, tooltip = { "viirld-gui.cb-flagAllowMulti-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagBuild, caption = { "viirld-gui.cb-flagBuild" }, tooltip = { "viirld-gui.cb-flagBuild-tt" } },
+                                    { type = "checkbox", _name = FLAG_flagDestroy, caption = { "viirld-gui.cb-flagDestroy" }, tooltip = { "viirld-gui.cb-flagDestroy-tt" } },
                                 }
                                 for value, data in pairs(ST_OUTS) do
                                     sub[#sub + 1] = { type = "radiobutton", state = false, _share = OPT_OUT_MODE, _value = value, caption = data.caption, tooltip = data.tooltip }
@@ -281,10 +281,10 @@ function DispGui:_create(name)
                             { type = "flow", direction = "vertical", _name = DIV_COMMON, _sub = {
                                 { type = "line" },
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
-                                    { type = "label", caption = { "yatm-gui.nets" }, tooltip = { "yatm-gui.nets-tt" } },
-                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "yatm-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
-                                    { type = "label", caption = { "yatm-gui.comps" }, tooltip = { "yatm-gui.comps-tt" } },
-                                    { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "yatm-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
+                                    { type = "label", caption = { "viirld-gui.nets" }, tooltip = { "viirld-gui.nets-tt" } },
+                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "label", caption = { "viirld-gui.comps" }, tooltip = { "viirld-gui.comps-tt" } },
+                                    { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "viirld-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
                                     --[[{ type = "flow", direction = "horizontal", _sub = {
                                         { type = "sprite-button", _share = EL_COMPS_BUTTON, _value = ", ", sprite = nil }
                                     }},
@@ -313,12 +313,12 @@ function DispGui:_create(name)
                     } },
                     { type = "scroll-pane", style = "scroll_pane", horizontal_scroll_policy = "never", vertical_scroll_policy = "always", _style1 = { vertically_stretchable = true, padding = 6 }, direction = "vertical", _share = TAB_STATUS, _sub = {
                         { type = "flow", direction = "vertical", _style1 = { vertically_stretchable = true, vertical_spacing = 8 }, _sub = {
-                            { type = "label", caption = { "yatm-gui.req-prov-head", table.concat(REQUEST_COLOR, ','), table.concat(PROVIDE_COLOR, ',') }, style = "caption_label" },
+                            { type = "label", caption = { "viirld-gui.req-prov-head", table.concat(REQUEST_COLOR, ','), table.concat(PROVIDE_COLOR, ',') }, style = "caption_label" },
                             { type = "table", column_count = 4, _name = EL_IO_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
                                 { type = "label", caption = "", style = "heading_3_label" },
-                                { type = "label", caption = { "yatm-gui.req-prov-count" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = { "yatm-gui.req-prov-on-way" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.req-prov-count" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.req-prov-on-way" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", style = "heading_3_label", },
                             }, _row = {
                                 { type = "label", caption = "" },
@@ -327,12 +327,12 @@ function DispGui:_create(name)
                                 { type = "label", caption = "" },
                             } },
                             { type = "line" },
-                            { type = "label", caption = { "yatm-gui.deliveries-head" }, style = "caption_label" },
+                            { type = "label", caption = { "viirld-gui.deliveries-head" }, style = "caption_label" },
                             { type = "table", column_count = 3, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                                { type = "label", caption = { "yatm-gui.deliveries-from" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                                { type = "label", caption = { "yatm-gui.deliveries-to" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
-                                { type = "label", caption = { "yatm-gui.deliveries-time" }, style = "heading_3_label" },
+                                { type = "label", caption = { "viirld-gui.deliveries-from" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = { "viirld-gui.deliveries-to" }, style = "heading_3_label", _style1 = { minimal_width = 150 } },
+                                { type = "label", caption = { "viirld-gui.deliveries-time" }, style = "heading_3_label" },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { single_line = false } },
                                 { type = "label", caption = "", _style1 = { single_line = false } },
@@ -340,16 +340,16 @@ function DispGui:_create(name)
                             } },
                             { type = "line" },
                             { type = "flow", direction = "horizontal", _sub = {
-                                { type = "label", caption = { "yatm-gui.stat-head" }, style = "caption_label" },
+                                { type = "label", caption = { "viirld-gui.stat-head" }, style = "caption_label" },
                                 { type = "empty-widget", _style1 = { horizontally_stretchable = "on" } },
-                                { type = "label", caption = { "yatm-gui.stat-trains", 0 }, _name = EL_STAT_TRAINS },
+                                { type = "label", caption = { "viirld-gui.stat-trains", 0 }, _name = EL_STAT_TRAINS },
                             } },
                             { type = "table", column_count = 4, _name = EL_CARGO_STAT_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
-                                { type = "label", caption = { "yatm-gui.stat-count" }, style = "heading_3_label", _style1 = { minimal_width = 70 } },
-                                { type = "label", caption = { "yatm-gui.stat-sent" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = { "yatm-gui.stat-recv" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = { "yatm-gui.stat-lastTime" }, style = "heading_3_label" },
+                                { type = "label", caption = { "viirld-gui.stat-count" }, style = "heading_3_label", _style1 = { minimal_width = 70 } },
+                                { type = "label", caption = { "viirld-gui.stat-sent" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.stat-recv" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.stat-lastTime" }, style = "heading_3_label" },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { minimal_width = 70 } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
@@ -359,8 +359,8 @@ function DispGui:_create(name)
                             { type = "table", column_count = 3, _name = EL_DEPOT_STAT_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
                                 { type = "label", caption = "", style = "heading_3_label", _style1 = { minimal_width = 70 } },
-                                { type = "label", caption = { "yatm-gui.stat-depot-trains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
-                                { type = "label", caption = { "yatm-gui.stat-depot-freeTrains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.stat-depot-trains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
+                                { type = "label", caption = { "viirld-gui.stat-depot-freeTrains" }, style = "heading_3_label", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { minimal_width = 70 } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
@@ -449,30 +449,30 @@ function DispGui:_updateMemButtons()
         global.mem[forceIndex][self.selectedItem.type] = global.mem[forceIndex][self.selectedItem.type] or {}
         for _, el in pairs(shares[EL_ITEM_MEM_BUTTON]) do
             local v = global.mem[forceIndex][self.selectedItem.type][el.tags._value]
-            el.style = v and "yatm_mem_active" or "yatm_mem"
+            el.style = v and "viirld_mem_active" or "viirld_mem"
             if v then
-                el.tooltip = { "", { "yatm-gui.mem-item-tt" }, {
-                    "yatm-gui.mem-item-active-tt",
-                    validCountWithUnits(v.request) and countWithUnitsToString2(v.request) or { "yatm-gui.mem-item-no-req" },
-                    validCountWithUnits(v.min) and countWithUnitsToString2(v.min) or { "yatm-gui.mem-item-no-min" }
+                el.tooltip = { "", { "viirld-gui.mem-item-tt" }, {
+                    "viirld-gui.mem-item-active-tt",
+                    validCountWithUnits(v.request) and countWithUnitsToString2(v.request) or { "viirld-gui.mem-item-no-req" },
+                    validCountWithUnits(v.min) and countWithUnitsToString2(v.min) or { "viirld-gui.mem-item-no-min" }
                 } }
             else
-                el.tooltip = { "yatm-gui.mem-item-tt" }
+                el.tooltip = { "viirld-gui.mem-item-tt" }
             end
         end
     else
         global.mem[forceIndex].other = global.mem[forceIndex].other or {}
         for _, el in pairs(shares[EL_ITEM_MEM_BUTTON]) do
             local v = global.mem[forceIndex].other[el.tags._value]
-            el.style = v and "yatm_mem_active" or "yatm_mem"
+            el.style = v and "viirld_mem_active" or "viirld_mem"
             if v then
-                el.tooltip = { "", { "yatm-gui.mem-item-tt" }, {
-                    "yatm-gui.mem-other-active-tt",
-                    validCountWithUnits(v.otherCargoMin) and countWithUnitsToString2(v.otherCargoMin) or { "yatm-gui.mem-other-no-cargo" },
-                    validCountWithUnits(v.otherFluidMin) and countWithUnitsToString2(v.otherFluidMin) or { "yatm-gui.mem-other-no-fluid" }
+                el.tooltip = { "", { "viirld-gui.mem-item-tt" }, {
+                    "viirld-gui.mem-other-active-tt",
+                    validCountWithUnits(v.otherCargoMin) and countWithUnitsToString2(v.otherCargoMin) or { "viirld-gui.mem-other-no-cargo" },
+                    validCountWithUnits(v.otherFluidMin) and countWithUnitsToString2(v.otherFluidMin) or { "viirld-gui.mem-other-no-fluid" }
                 } }
             else
-                el.tooltip = { "yatm-gui.mem-item-tt" }
+                el.tooltip = { "viirld-gui.mem-item-tt" }
             end
         end
     end
@@ -854,7 +854,7 @@ function DispGui:_updateElemButtons(element)
         self.selectedItem = nil
     end
     for _, el in pairs(self.model.shares[EL_ITEM_BUTTON]) do
-        el.style = self.selectedButton == el.tags._value and "yatm_slot_button_selected" or "yatm_slot_button"
+        el.style = self.selectedButton == el.tags._value and "viirld_slot_button_selected" or "viirld_slot_button"
         if el ~= element and self.selectedButton ~= nil then
             el.locked = not not el.elem_value
         end
@@ -956,7 +956,7 @@ function DispGui:updateStopInfo()
             end
         end
 
-        named[EL_STAT_TRAINS].caption = { "yatm-gui.stat-trains", util.format_number(stop.statTrains or 0, false) }
+        named[EL_STAT_TRAINS].caption = { "viirld-gui.stat-trains", util.format_number(stop.statTrains or 0, false) }
 
         if stop.isBidi then
             if stop.stat then

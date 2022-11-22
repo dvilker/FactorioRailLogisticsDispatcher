@@ -8,7 +8,7 @@ local empty4 = {
 }
 
 do
-    local name = 'yatm-io'
+    local name = 'viirld-io'
     local entity = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
     entity.name = name
     entity.minable = nil
@@ -26,7 +26,7 @@ do
 end
 
 do
-    local name = 'yatm-dispatcher'
+    local name = 'viirld-dispatcher'
 
     local item = table.deepcopy(data.raw["item"]["train-stop"])
     item.name = name
@@ -49,7 +49,7 @@ do
             shift = { -5, 9 }
         },
     }
-    item.order = "a[train-system]-f[yatm-dispatcher]"
+    item.order = "a[train-system]-f[viirld-dispatcher]"
     item.subgroup = data.raw["item"]["train-stop"].subgroup
 
     local entity = table.deepcopy(data.raw["arithmetic-combinator"]["arithmetic-combinator"])
@@ -209,7 +209,7 @@ end
 data:extend {
     {
         type = "sprite",
-        name = "yatm_stack",
+        name = "viirld_stack",
         filename = "__core__/graphics/icons/technology/effect-constant/effect-constant-capacity.png",
         priority = "medium",
         width = 32 + 4,
@@ -222,7 +222,7 @@ data:extend {
 
 local style = data.raw["gui-style"].default
 
-style.yatm_count_label = {
+style.viirld_count_label = {
     type = "label_style",
     parent = "count_label",
     width = 36,
@@ -231,41 +231,41 @@ style.yatm_count_label = {
     --vertical_align = "bottom",
 }
 
-style.yatm_slot_button = {
+style.viirld_slot_button = {
     type = "button_style",
     parent = "slot_button",
 }
 
-style.yatm_slot_button_selected = {
+style.viirld_slot_button_selected = {
     type = "button_style",
-    parent = "yatm_slot_button",
+    parent = "viirld_slot_button",
     default_graphical_set = style.slot_button.selected_graphical_set,
     hovered_graphical_set = style.slot_button.selected_hovered_graphical_set,
     clicked_graphical_set = style.slot_button.selected_clicked_graphical_set,
 }
 
-style.yatm_unit = {
+style.viirld_unit = {
     type = "button_style",
     parent = "button",
     minimal_width = 20,
 }
 
-style.yatm_mem = {
+style.viirld_mem = {
     type = "button_style",
     parent = "button",
     minimal_width = 20,
 }
 
 local activeColor = { 0, 0.3, 0 }
-style.yatm_mem_active = {
+style.viirld_mem_active = {
     type = "button_style",
-    parent = "yatm_mem",
+    parent = "viirld_mem",
     default_font_color = activeColor,
     hovered_font_color = activeColor,
     clicked_font_color = activeColor,
 }
 
-style.yatm_draggable_space_header = {
+style.viirld_draggable_space_header = {
     type = "empty_widget_style",
     parent = "draggable_space_header",
     horizontally_stretchable = "on",
@@ -276,7 +276,7 @@ style.yatm_draggable_space_header = {
 
 local whileColor = { 1, 1, 1 }
 
-style.yatm_frame_button = {
+style.viirld_frame_button = {
     type = "button_style",
     parent = "frame_button",
     height = 24,
@@ -286,7 +286,7 @@ style.yatm_frame_button = {
     left_click_sound = { { filename = "__core__/sound/gui-tool-button.ogg", volume = 1 } }
 }
 
-style.yatm_tabbed_pane = table.deepcopy(style.tabbed_pane)
-style.yatm_tabbed_pane.tab_content_frame.right_padding = 7
-style.yatm_tabbed_pane.tab_content_frame.left_padding = 7
-style.yatm_tabbed_pane.tab_content_frame.bottom_padding = 7
+style.viirld_tabbed_pane = table.deepcopy(style.tabbed_pane)
+style.viirld_tabbed_pane.tab_content_frame.right_padding = 7
+style.viirld_tabbed_pane.tab_content_frame.left_padding = 7
+style.viirld_tabbed_pane.tab_content_frame.bottom_padding = 7
