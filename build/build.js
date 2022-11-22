@@ -31,10 +31,14 @@ const fileList = [
 ]
 
 const fs = require('fs')
-const archiver = require('archiver');
+const archiver = require('archiver')
+const zipFile = `out/${archiveName}.zip`
 
-const output = fs.createWriteStream(`out/${archiveName}.zip`);
-const archive = archiver('zip');
+if (fs.existsSync(zipFile)) {
+    fs.unlinkSync(zipFile)
+}
+const output = fs.createWriteStream(zipFile);
+const archive = archiver('zip', {decodeStrings: false, zlib: {level: 9}});
 const parsedTxtFiles = {}
 
 archive.on('error', function (err) {
@@ -47,7 +51,7 @@ for (let fn of fileList) {
     if (/^locale\/.*\.cfg$/) {
         prepareLocaleCfg('../' + fn)
     }
-    if (/\.lua$/) {
+    if (/\.lua$/.test(fn)) {
         archive.append(getLuaContent('../' + fn), {name: `${archiveName}/${fn}`})
     } else {
         archive.file('../' + fn, {name: `${archiveName}/${fn}`})

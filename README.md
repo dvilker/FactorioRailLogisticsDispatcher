@@ -14,7 +14,7 @@ This mod is similar to the famous LTN mod with the following differences:
 | Dispatcher has GUI and can also be configured with a permanent combinator         | Needs constant combinator for setup                                             |
 | Optimized for multi-cargo deliveries (first motivation to write this mod)         | Supports multi-cargo delivery, but due to bugs it is impossible to fully use it |
 | MIT license. Modders of all countries unite! (second motivation) | Restrictive license                                                             |
-n
+
 
 Minor features:
 
