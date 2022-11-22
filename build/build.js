@@ -27,6 +27,7 @@ const fileList = [
     'LICENSE',
     'README.md',
     'settings.lua',
+    'thumbnail.png',
 ]
 
 const fs = require('fs')
