@@ -23,6 +23,7 @@ const fileList = [
     'control.lua',
     'data.lua',
     'data-updates.lua',
+    'data-final-fixes.lua',
     'info.json',
     'LICENSE',
     'README.md',

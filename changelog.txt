@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.7
+Date: 2022.11.24
+  Changes:
+    - Technology now costs as Rail Signals multiplied by 1.5
+    - With "pyindustry" mod technology costs as Rail Signals and recipe contains Electronic circuit instead Advanced circuit
+---------------------------------------------------------------------------------------------------
 Version: 0.0.6
 Date: 2022.11.21
   Changes:

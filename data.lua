@@ -192,17 +192,10 @@ do
         icons = item.icons,
         prerequisites = { "automated-rail-transportation", "circuit-network", "advanced-electronics" },
         effects = { { type = "unlock-recipe", recipe = name } },
-        unit = {
-            count = 100,
-            time = 30,
-            ingredients = {
-                { "automation-science-pack", 1 },
-                { "logistic-science-pack", 1 },
-            },
-        },
+        unit = table.deepcopy(data.raw["technology"]["rail-signals"].unit),
         order = "c-g-c"
     }
-
+    tech.unit.count = math.floor(tech.unit.count * 1.5)
     data:extend { item, entity, recipe, tech }
 end
 
