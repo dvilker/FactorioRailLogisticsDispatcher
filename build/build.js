@@ -3,7 +3,7 @@ const archiveName = 'Viirld'
 const fileList = [
     'locale/ru/ru.cfg',
     'locale/en/en.cfg',
-
+    'migrations/toTypeAndName.lua',
     'script/informatron.lua',
     'script/compositions.lua',
     'script/config.lua',

@@ -7,7 +7,7 @@
     ---@field valid boolean
     ---@field provider StopClass
     ---@field requester StopClass
-    ---@field contents table<string, number>
+    ---@field contents table<TypeAndName, number>
     ---@field providerPassed boolean
     ---@field requesterPassed boolean
     ---@field train TrainClass @nullable

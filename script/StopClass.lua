@@ -24,7 +24,7 @@
     ---@field stopEntity LuaEntity @ train stop entity
     ---@field sur SurClass @ surface of stop
     ---@field prevMode ST_MODE @ for mode change detection
-    ---@field signalStates table<string, StopSignalState> @ cargo signals with state (item/fluid name -> StopSignalState)
+    ---@field signalStates table<TypeAndName, StopSignalState> @ cargo signals with state (item/fluid name -> StopSignalState)
     ---@field isBidi true|nil @ is stop uses for cargo exchange
     ---@field isDepot true|nil @ is stop is depot
     ---@field isClean true|nil @ is stop is clean station
@@ -32,18 +32,18 @@
     ---@field turnedInserters table<number, LuaEntity> @nullable saved turned inserters
     ---@field inserters table<number, LuaEntity> @nullable inserters thats load or unload cargo wagons
     ---@field deliveries table<DeliveryUid, DeliveryClass> @ active deliveries with this station
-    ---@field deliveryChanges table<string, number> @ Expected changes due to deliveries
+    ---@field deliveryChanges table<TypeAndName, number> @ Expected changes due to deliveries
     ---@field delivery DeliveryClass @nullable current delivery if train at stop
     ---@field train TrainClass @nullable train at stop
     ---@field trainItemContents table<string, number> @nullable contents of arrived train
     ---@field trainFluidContents table<string, number> @nullable contents of arrived train
-    ---@field provide table<string, StopSignalState> @nullable
-    ---@field request table<string, StopSignalState> @nullable
-    ---@field stat table<string, StopStatPerCargo> @nullable Statistics per cargo
+    ---@field provide table<TypeAndName, StopSignalState> @nullable
+    ---@field request table<TypeAndName, StopSignalState> @nullable
+    ---@field stat table<TypeAndName, StopStatPerCargo> @nullable Statistics per cargo
     ---@field statTrains number @nullable Count of all trains (only registered)
     ---@field errorMask number @nullable any of request has error
     ---@field errorMaskInvalid boolean @nullable need to update error mask
-    ---@field lastTickMap table<string, number> @ tick of last delivery for each item or fluid
+    ---@field lastTickMap table<TypeAndName, number> @ tick of last delivery for each item or fluid
     ---@field compFlags TrainCompositionFlags @nullable Map of compatible traion compositions or nil if any
     ---@field train TrainClass|nil @ train at stop
     ---@field gui DispGui @nullable gui if opened
@@ -104,14 +104,14 @@ function StopClass:updateOutputPort()
         if not self.disp.outMode or self.disp.outMode == ST_OUT_NEED_CONTENTS_NEG or self.disp.outMode == ST_OUT_NEED_CONTENTS_POS then
             local sign = --[[---@type number]] self.disp.outMode ~= ST_OUT_NEED_CONTENTS_POS and -1 or 1
             if delivery.provider == self then
-                for name, count in pairs(delivery.contents) do
-                    out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
+                for typeAndName, count in pairs(delivery.contents) do
+                    out[#out + 1] = { index = #out + 1, count = count * sign, signal = fromTypeAndNameToSignal(typeAndName) }
                 end
             end
         elseif self.disp.outMode == ST_OUT_EXCHANGE then
             local sign = delivery.provider == self and 1 or -1
-            for name, count in pairs(delivery.contents) do
-                out[#out + 1] = { index = #out + 1, count = count * sign, signal = { type = typeOfName(name), name = name } }
+            for typeAndName, count in pairs(delivery.contents) do
+                out[#out + 1] = { index = #out + 1, count = count * sign, signal = fromTypeAndNameToSignal(typeAndName) }
             end
         end
         if delivery.provider == self then
@@ -161,8 +161,8 @@ function StopClass:_updateDeliveryChanges()
             end
         end
         if mul then
-            for name, ex in pairs(delivery.contents) do
-                changes[name] = (changes[name] or 0) - ex * mul
+            for typeAndName, ex in pairs(delivery.contents) do
+                changes[typeAndName] = (changes[typeAndName] or 0) - ex * mul
             end
         end
     end
@@ -204,7 +204,8 @@ function StopClass:_updateBidi()
         local trainFluidContents = self.train and self.train.train.get_fluid_contents()
         local bothWires = true
         for _, sig in pairs(signals) do
-            local ss = signalStates[sig.signal.name]
+            local typeAndName = toTypeAndName(sig.signal)
+            local ss = signalStates[typeAndName]
             if not ss then
                 if sig.signal.type == "item" and self.disp.otherCargoMin ~= nil
                         or sig.signal.type == "fluid" and self.disp.otherFluidMin ~= nil
@@ -224,7 +225,7 @@ function StopClass:_updateBidi()
                         _provide = 0, -- fills later
                         _count = 0, -- fills later
                     }
-                    signalStates[sig.signal.name] = ss
+                    signalStates[typeAndName] = ss
                 end
             end
             if ss then
@@ -237,14 +238,14 @@ function StopClass:_updateBidi()
                         sig.count = sig.count + (unitCalc(ss.request, ss.name) or 0) -- get_merged_signals() returns x2 for signals of combinator, correct it
                     end
                 end
-                self.deliveryChanges = self.deliveryChanges or {} -- todo remove line
-                --[[DEBUG]] ss._sig_count = sig.count
-                --[[DEBUG]] ss._train_count = trainContents and trainContents[ss.name]
-                sig.count = sig.count + (self.deliveryChanges[ss.name] or 0) -- correct by already delivering
-                if trainContents then
+                self.deliveryChanges = self.deliveryChanges or {}
+                 --[[DEBUG]] ss._sig_count = sig.count
+                 --[[DEBUG]] ss._train_count = trainContents and trainContents[toTypeAndName(ss)]
+                sig.count = sig.count + (self.deliveryChanges[typeAndName] or 0) -- correct by already delivering
+                if trainContents and ss.type == 'item' then
                     sig.count = sig.count + (trainContents[ss.name] or 0)
                 end
-                if trainFluidContents then
+                if trainFluidContents and ss.type == 'fluid' then
                     sig.count = sig.count + (trainFluidContents[ss.name] or 0)
                 end
                 ss._count = sig.count
@@ -267,24 +268,24 @@ function StopClass:_updateBidi()
     end
     ---@type table<string, StopSignalState>
     local provide, request
-    for k, signal in pairs(signalStates) do
+    for typeAndName, signal in pairs(signalStates) do
         if signal.dynamic and not signal._used then
             if signal.error then
                 self.errorMaskInvalid = true
             end
-            signalStates[k] = nil
+            signalStates[typeAndName] = nil
         else
             signal._used = nil
             if signal._count > 0 then
                 provide = provide or {}
-                provide[signal.name] = signal
+                provide[typeAndName] = signal
                 if signal.error then
                     signal.error = nil
                     self.errorMaskInvalid = true
                 end
             elseif signal._count < 0 then
                 request = request or {}
-                request[signal.name] = signal
+                request[typeAndName] = signal
             end
         end
     end
@@ -301,11 +302,6 @@ end
 ---@return DeliveryClass @nullable New delivery
 ---@overload fun(): DeliveryClass
 function StopClass:update(doNotMakeDeliveries)
-    if self._settingsUpdated then
-        -- TODO REMOVE WITH FLOAT.LUA REMOVED
-        self._settingsUpdated = nil
-        self:settingsUpdated()
-    end
     local mode = self.disp.mode
     if self.prevMode ~= mode then
         self:_updateMode()
@@ -419,7 +415,7 @@ end
 ---@param train LuaTrain
 function StopClass:_fetchInserters(train)
     local inserters
---    train.manual_mode = true
+    --    train.manual_mode = true
     for _, car in pairs(train.cargo_wagons) do
         local inses = car.surface.find_entities_filtered({
             type = "inserter",
@@ -435,7 +431,7 @@ function StopClass:_fetchInserters(train)
             end
         end
     end
---    train.manual_mode = false
+    --    train.manual_mode = false
     self.inserters = inserters
 end
 
@@ -491,13 +487,13 @@ function StopClass:trainArrived(trainEntity)
                     self:_updateDeliveryChanges()
                     self:updateOutputPort()
                 else
-                    self.stopEntity.force.print({"viirld.err-train-not-by-schedule", trainEntity.id, self.stopEntity.unit_number})
+                    self.stopEntity.force.print({ "viirld.err-train-not-by-schedule", trainEntity.id, self.stopEntity.unit_number })
                 end
             else
-                self.stopEntity.force.print({"viirld.err-unknown-delivery", trainEntity.id, self.stopEntity.unit_number})
+                self.stopEntity.force.print({ "viirld.err-unknown-delivery", trainEntity.id, self.stopEntity.unit_number })
             end
         else
-            self.stopEntity.force.print({"viirld.err-unknown-train", trainEntity.id, self.stopEntity.unit_number})
+            self.stopEntity.force.print({ "viirld.err-unknown-train", trainEntity.id, self.stopEntity.unit_number })
         end
     end
     self:updateVisual()
@@ -541,10 +537,12 @@ function StopClass:trainDepart()
                 end
             end
             if arrContents then
+                local type = i == 1 and "item" or "fluid"
                 self.stat = self.stat or {}
                 for name, count in pairs(arrContents) do
-                    self.stat[name] = self.stat[name] or {}
-                    local stat = self.stat[name]
+                    local typeAndName = toTypeAndName(type, name)
+                    self.stat[typeAndName] = self.stat[typeAndName] or {}
+                    local stat = self.stat[typeAndName]
                     if count >= 0 then
                         stat.received = (stat.received or 0) + count
                     else
@@ -600,7 +598,7 @@ function StopClass:settingsUpdated()
     local signalStates = {}
     if self.disp.signals then
         for index, sig in pairs(self.disp.signals) do
-            signalStates[sig.name] = --[[---@type StopSignalState]]{
+            signalStates[toTypeAndName(sig)] = --[[---@type StopSignalState]]{
                 type = sig.type,
                 name = sig.name,
                 index = index,

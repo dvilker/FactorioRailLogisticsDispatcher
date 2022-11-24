@@ -865,33 +865,33 @@ function DispGui:updateStopInfo()
     local stop = self.disp.stop
     local named = self.model.named
     if stop then
-        ---@param name string
-        local function registerName(self, name)
-            if not self.ioRows[name] then
+        ---@param typeAndName TypeAndName
+        local function registerName(self, typeAndName)
+            if not self.ioRows[typeAndName] then
                 local rowModel = guiAddRow(self.model, EL_IO_TABLE)
-                rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "]"
-                self.ioRows[name] = rowModel
+                rowModel.cells[1].caption = "[" .. typeAndName .. "]"
+                self.ioRows[typeAndName] = rowModel
             end
         end
         if stop.request then
-            for name, _ in pairs(stop.request) do
-                registerName(self, name)
+            for typeAndName, _ in pairs(stop.request) do
+                registerName(self, typeAndName)
             end
         end
         if stop.provide then
-            for name, _ in pairs(stop.provide) do
-                registerName(self, name)
+            for typeAndName, _ in pairs(stop.provide) do
+                registerName(self, typeAndName)
             end
         end
         if stop.deliveryChanges then
-            for name, _ in pairs(stop.deliveryChanges) do
-                registerName(self, name)
+            for typeAndName, _ in pairs(stop.deliveryChanges) do
+                registerName(self, typeAndName)
             end
         end
-        for name, rowModel in pairs(self.ioRows) do
+        for typeAndName, rowModel in pairs(self.ioRows) do
             ---@type LocalisedString
             local state
-            local request = stop.request and stop.request[name]
+            local request = stop.request and stop.request[typeAndName]
             if request then
                 rowModel.cells[2].caption = '−' .. util.format_number(-request._count, false)
                 if request.error and request.errorTick then
@@ -902,7 +902,7 @@ function DispGui:updateStopInfo()
                 rowModel.cells[2].style.font_color = request._request > 0 and REQUEST_COLOR or UNDER_MIN_COLOR
                 rowModel.cells[2].style.font = request._request > 0 and 'default-bold' or 'default'
             else
-                local provide = stop.provide and stop.provide[name]
+                local provide = stop.provide and stop.provide[typeAndName]
                 if provide then
                     rowModel.cells[2].caption = '+' .. util.format_number(provide._count, false)
                     rowModel.cells[2].style.font_color = provide._provide > 0 and PROVIDE_COLOR or UNDER_MIN_COLOR
@@ -913,8 +913,8 @@ function DispGui:updateStopInfo()
                     rowModel.cells[2].style.font = 'default'
                 end
             end
-            if stop.deliveryChanges[name] then
-                rowModel.cells[3].caption = util.format_number(stop.deliveryChanges[name], false)
+            if stop.deliveryChanges[typeAndName] then
+                rowModel.cells[3].caption = util.format_number(stop.deliveryChanges[typeAndName], false)
             else
                 rowModel.cells[3].caption = "-"
             end
@@ -934,8 +934,8 @@ function DispGui:updateStopInfo()
                 if delivery.providerPassed then
                     text[#text + 1] = "."
                 end
-                for name, count in pairs(delivery.contents) do
-                    text[#text + 1] = "\n    [" .. typeOfName(name) .. "=" .. name .. "] " .. util.format_number(count, false)
+                for typeAndName, count in pairs(delivery.contents) do
+                    text[#text + 1] = "\n    [" .. typeAndName .. "] " .. util.format_number(count, false)
                 end
                 rowModel.cells[1].caption = table.concat(text)
             end
@@ -960,20 +960,20 @@ function DispGui:updateStopInfo()
 
         if stop.isBidi then
             if stop.stat then
-                for name, stat in pairs(stop.stat) do
-                    local rowModel = self.statRows[name]
+                for typeAndName, stat in pairs(stop.stat) do
+                    local rowModel = self.statRows[typeAndName]
                     if not rowModel then
                         rowModel = guiAddRow(self.model, EL_CARGO_STAT_TABLE)
-                        self.statRows[name] = rowModel
+                        self.statRows[typeAndName] = rowModel
                     end
-                    rowModel.cells[1].caption = "[" .. typeOfName(name) .. "=" .. name .. "] " .. (stat.deliveries and util.format_number(stat.deliveries, false) or "?")
+                    rowModel.cells[1].caption = "[" .. typeAndName .. "] " .. (stat.deliveries and util.format_number(stat.deliveries, false) or "?")
                     rowModel.cells[2].caption = stat.provided and util.format_number(stat.provided, true) or "-"
                     rowModel.cells[3].caption = stat.received and util.format_number(stat.received, true) or "-"
                     rowModel.cells[4].caption = stat.lastTick and util.formattime(game.tick - stat.lastTick) or "-"
                 end
             end
-            for name, row in pairs(self.statRows) do
-                if not stop.stat or not stop.stat[name] then
+            for typeAndName, row in pairs(self.statRows) do
+                if not stop.stat or not stop.stat[typeAndName] then
                     guiRemoveRow(row)
                 end
             end
@@ -1016,20 +1016,20 @@ function DispGui:updateStopInfo()
             if stop.inserters then
                 debugLines[#debugLines + 1] = "Inserters: " .. tostring(table_size(stop.inserters))
             end
-            for name, sig in pairs(stop.signalStates) do
-                local prefix = "[" .. sig.type .. "=" .. sig.name .. "] "
+            for typeAndName, sig in pairs(stop.signalStates) do
+                local prefix = "[" .. typeAndName .. "] "
                 for k, v in pairs(sig) do
                     debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
                 end
-                if stop.deliveryChanges and stop.deliveryChanges[name] then
-                    debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(stop.deliveryChanges[name])
+                if stop.deliveryChanges and stop.deliveryChanges[typeAndName] then
+                    debugLines[#debugLines + 1] = prefix .. "DC=" .. tostring(stop.deliveryChanges[typeAndName])
                 end
             end
             if stop.deliveryChanges then
-                for name, v in pairs(stop.deliveryChanges) do
-                    if not stop.signalStates[name] then
+                for typeAndName, v in pairs(stop.deliveryChanges) do
+                    if not stop.signalStates[typeAndName] then
                         local prefix
-                        prefix = "[" .. typeOfName(name) .. "=" .. name .. "] "
+                        prefix = "[" .. typeAndName .. "] "
                         debugLines[#debugLines + 1] = prefix .. "!DC=" .. tostring(v)
                     end
                 end

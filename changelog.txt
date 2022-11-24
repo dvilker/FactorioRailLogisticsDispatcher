@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.8
+Date: 2022.11.25
+  Changes:
+    - Fixed undefined behavior if there is an item and liquid with the same name in the game
+    - Minor fixes
+---------------------------------------------------------------------------------------------------
 Version: 0.0.7
 Date: 2022.11.24
   Changes:

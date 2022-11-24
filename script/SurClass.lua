@@ -11,8 +11,8 @@
     ---@field deliveries table<DeliveryUid, DeliveryClass> @All active deliveries on surface
     ---@field trains table<TrainUid, TrainClass> @All managed trains on surface
     ---@field freeTrains table<TrainType, table<TrainUid, TrainClass>> @Free managed trains on surface
-    ---@field provide table<string, table<StopUid, StopClass>> @Current provides
-    ---@field provideUpdate table<string, number> @Tick of last update for increase
+    ---@field provide table<TypeAndName, table<StopUid, StopClass>> @Current provides
+    ---@field provideUpdate table<TypeAndName, number> @Tick of last update for increase
 SurClass = { }
 
 ---@param surfaceIndex number @surface.index
@@ -141,18 +141,18 @@ function SurClass:correctDeliveriesAtStop(requester)
                 local prevContents = delivery.contents
                 local newContents, _, _ = self:_getNeededExchange(delivery.provider, requester, true, prevContents)
                 if newContents then
-                    for name, oldCount in pairs(prevContents) do
-                        local newCount = newContents[name]
+                    for typeAndName, oldCount in pairs(prevContents) do
+                        local newCount = newContents[typeAndName]
                         if not newCount or newCount < oldCount then
-                            newContents[name] = oldCount
+                            newContents[typeAndName] = oldCount
                         end
                     end
                     if self:_newDelivery(delivery.provider, requester, train, newContents, delivery) then
                         newContents = delivery.contents
                         local changed = table_size(prevContents) == table_size(newContents)
                         if not changed then
-                            for name, oldCount in pairs(prevContents) do
-                                local newCount = newContents[name]
+                            for typeAndName, oldCount in pairs(prevContents) do
+                                local newCount = newContents[typeAndName]
                                 if oldCount ~= newCount then
                                     changed = true
                                     break
@@ -160,8 +160,8 @@ function SurClass:correctDeliveriesAtStop(requester)
                             end
                         end
                         if not changed then
-                            for name, newCount in pairs(newContents) do
-                                local oldCount = prevContents[name]
+                            for typeAndName, newCount in pairs(newContents) do
+                                local oldCount = prevContents[typeAndName]
                                 if oldCount ~= newCount then
                                     changed = true
                                     break
@@ -203,21 +203,20 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
         self.fuelStops[stop.uid] = stop.isFuel and stop or nil
 
         if stop.provide then
-            for name, _ in pairs(stop.provide) do
-                local provideStops = self.provide[name]
+            for typeAndName, _ in pairs(stop.provide) do
+                local provideStops = self.provide[typeAndName]
                 if not provideStops then
                     provideStops = {}
-                    self.provide[name] = provideStops
+                    self.provide[typeAndName] = provideStops
                 end
                 provideStops[stop.uid] = stop
             end
         end
-        self.provide = self.provide or {} -- todo remove line
-        for name, provideStops in pairs(self.provide) do
-            if not stop.provide or not stop.provide[name] then
+        for typeAndName, provideStops in pairs(self.provide) do
+            if not stop.provide or not stop.provide[typeAndName] then
                 provideStops[stop.uid] = nil
                 if table_size(provideStops) == 0 then
-                    self.provide[name] = nil
+                    self.provide[typeAndName] = nil
                 end
             end
         end
@@ -255,10 +254,10 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
         self.fuelStops[stop.uid] = nil
         stop.provide = nil
         stop.request = nil
-        for name, provideStops in pairs(self.provide) do
+        for typeAndName, provideStops in pairs(self.provide) do
             provideStops[stop.uid] = nil
             if table_size(provideStops) == 0 then
-                self.provide[name] = nil
+                self.provide[typeAndName] = nil
             end
         end
         self:removeDeliveriesBy(stop)
@@ -282,17 +281,17 @@ function SurClass:_tryToMakeDelivery(requester)
 
     ---@type StopClass, TrainClass, number, number, table<string, number>, number
     local bestProvider, bestTrain, bestScore, bestDistance, bestContents, errorMask
-    for reqName, reqState in pairs(requester.request) do
+    for typeAndName, reqState in pairs(requester.request) do
         ---@type LocalisedString
         local newError
         if reqState._request > 0 then
             local hasProvider, hasMinProvide, hasTrain
-            local providers = self.provide[reqName]
+            local providers = self.provide[typeAndName]
             if providers then
                 for _, provider in pairs(providers) do
                     if provider ~= requester
                             and provider.provide
-                            and provider.provide[reqName] and provider.provide[reqName]._provide > 0
+                            and provider.provide[typeAndName] and provider.provide[typeAndName]._provide > 0
                             and provider:hasTrainSlot()
                             and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
                             and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
@@ -360,13 +359,12 @@ end
 ---@param provider StopClass
 ---@param requester StopClass
 ---@param train TrainClass
----@param contents table<string, number>
+---@param contents table<TypeAndName, number>
 ---@param existsDelivery DeliveryClass
 ---@return DeliveryClass @nullable
 function SurClass:_newDelivery(provider, requester, train, contents, existsDelivery)
     local availStacks = train.itemCapacity
     local availFluid = train.fluidCapacity
-    requester.lastTickMap = requester.lastTickMap or {} -- todo remove
     ---@type table<string, number>
     local lastMap = requester.lastTickMap
     ---@type number
@@ -374,29 +372,30 @@ function SurClass:_newDelivery(provider, requester, train, contents, existsDeliv
     while current do
         ---@type number
         local next
-        for name, count in pairs(contents) do
-            local nameLastTick = table_size(contents) ~= 1 and lastMap[name] or 0
+        for typeAndName, count in pairs(contents) do
+            local nameLastTick = table_size(contents) ~= 1 and lastMap[typeAndName] or 0
             if current == nameLastTick then
-                local itemProto = game.item_prototypes[name]
-                if itemProto then
+                if typeAndNameIsItem(typeAndName) then
+                    local _, name = fromTypeAndName(typeAndName)
+                    local itemProto = game.item_prototypes[name]
                     local stacks = math.ceil(count / itemProto.stack_size)
                     if availStacks > stacks then
                         availStacks = availStacks - stacks
                     elseif availStacks > 0 then
-                        contents[name] = availStacks * itemProto.stack_size
+                        contents[typeAndName] = availStacks * itemProto.stack_size
                         availStacks = 0
                     else
-                        contents[name] = nil
+                        contents[typeAndName] = nil
                     end
                 else
                     -- todo allow to combine fluids
                     if availFluid > 0 then
-                        if availFluid < contents[name] then
-                            contents[name] = availFluid
+                        if availFluid < contents[typeAndName] then
+                            contents[typeAndName] = availFluid
                         end
                         availFluid = 0
                     else
-                        contents[name] = nil
+                        contents[typeAndName] = nil
                     end
                 end
             elseif nameLastTick > current then
@@ -417,8 +416,8 @@ function SurClass:_newDelivery(provider, requester, train, contents, existsDeliv
     delivery.provider = provider
     delivery.requester = requester
     delivery.contents = contents
-    for name, _ in pairs(contents) do
-        requester.lastTickMap[name] = game.tick
+    for typeAndName, _ in pairs(contents) do
+        requester.lastTickMap[typeAndName] = game.tick
     end
     return delivery
 end
@@ -426,17 +425,17 @@ end
 ---@param provider StopClass
 ---@param requester StopClass
 ---@param ignoreMin boolean
----@param updatingContents table<string, number>
----@return table<string, number>, number, number @ contents, cargo stacks, fluids count
+---@param updatingContents table<TypeAndName, number>
+---@return table<TypeAndName, number>, number, number @ contents, cargo stacks, fluids count
 function SurClass:_getNeededExchange(provider, requester, ignoreMin, updatingContents)
     ---@type table<string, number>
     local contents
     local needCargoCells = 0
     local needFluids = 0
     if requester.request then
-        for name, reqSig in pairs(requester.request) do
-            if not updatingContents or updatingContents[name] then
-                local provSig = provider.provide[name]
+        for typeAndName, reqSig in pairs(requester.request) do
+            if not updatingContents or updatingContents[typeAndName] then
+                local provSig = provider.provide[typeAndName]
                 if provSig then
                     local valid
                     if ignoreMin then
@@ -449,11 +448,11 @@ function SurClass:_getNeededExchange(provider, requester, ignoreMin, updatingCon
                         contents = contents or {}
                         local count = ignoreMin and math.min(-reqSig._count, provSig._count) or math.min(reqSig._request, provSig._provide)
                         if updatingContents then
-                            count = count + updatingContents[name]
+                            count = count + updatingContents[typeAndName]
                         end
-                        contents[name] = count
+                        contents[typeAndName] = count
                         if provSig.type == "item" then
-                            needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
+                            needCargoCells = needCargoCells + math.ceil(count / fromTypeAndNameToProto(typeAndName).stack_size)
                         else
                             needFluids = needFluids + count
                         end
@@ -467,7 +466,7 @@ end
 
 ---@param provider StopClass
 ---@param requester StopClass
----@param contents table<string, number>
+---@param contents table<TypeAndName, number>
 ---@param needCargoCells number
 ---@param needFluids number
 ---@return TrainClass, number, number @nullable train, score, distance
@@ -507,76 +506,6 @@ function SurClass:_findBestTrainForExchange(provider, requester, contents, needC
     return nil, nil, nil
 end
 
---- - -@param provider StopClass
---- - -@param requester StopClass
---- - -@return TrainClass, number, number, table<string, number> @nullable train, score, distance, contents
---- - -@deprecated
---function SurClass:_checkDeliveryAndFindBestTrain(provider, requester)
---    if not provider.provide
---            or not isCompatibleNetworks(provider.disp.networks, requester.disp.networks)
---            or not isCompatibleTrainCompositions(provider.compFlags, requester.compFlags)
---    then
---        return nil, nil, nil, nil
---    end
---    ---@type table<string, number>
---    local contents
---    local needCargoCells = 0
---    local needFluidWagons = 0
---    for name, reqSig in pairs(requester.request) do
---        local provSig = provider.provide[name]
---        if provSig then
---            local commonMin = math.max(reqSig._min, provSig._min)
---            if reqSig._request >= commonMin and provSig._provide >= commonMin then
---                contents = contents or {}
---                local count = math.min(reqSig._request, provSig._provide)
---                contents[name] = count
---                if provSig.type == "item" then
---                    needCargoCells = needCargoCells + math.ceil(count / game.item_prototypes[name].stack_size)
---                else
---                    needFluidWagons = needFluidWagons + 1
---                end
---                if not provider.disp.flagAllowMulti or not requester.disp.flagAllowMulti then
---                    break
---                end
---            end
---        end
---    end
---    if not contents then
---        return nil, nil, nil, nil
---    end
---    ---@type TrainType, number
---    local bestTrainType, bestScore
---    for trainType, trains in pairs(self.freeTrains) do
---        local trainExample = trains[next(trains)]
---        if (not provider.compFlags or provider.compFlags[trainExample.comp])
---                and (not requester.compFlags or requester.compFlags[trainExample.comp])
---                and ((needCargoCells > 0 and trainExample.itemCapacity > 0) or (needFluidWagons > 0 and #trainExample.fluidWagons > 0))
---        then
---            local acceptedCells = math.min(needCargoCells, trainExample.itemCapacity)
---            local acceptedFluid = math.min(needFluidWagons, #trainExample.fluidWagons) -- todo enhance fluid formula
---            local score = acceptedCells + acceptedFluid * 40 -- todo  may enhance formula
---            if bestScore == nil or score > bestScore then
---                bestTrainType = trainType
---                bestScore = score
---            end
---        end
---    end
---    if bestTrainType then
---        ---@type number, TrainClass
---        local bestDistance, bestTrain
---        for _, train in pairs(self.freeTrains[bestTrainType]) do
---            local distance = comparableDistance(--[[---@type _MapPosition1]]provider.stopEntity.position, --[[---@type _MapPosition1]]train.train.front_stock.position)
---            if bestDistance == nil or distance < bestDistance then
---                bestTrain = train
---                bestDistance = distance
---            end
---        end
---        if bestTrain then
---            return bestTrain, bestScore, bestDistance, contents
---        end
---    end
---    return nil, nil, nil, nil
---end
 
 ---@param delivery DeliveryClass
 function SurClass:addDelivery(delivery)

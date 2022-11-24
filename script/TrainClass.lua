@@ -211,7 +211,7 @@ function TrainClass:_appendClean(records, warning)
     local bestStop = self:_getBestStop(self.sur.cleanStops)
     if not bestStop then
         if warning then
-            self.train.front_stock.force.print({"err-clean-not-found", self.train.id})
+            self.train.front_stock.force.print({"viirld.err-clean-not-found", self.train.id})
         end
         return false
     end
@@ -380,13 +380,14 @@ function TrainClass:gotoToDelivery(delivery, isCorrection)
             }
         else
             if p == 1 then
-                for name, count in pairs(delivery.contents) do
+                for typeAndName, count in pairs(delivery.contents) do
                     local comparator = stop.disp.flagUseEquals and "=" or ">="
-                    if game.item_prototypes[name] then
+                    local signal = fromTypeAndNameToSignal(typeAndName)
+                    if typeAndNameIsItem(signal.type) then
                         conditions[#conditions + 1] = {
                             type = "item_count",
                             condition = {
-                                first_signal = { type = "item", name = name },
+                                first_signal = signal,
                                 comparator = comparator,
                                 constant = count,
                             },
@@ -396,7 +397,7 @@ function TrainClass:gotoToDelivery(delivery, isCorrection)
                         conditions[#conditions + 1] = {
                             type = "fluid_count",
                             condition = {
-                                first_signal = { type = "fluid", name = name },
+                                first_signal = signal,
                                 comparator = comparator,
                                 constant = count,
                             },

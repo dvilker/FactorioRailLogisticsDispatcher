@@ -123,7 +123,6 @@ function swapInserter(inserter, restore)
     inserter.direction = inserter.direction
 end
 
-
 ---@param from _MapPosition1
 ---@param to _MapPosition1
 ---@return number
@@ -138,8 +137,49 @@ function comparableDistance(from, to)
     return (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
 end
 
+---@alias TypeAndName string @ type .. "=" .. name
+
+---@param type string
 ---@param name string
----@return string
-function typeOfName(name)
-    return game.item_prototypes[name] and "item" or "fluid"
+---@overload fun(table: { type: string, name: string}): TypeAndName
+---@return TypeAndName
+function toTypeAndName(type, name)
+    return name and (type .. '=' .. name) or (type.type .. '=' .. type.name)
+end
+
+---@param typeAndName TypeAndName
+---@return string, string
+function fromTypeAndName(typeAndName)
+    if string.byte(typeAndName) == 105 then
+        return "item", string.sub(typeAndName, 6)
+    else
+        return "fluid", string.sub(typeAndName, 7)
+    end
+end
+
+---@param typeAndName TypeAndName
+---@return SignalID
+function fromTypeAndNameToSignal(typeAndName)
+    if string.byte(typeAndName) == 105 then
+        return { type = "item", name = string.sub(typeAndName, 6) }
+    else
+        return { type = "fluid", name = string.sub(typeAndName, 7) }
+    end
+end
+
+
+---@param typeAndName TypeAndName
+---@return LuaItemPrototype|LuaFluidPrototype
+function fromTypeAndNameToProto(typeAndName)
+    if string.byte(typeAndName) == 105 then
+        return game.item_prototypes[string.sub(typeAndName, 6)]
+    else
+        return game.item_prototypes[string.sub(typeAndName, 7)]
+    end
+end
+
+---@param typeAndNameOrJustType TypeAndName
+---@return boolean
+function typeAndNameIsItem(typeAndNameOrJustType)
+    return string.byte(typeAndNameOrJustType) == 105 -- i
 end
