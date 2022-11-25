@@ -17,4 +17,7 @@ if mods["nullius"] then
     -- Place dispatcher in the same subgroup as the regular train stop
     data.raw["recipe"]["viirld-dispatcher"].subgroup = data.raw["train-stop"]["train-stop"].subgroup
     data.raw["item"]["viirld-dispatcher"].subgroup = data.raw["item"]["train-stop"].subgroup
+    -- Nullius makes modded technologies part of its research tree
+    -- Place dispatcher in the same place on the research tree as LTN 
+    table.insert(data.raw.technology["nullius-broadcasting-1"].prerequisites, name)
 end

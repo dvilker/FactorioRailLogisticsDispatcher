@@ -228,7 +228,6 @@ do
         }
         tech.prerequisites = { "nullius-checkpoint-optimization", "nullius-traffic-control" }
         tech.ignore_tech_cost_multiplier = true
-        table.insert(data.raw.technology["nullius-broadcasting-1"].prerequisites, name)
     end
 
     data:extend { item, entity, recipe, tech }
