@@ -51,6 +51,10 @@ do
     }
     item.order = "a[train-system]-f[viirld-dispatcher]"
     item.subgroup = data.raw["item"]["train-stop"].subgroup
+    if (mods["nullius"]) then
+        -- Enable item in Nullius and place next to the regular train stop
+        item.order = "nullius-eca"
+    end
 
     local entity = table.deepcopy(data.raw["arithmetic-combinator"]["arithmetic-combinator"])
     entity.name = name
@@ -183,6 +187,19 @@ do
     }
     recipe.enabled = false
 
+    if (mods["nullius"]) then
+        -- Enable recipe and place it just after regular station
+        recipe.order = "nullius-eca"
+        -- Use the same costs (minus the train stop) and metadata as for LTN
+        recipe.category = "medium-crafting"
+        recipe.always_show_made_in = true
+        recipe.energy_required = 3
+        recipe.ingredients = {
+            {"arithmetic-combinator", 2},
+            {"green-wire", 4}
+        }
+    end
+
     local tech = {
         type = "technology",
         name = name,
@@ -196,6 +213,24 @@ do
         order = "c-g-c"
     }
     tech.unit.count = math.floor(tech.unit.count * 1.5)
+
+    if (mods["nullius"]) then
+        -- Enable technology
+        tech.order = "nullius-" .. (tech.order or "")
+        -- Use the same costs and requirements as for LTN
+        tech.unit = {
+            count = 100,
+            ingredients = {
+                { "nullius-geology-pack", 1 }, { "nullius-climatology-pack", 1 },
+                { "nullius-mechanical-pack", 1 }, { "nullius-electrical-pack", 1 }
+            },
+            time = 25
+        }
+        tech.prerequisites = { "nullius-checkpoint-optimization", "nullius-traffic-control" }
+        tech.ignore_tech_cost_multiplier = true
+        table.insert(data.raw.technology["nullius-broadcasting-1"].prerequisites, name)
+    end
+
     data:extend { item, entity, recipe, tech }
 end
 
