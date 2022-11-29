@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.10
+Date: 2022.11.29
+  Changes:
+    - Fixed a bug when updating blueprint
+    - Added red light - if something is wrong
+    - Added hint if rails are missing
+---------------------------------------------------------------------------------------------------
 Version: 0.0.9
 Date: 2022.11.29
   Changes:

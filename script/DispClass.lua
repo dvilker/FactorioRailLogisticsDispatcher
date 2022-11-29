@@ -368,13 +368,17 @@ function DispClass:updateVisual()
     local notWorking
     if self.stop then
         if self.mode == ST_MODE_BIDI then
-            notWorking = self.stop.errorMask
-            if self.stop.train then
-                color = DISP_COLOR_AQUA
-            elseif table_size(self.stop.deliveries) > 0 then
-                color = DISP_COLOR_YELLOW
+            if self.stop:isValid() then
+                notWorking = self.stop.errorMask
+                if self.stop.train then
+                    color = DISP_COLOR_AQUA
+                elseif table_size(self.stop.deliveries) > 0 then
+                    color = DISP_COLOR_YELLOW
+                else
+                    color = DISP_COLOR_GREEN
+                end
             else
-                color = DISP_COLOR_GREEN
+                color = DISP_COLOR_LIGHT_RED
             end
         elseif self.mode == ST_MODE_OFF then
             color = DISP_COLOR_GREEN_DARK

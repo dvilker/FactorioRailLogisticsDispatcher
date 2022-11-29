@@ -220,7 +220,7 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
                 end
             end
         end
-        if not doNotMakeDeliveries then
+        if not doNotMakeDeliveries and stop:isValid() then
             if correctScheduleBeforeProvider then
                 self:correctDeliveriesAtStop(stop)
             end

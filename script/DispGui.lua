@@ -137,25 +137,43 @@ function DispGui:close()
     self.disp.gui = nil
     self.disp:setSettings(self.data)
 
-    if self.disp.stop then
-        if self.disp.mode == ST_MODE_BIDI then
-            local hasConnection = false
-            for _, def in pairs(self.disp.entity.circuit_connection_definitions) do
-                if def.source_circuit_id == defines.circuit_connector_id.combinator_input
-                        and def.target_entity ~= self.disp.input
-                then
-                    hasConnection = true
-                    break
+    if self.disp.stop and self.disp.stop.stopEntity.valid then
+        if self.disp.stop.stopEntity.connected_rail and self.disp.stop.stopEntity.connected_rail.valid then
+            if self.disp.stop:isValid() then
+                if self.disp.mode == ST_MODE_BIDI then
+                    local hasConnection = false
+                    for _, def in pairs(self.disp.entity.circuit_connection_definitions) do
+                        if def.source_circuit_id == defines.circuit_connector_id.combinator_input
+                                and def.target_entity ~= self.disp.input
+                        then
+                            hasConnection = true
+                            break
+                        end
+                    end
+                    if not hasConnection then
+                        self.disp.entity.surface.create_entity {
+                            type = "flying-text",
+                            name = "tutorial-flying-text",
+                            position = self.disp.entity.position,
+                            text = { "viirld.err-not-input-connected" },
+                        }
+                    end
                 end
-            end
-            if not hasConnection then
+            else
                 self.disp.entity.surface.create_entity {
                     type = "flying-text",
                     name = "tutorial-flying-text",
                     position = self.disp.entity.position,
-                    text = { "viirld.err-not-input-connected" },
+                    text = { "viirld.err-internal" },
                 }
             end
+        else
+            self.disp.entity.surface.create_entity {
+                type = "flying-text",
+                name = "tutorial-flying-text",
+                position = self.disp.entity.position,
+                text = { "viirld.err-no-rail" },
+            }
         end
     else
         self.disp.entity.surface.create_entity {

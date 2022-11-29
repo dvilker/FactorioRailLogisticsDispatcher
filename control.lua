@@ -82,8 +82,14 @@ script.on_event(
         ---@overload fun (event: EventData)
         ---@param event OnGuiOpened
         function(event)
+            --[[DEBUG]]log("ViiRLD: on_gui_opened: "..var_dump(event))
             if event.gui_type == defines.gui_type.entity and event.entity then
                 DispGui.handleGuiOpened(event)
+            end
+            if event.item and event.item.is_blueprint then
+                --[[DEBUG]]log("ViiRLD: on_gui_opened: open blueprint")
+                global.openedBlueprints = global.openedBlueprints or {}
+                global.openedBlueprints[event.player_index] = event.item
             end
         end
 )
@@ -210,18 +216,6 @@ script.on_event(
         end
 )
 
-lastBlue = nil
-
-script.on_event(defines.events.on_player_setup_blueprint, function(event)
-    local player = game.players[event.player_index]
-    lastBlue = player.blueprint_to_setup
-    lastBlueE = player.blueprint_to_setup.get_blueprint_entities()
-end)
-
-
-
------------
-
 
 ---@param blueprint LuaItemStack
 ---@param mapping table<uint, LuaEntity>
@@ -243,12 +237,21 @@ script.on_event(
         function(event)
             local player = game.players[event.player_index]
             local cursor = player.cursor_stack
-            if cursor and cursor.valid_for_read and cursor.type == 'blueprint' then
-                dataToBlueprint(cursor, event.mapping.get())
-            else
-                global.blueprintMappings = global.blueprintMappings or {}
-                global.blueprintMappings[player.index] = event.mapping.get()
+            local mapping = event.mapping.get()
+            --[[DEBUG]]log("ViiRLD: on_player_setup_blueprint: opened: " .. var_dump(player.opened))
+            --[[DEBUG]]log("ViiRLD: on_player_setup_blueprint: mapping: " .. var_dump(mapping))
+            if cursor and cursor.valid_for_read and cursor.type == 'blueprint' and cursor.get_blueprint_entities() then
+                --[[DEBUG]]log("ViiRLD: on_player_setup_blueprint: entities: " .. var_dump(cursor.get_blueprint_entities()))
+                dataToBlueprint(cursor, mapping)
+                return
             end
+            if global.openedBlueprints and global.openedBlueprints[event.player_index] then
+                --[[DEBUG]]log("ViiRLD: on_player_setup_blueprint: opened blueprint: " .. var_dump(global.openedBlueprints[event.player_index]))
+                dataToBlueprint(global.openedBlueprints[event.player_index], mapping)
+                return
+            end
+            global.blueprintMappings = global.blueprintMappings or {}
+            global.blueprintMappings[player.index] = mapping
         end
 )
 
@@ -259,6 +262,7 @@ script.on_event(
         ---@param event OnPlayerConfiguredBlueprint
         function(event)
             if global.blueprintMappings then
+                --[[DEBUG]]log("ViiRLD: on_player_configured_blueprint: blueprintMappings: " .. var_dump(global.blueprintMappings))
                 local player = game.players[event.player_index]
                 local mapping = global.blueprintMappings[player.index]
                 local cursor = player.cursor_stack

@@ -184,83 +184,86 @@ function StopClass:_updateMode()
 end
 
 function StopClass:_updateBidi()
-    local signals = self.disp.input.get_merged_signals(defines.circuit_connector_id.constant_combinator)
     local signalStates = self.signalStates
     for _, signal in pairs(signalStates) do
         signal._request = 0
         signal._provide = 0
         signal._count = 0
     end
-    if signals then
-        local trainContents = self.train and self.train.train.get_contents()
-        if countingInsertersContent and self.train and self.inserters then
-            for _, ins in pairs(self.inserters) do
-                if ins.valid and ins.held_stack.count > 0 then
-                    local name = ins.held_stack.name
-                    trainContents[name] = (trainContents[name] or 0) + ins.held_stack.count
-                end
-            end
-        end
-        local trainFluidContents = self.train and self.train.train.get_fluid_contents()
-        local bothWires = true
-        for _, sig in pairs(signals) do
-            local typeAndName = toTypeAndName(sig.signal)
-            local ss = signalStates[typeAndName]
-            if not ss then
-                if sig.signal.type == "item" and self.disp.otherCargoMin ~= nil
-                        or sig.signal.type == "fluid" and self.disp.otherFluidMin ~= nil
-                then
-                    ss = {
-                        type = sig.signal.type,
-                        name = sig.signal.name,
-                        index = 0,
-                        request = nil, -- only by signal
-                        min = nil, -- fills later
-                        error = nil,
-                        errorTick = nil,
-                        dynamic = true,
-                        _used = true,
-                        _min = 0, -- fills later
-                        _request = 0, -- fills later
-                        _provide = 0, -- fills later
-                        _count = 0, -- fills later
-                    }
-                    signalStates[typeAndName] = ss
-                end
-            end
-            if ss then
-                if ss.dynamic then
-                    ss.min = sig.signal.type == "item" and self.disp.otherCargoMin or self.disp.otherFluidMin
-                    ss._min = unitCalc(ss.min, sig.signal.name) or 0
-                    ss._used = true
-                else
-                    if bothWires then
-                        sig.count = sig.count + (unitCalc(ss.request, ss.name) or 0) -- get_merged_signals() returns x2 for signals of combinator, correct it
+    local isValid = self:isValid()
+    if isValid then
+        local signals = self.disp.input.get_merged_signals(defines.circuit_connector_id.constant_combinator)
+        if signals then
+            local trainContents = self.train and self.train.train.get_contents()
+            if countingInsertersContent and self.train and self.inserters then
+                for _, ins in pairs(self.inserters) do
+                    if ins.valid and ins.held_stack.count > 0 then
+                        local name = ins.held_stack.name
+                        trainContents[name] = (trainContents[name] or 0) + ins.held_stack.count
                     end
                 end
-                self.deliveryChanges = self.deliveryChanges or {}
-                 --[[DEBUG]] ss._sig_count = sig.count
-                 --[[DEBUG]] ss._train_count = trainContents and trainContents[toTypeAndName(ss)]
-                sig.count = sig.count + (self.deliveryChanges[typeAndName] or 0) -- correct by already delivering
-                if trainContents and ss.type == 'item' then
-                    sig.count = sig.count + (trainContents[ss.name] or 0)
-                end
-                if trainFluidContents and ss.type == 'fluid' then
-                    sig.count = sig.count + (trainFluidContents[ss.name] or 0)
-                end
-                ss._count = sig.count
-                local sum = math.abs(sig.count) >= ss._min and sig.count or 0
-                if ss.dynamic then
-                    if sum > 0 then
-                        ss._provide = sum
-                    elseif sum < 0 then
-                        ss._request = -sum
+            end
+            local trainFluidContents = self.train and self.train.train.get_fluid_contents()
+            local bothWires = true
+            for _, sig in pairs(signals) do
+                local typeAndName = toTypeAndName(sig.signal)
+                local ss = signalStates[typeAndName]
+                if not ss then
+                    if sig.signal.type == "item" and self.disp.otherCargoMin ~= nil
+                            or sig.signal.type == "fluid" and self.disp.otherFluidMin ~= nil
+                    then
+                        ss = {
+                            type = sig.signal.type,
+                            name = sig.signal.name,
+                            index = 0,
+                            request = nil, -- only by signal
+                            min = nil, -- fills later
+                            error = nil,
+                            errorTick = nil,
+                            dynamic = true,
+                            _used = true,
+                            _min = 0, -- fills later
+                            _request = 0, -- fills later
+                            _provide = 0, -- fills later
+                            _count = 0, -- fills later
+                        }
+                        signalStates[typeAndName] = ss
                     end
-                else
-                    if sum > 0 and not ss.request then
-                        ss._provide = sum
-                    elseif sum < 0 and ss.request then
-                        ss._request = -sum
+                end
+                if ss then
+                    if ss.dynamic then
+                        ss.min = sig.signal.type == "item" and self.disp.otherCargoMin or self.disp.otherFluidMin
+                        ss._min = unitCalc(ss.min, sig.signal.name) or 0
+                        ss._used = true
+                    else
+                        if bothWires then
+                            sig.count = sig.count + (unitCalc(ss.request, ss.name) or 0) -- get_merged_signals() returns x2 for signals of combinator, correct it
+                        end
+                    end
+                    self.deliveryChanges = self.deliveryChanges or {}
+                    --[[DEBUG]] ss._sig_count = sig.count
+                    --[[DEBUG]] ss._train_count = trainContents and trainContents[toTypeAndName(ss)]
+                    sig.count = sig.count + (self.deliveryChanges[typeAndName] or 0) -- correct by already delivering
+                    if trainContents and ss.type == 'item' then
+                        sig.count = sig.count + (trainContents[ss.name] or 0)
+                    end
+                    if trainFluidContents and ss.type == 'fluid' then
+                        sig.count = sig.count + (trainFluidContents[ss.name] or 0)
+                    end
+                    ss._count = sig.count
+                    local sum = math.abs(sig.count) >= ss._min and sig.count or 0
+                    if ss.dynamic then
+                        if sum > 0 then
+                            ss._provide = sum
+                        elseif sum < 0 then
+                            ss._request = -sum
+                        end
+                    else
+                        if sum > 0 and not ss.request then
+                            ss._provide = sum
+                        elseif sum < 0 and ss.request then
+                            ss._request = -sum
+                        end
                     end
                 end
             end
@@ -296,6 +299,20 @@ end
 ---@return boolean
 function StopClass:hasTrainSlot()
     return self.stopEntity.trains_limit == nil or self.stopEntity.trains_limit > table_size(self.deliveries)
+end
+
+---@return boolean
+function StopClass:isValid()
+    if not self.valid then
+        return false
+    end
+    return self.valid
+            and self.stopEntity.valid
+            and self.disp.entity.valid
+            and self.disp.input.valid
+            and self.disp.output.valid
+            and self.stopEntity.connected_rail
+            and self.stopEntity.connected_rail.valid
 end
 
 ---@param doNotMakeDeliveries boolean
@@ -404,6 +421,8 @@ function StopClass:_restoreInserters(forced)
                     swapInserter(ins, true)
                     self.turnedInserters[k] = nil
                 end
+            else
+                self.turnedInserters[k] = nil
             end
         end
         if table_size(self.turnedInserters) == 0 then

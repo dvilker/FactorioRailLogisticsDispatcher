@@ -28,6 +28,7 @@ Minor features:
     - Yellow - in supply/request mode - has delivery. In depot mode - refueling.
     - Blue - train at station.
     - White - dispatcher in depot or clean mode.
+    - Red - something is wrong.
 5. Play to see more features!
 
 
