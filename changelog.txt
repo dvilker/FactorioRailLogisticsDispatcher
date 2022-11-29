@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.9
+Date: 2022.11.29
+  Changes:
+    - Fixed a bug when copying settings if the parameters of requests and supplies were specified out of order
+---------------------------------------------------------------------------------------------------
 Version: 0.0.8
 Date: 2022.11.25
   Changes:

@@ -256,6 +256,7 @@ end
 
 ---@param source DispSettings
 function DispClass:setSettings(source)
+    --[[DEBUG]]log("ViiRLD: DispClass:setSettings: "..var_dump(source))
     if source then
         local mode = source.mode
         if mode and ST_MODES[mode] then
@@ -315,6 +316,9 @@ function DispClass:setSettings(source)
             ---@type table<number, DispSignal>
             local validSignals = {}
             for index, sig in pairs(signals) do
+                if type(index) == "string" then
+                    index = tonumber(index)
+                end
                 if signalNames[sig.name] or validSignals[index] then
                     goto nextSignal
                 end
