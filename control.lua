@@ -82,7 +82,7 @@ script.on_event(
         ---@overload fun (event: EventData)
         ---@param event OnGuiOpened
         function(event)
-            --[[DEBUG]]log("ViiRLD: on_gui_opened: "..var_dump(event))
+            --[[DEBUG]]log("ViiRLD: on_gui_opened: " .. var_dump(event))
             if event.gui_type == defines.gui_type.entity and event.entity then
                 DispGui.handleGuiOpened(event)
             end
@@ -146,6 +146,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
 ---@param event OnPlayerMinedEntity
 local function entityRemoved(event)
     local entity = event.entity
+    --[[DEBUG]] log("ViiRLD: entityRemoved: " .. var_dump(event) .. " entity valid: " .. var_dump(entity and entity.valid))
     if entity and entity.valid then
         if entity.name == "train-stop" or entity.name == "viirld-dispatcher" then
             DispClass.handleRemoved(entity)
@@ -156,7 +157,7 @@ local function entityRemoved(event)
 end
 script.on_event(defines.events.on_player_mined_entity, entityRemoved)
 script.on_event(defines.events.on_entity_died, entityRemoved)
-script.on_event(defines.events.on_robot_mined, entityRemoved)
+script.on_event(defines.events.on_robot_mined_entity, entityRemoved)
 script.on_event(defines.events.script_raised_destroy, entityRemoved)
 
 script.on_event(
@@ -215,7 +216,6 @@ script.on_event(
             end
         end
 )
-
 
 ---@param blueprint LuaItemStack
 ---@param mapping table<uint, LuaEntity>

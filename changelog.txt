@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.11
+Date: 2022.12.01
+  Changes:
+    - Fixed a bug when the dispatcher did not work, if before that it was removed by the bot and restored
+---------------------------------------------------------------------------------------------------
 Version: 0.0.10
 Date: 2022.11.29
   Changes:
