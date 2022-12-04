@@ -81,6 +81,9 @@ function TrainClass:isEnoughFuel()
         for _, loco in pairs(dir) do
             local burner = loco.burner
             if burner then
+                if #burner.inventory == 0 then
+                    return true
+                end
                 energy = energy + burner.remaining_burning_fuel
                 if energy >= need then
                     return true
