@@ -58,6 +58,13 @@ You can set the net mask bit. For example:
 For delivery, it is necessary that the masks (bit AND) of the network at the supply station, the request station and the train intersect.
 
 
+##### priority-tt
+
+Stations with a higher priority are used for deliveries first. Both for supply stations and request stations.
+
+In some rare cases, a supply station with a lower priority can be used instead of a higher priority — an implementation feature.
+
+
 ##### comps-tt
 
 One or more types of trains that are allowed at this station (separated by a space).

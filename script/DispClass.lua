@@ -21,6 +21,7 @@
     ---@field otherFluidMin CountWithUnits @nullable
     ---@field networks Networks @nullable
     ---@field comps TrainCompositions @nullable Allowed composition at station. Also build compositions
+    ---@field priority number Station priority
 
 
 ---@alias DispUid number
@@ -44,6 +45,7 @@ function DispClass:new(dispEntity)
         mode = ST_MODE_OFF,
         networks = defaultNetworks,
         signals = { },
+        priority = 0,
     })
     disp:_createIO()
     local beh = --[[---@type LuaArithmeticCombinatorControlBehavior]] dispEntity.get_control_behavior()
@@ -242,6 +244,7 @@ function DispClass:getSettings()
         otherFluidMin = util.copy(self.otherFluidMin),
         networks = self.networks or defaultNetworks,
         comps = self.comps,
+        priority = self.priority,
     }
 end
 
@@ -309,6 +312,7 @@ function DispClass:setSettings(source)
             local comps = parseTrainCompositions(source.comps)
             self.comps = comps and table.concat(comps, " ")
         end
+        self.priority = source.priority
         ---@type table<string, true>
         local signalNames = {}
         local signals = source.signals

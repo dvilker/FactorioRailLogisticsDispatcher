@@ -7,6 +7,7 @@
 ---@shape StopSignalState: DispSignal
     ---@field index number
     ---@field error LocalisedString @nullable
+    ---@field errorTt LocalisedString @nullable
     ---@field errorTick number @nullable
     ---@field dynamic boolean @nullable Added by signal to input combinator
     ---@field _min number @ Result of minimum
