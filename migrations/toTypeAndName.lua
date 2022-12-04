@@ -14,6 +14,7 @@ end
 if global.surObs then
     for _, sur in pairs(global.surObs) do
         processMap(sur.provide, "sur.provide")
+        processMap(sur.request, "sur.request")
         processMap(sur.provideUpdate, "sur.provideUpdate")
         for _, stop in pairs(sur.stops) do
             processMap(stop.signalStates, "stop.signalStates")

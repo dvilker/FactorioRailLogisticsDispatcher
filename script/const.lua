@@ -33,6 +33,7 @@ UNDER_MIN_COLOR = { 0xaa, 0xaa, 0xaa }
 E_NO_PROVIDER = --[[---@type LocalisedString]] { "viirld-gui.no-provider" }
 E_NO_MIN_PROVIDER = --[[---@type LocalisedString]] { "viirld-gui.no-min-provider" }
 E_NO_TRAIN = --[[---@type LocalisedString]] { "viirld-gui.no-train" }
+E_LOW_PRIORITY = --[[---@type LocalisedString]] { "viirld-gui.low-priority" }
 
 ---@type string
 ST_TAG = "viirld"

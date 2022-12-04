@@ -12,6 +12,7 @@
     ---@field trains table<TrainUid, TrainClass> @All managed trains on surface
     ---@field freeTrains table<TrainType, table<TrainUid, TrainClass>> @Free managed trains on surface
     ---@field provide table<TypeAndName, table<StopUid, StopClass>> @Current provides
+    ---@field request table<TypeAndName, table<StopUid, StopClass>> @Current requests -- for priority
     ---@field provideUpdate table<TypeAndName, number> @Tick of last update for increase
 SurClass = { }
 
@@ -34,6 +35,7 @@ function SurClass:new(surfaceIndex)
         freeTrains = {},
 
         provide = {},
+        request = {},
         provideUpdate = {},
     })
 end
@@ -185,8 +187,6 @@ function SurClass:correctDeliveriesAtStop(requester)
     end
 end
 
-
-
 ---@param stop StopClass
 ---@param doNotMakeDeliveries boolean
 ---@return DeliveryClass @nullable New delivery
@@ -217,6 +217,24 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
                 provideStops[stop.uid] = nil
                 if table_size(provideStops) == 0 then
                     self.provide[typeAndName] = nil
+                end
+            end
+        end
+        if stop.request then
+            for typeAndName, _ in pairs(stop.request) do
+                local requestStops = self.request[typeAndName]
+                if not requestStops then
+                    requestStops = {}
+                    self.request[typeAndName] = requestStops
+                end
+                requestStops[stop.uid] = stop
+            end
+        end
+        for typeAndName, requestStops in pairs(self.request) do
+            if not stop.request or not stop.request[typeAndName] then
+                requestStops[stop.uid] = nil
+                if table_size(requestStops) == 0 then
+                    self.request[typeAndName] = nil
                 end
             end
         end
@@ -279,44 +297,66 @@ function SurClass:_tryToMakeDelivery(requester)
         return nil
     end
 
-    ---@type StopClass, TrainClass, number, number, table<string, number>, number
-    local bestProvider, bestTrain, bestScore, bestDistance, bestContents, errorMask
+    ---@type StopClass, TrainClass, number, number, number, table<string, number>, number
+    local bestProvider, bestTrain, bestPriority, bestScore, bestDistance, bestContents, errorMask
     for typeAndName, reqState in pairs(requester.request) do
-        ---@type LocalisedString
-        local newError
+        ---@type LocalisedString, LocalisedString
+        local newError, newErrorTt
         if reqState._request > 0 then
             local hasProvider, hasMinProvide, hasTrain
-            local providers = self.provide[typeAndName]
-            if providers then
-                for _, provider in pairs(providers) do
-                    if provider ~= requester
-                            and provider.provide
-                            and provider.provide[typeAndName] and provider.provide[typeAndName]._provide > 0
-                            and provider:hasTrainSlot()
-                            and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
-                            and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
-                    then
-                        hasProvider = true
-                        local contents, c, f = self:_getNeededExchange(provider, requester, false, nil)
-                        if contents then
-                            hasMinProvide = true
-                            local train, score, distance = self:_findBestTrainForExchange(provider, requester, contents, c, f)
-                            if train then
-                                hasTrain = true
-                                if not bestScore or bestScore < score or (bestScore == score and distance < bestDistance) then
-                                    bestProvider = provider
-                                    bestTrain = train
-                                    bestScore = score
-                                    bestDistance = distance
-                                    bestContents = contents
+            ---@type StopClass
+            local hasMorePriority
+            local otherRequest = self.request[typeAndName]
+            if otherRequest then
+                local reqPriority = requester.disp.priority
+                for _, reqStop in pairs(otherRequest) do
+                    local priority = reqStop.disp.priority
+                    if math.abs(reqPriority - priority) > 0.000001 and priority > reqPriority then
+                        hasMorePriority = reqStop
+                        break
+                    end
+                end
+            end
+            if not hasMorePriority then
+                local providers = self.provide[typeAndName]
+                if providers then
+                    for _, provider in pairs(providers) do
+                        if provider ~= requester
+                                and provider.provide
+                                and provider.provide[typeAndName] and provider.provide[typeAndName]._provide > 0
+                                and provider:hasTrainSlot()
+                                and isCompatibleNetworks(requester.disp.networks, provider.disp.networks)
+                                and isCompatibleTrainCompositions(requester.compFlags, provider.compFlags)
+                        then
+                            local priority = provider.disp.priority
+                            if not bestPriority or bestPriority <= priority or math.abs(bestPriority - priority) < 0.000001 then
+                                hasProvider = true
+                                local contents, c, f = self:_getNeededExchange(provider, requester, false, nil)
+                                if contents then
+                                    hasMinProvide = true
+                                    local train, score, distance = self:_findBestTrainForExchange(provider, requester, contents, c, f)
+                                    if train then
+                                        hasTrain = true
+                                        if not bestScore or bestScore < score or (bestScore == score and distance < bestDistance) then
+                                            bestProvider = provider
+                                            bestTrain = train
+                                            bestPriority = priority
+                                            bestScore = score
+                                            bestDistance = distance
+                                            bestContents = contents
+                                        end
+                                    else
+                                    end
                                 end
-                            else
                             end
                         end
                     end
                 end
             end
-            if not hasProvider then
+            if hasMorePriority then
+                newError = E_LOW_PRIORITY
+                newErrorTt = { "viirld-gui.low-priority-tt", hasMorePriority.stopEntity.backer_name }
+            elseif not hasProvider then
                 newError = E_NO_PROVIDER
             elseif not hasMinProvide then
                 newError = E_NO_MIN_PROVIDER
@@ -330,6 +370,7 @@ function SurClass:_tryToMakeDelivery(requester)
         end
         if reqState.error ~= newError then
             reqState.error = newError
+            reqState.errorTt = newErrorTt
             reqState.errorTick = game.tick
         end
     end
@@ -505,7 +546,6 @@ function SurClass:_findBestTrainForExchange(provider, requester, contents, needC
     end
     return nil, nil, nil
 end
-
 
 ---@param delivery DeliveryClass
 function SurClass:addDelivery(delivery)

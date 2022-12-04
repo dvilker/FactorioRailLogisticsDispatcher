@@ -28,6 +28,7 @@ local EL_NETWORKS = 3003
 local EL_COMPS = 3004
 local EL_COMPS_BUTTONS = 3005
 local EL_COMPS_BUTTON = 3006
+local EL_PRIORITY = 3007
 
 local EL_OTHER_BUTTON = 3102
 local EL_ITEM_BUTTON = 3101
@@ -303,6 +304,8 @@ function DispGui:_create(name)
                                     { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
                                     { type = "label", caption = { "viirld-gui.comps" }, tooltip = { "viirld-gui.comps-tt" } },
                                     { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "viirld-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
+                                    { type = "label", caption = { "viirld-gui.priority" }, tooltip = { "viirld-gui.priority-tt" } },
+                                    { type = "textfield", _name = EL_PRIORITY, text = "0", tooltip = { "viirld-gui.priority-tt" }, numeric = true, allow_decimal = true, allow_negative = true, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
                                     --[[{ type = "flow", direction = "horizontal", _sub = {
                                         { type = "sprite-button", _share = EL_COMPS_BUTTON, _value = ", ", sprite = nil }
                                     }},
@@ -524,6 +527,7 @@ function DispGui:_updateVisibleAndEnabled()
     guiSetVisible(shares[OPT_OUT_MODE], data.mode == ST_MODE_BIDI)
 
     guiSetVisible(shares[EL_NETWORKS], data.mode ~= ST_MODE_OFF)
+    guiSetVisible(shares[EL_PRIORITY], data.mode ~= ST_MODE_OFF)
     guiSetVisible(shares[EL_COMPS], data.mode ~= ST_MODE_OFF)
     -- guiSetVisible(shares[EL_COMPS_BUTTONS], data.mode ~= ST_MODE_OFF)
 
@@ -560,6 +564,7 @@ function DispGui:_dataToForm()
     guiSetRadiobutton(self.model, OPT_OUT_MODE, self.data.outMode or ST_OUT_NEED_CONTENTS_NEG)
 
     named[EL_NETWORKS].text = tostring(self.data.networks or defaultNetworks)
+    named[EL_PRIORITY].text = tostring(self.data.priority)
     named[EL_COMPS].text = self.data.comps or ""
     self:_updateVisibleAndEnabled()
 end
@@ -800,6 +805,8 @@ function DispGui:_handleGuiEvent(event)
             doUpdateCounters = true
         elseif _name == EL_NETWORKS then
             self.data.networks = toPosNumber(element.text, 1)
+        elseif _name == EL_PRIORITY then
+            self.data.priority = tonumber(element.text) or 0
         elseif _name == EL_COMPS then
             self.data.comps = element.text
         elseif _name == FLAG_flagReverseLocos then
@@ -907,8 +914,8 @@ function DispGui:updateStopInfo()
             end
         end
         for typeAndName, rowModel in pairs(self.ioRows) do
-            ---@type LocalisedString
-            local state
+            ---@type LocalisedString, LocalisedString
+            local state, stateTt
             local request = stop.request and stop.request[typeAndName]
             if request then
                 rowModel.cells[2].caption = '−' .. util.format_number(-request._count, false)
@@ -917,6 +924,7 @@ function DispGui:updateStopInfo()
                 else
                     state = request.error
                 end
+                stateTt = request.errorTt
                 rowModel.cells[2].style.font_color = request._request > 0 and REQUEST_COLOR or UNDER_MIN_COLOR
                 rowModel.cells[2].style.font = request._request > 0 and 'default-bold' or 'default'
             else
@@ -937,6 +945,7 @@ function DispGui:updateStopInfo()
                 rowModel.cells[3].caption = "-"
             end
             rowModel.cells[4].caption = state or ""
+            rowModel.cells[4].tooltip = stateTt
         end
 
         for uid, delivery in pairs(stop.deliveries) do
