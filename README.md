@@ -54,7 +54,8 @@ Use `build/build.js` for make mod-zip file and for processing some files (locale
 
 ## Contributors
 
-1. As long as it's just me
+1. Viidi - Author and initiator of this mod.
+2. WristWatch - English, fixes.
 
 ## License
 
