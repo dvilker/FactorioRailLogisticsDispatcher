@@ -12,9 +12,9 @@ supplies this type of cargo.
 
 [font=default-bold]Minimum[/font] — minimum train load for this type of cargo. Trains must not run empty.
 
-You can also configure the general mode [virtual-signal=signal-anything] — request (<0) and offer (>0) will be taken from the signal on the dispatcher's input port. To activate the general mode, a minimum must be set for a solid load and/or liquid.
+You can also configure the general mode [virtual-signal=signal-anything] — request (<0) and offer (>0) will be taken from the signal on the dispatcher's input port. To activate the general mode, a minimum value must be set for a solid load and/or liquid.
 
-When two stations with a similar request and supply appear in the network, a delivery is created if there is a suitable train.
+When two stations with a similar request and supply appear in the network, a delivery is created if there is a suitable train available.
 
 ##### mode-depot-tt
 
@@ -25,17 +25,17 @@ If you want to have different depots for different types of trains, name them di
 At the depot, the train is painted in the color of the station, and also receives a network mask.
 The name of the depot to which the train is assigned is applied to the front locomotive.
 
-Any train arriving at the depot becomes a member of railway logistics.
+Any train arriving at the depot becomes a member of the railway logistics network.
 After completing the task, the train goes to the depot, but on the way it can receive a new task bypassing the depot.
 
-If there is a train with cargo in the depot, it will go to the cleaning station, if there is one. If not, he will stand and wait until he is emptied.
-If there is an empty train in the depot, it will go to the fuel station, if there is one. If not, it will stand and wait until it is refueled.
+If there is a train with cargo in the depot, it will go to the cleaning station, if there is one. If not, it will stand and wait until it is emptied.
+If there is a train lacking fuel (configurable in settings) in the depot, it will go to the fuel station, if there is one. If not, it will stand and wait until it is refueled.
 
 
 ##### mode-fuel-tt
 
-If the train's energy supply runs out (set in the settings), it goes to the nearest suitable fuel station, if there is one.
-If there are no fuel stations, then the train will proceed to the depot, where it will wait for fuel loading.
+If the train's fuel/energy supply runs out (set in the settings), it goes to the nearest suitable fuel station, if there is one.
+If there are no fuel stations, then the train will proceed to the depot, where it will wait for fuel to be loaded.
 Usually one fuel station per surface is sufficient.
 At the fuel station, it is recommended to refuel the train as soon as possible.
 If the fuel station is the only station in the train schedule, then after refueling it will be sent to the nearest suitable depot, so it is convenient to build new trains at the fuel station.
@@ -43,8 +43,7 @@ If the fuel station is the only station in the train schedule, then after refuel
 
 ##### mode-clean-tt
 
-If the train after the task or upon arrival at the depot is not empty, it is sent to the cleaning station,
-where it should be completely freed from the content.
+If the train is not empty upon completion of a task or on being sent to the depot, it is sent to the cleaning station, where any cargo should be emptied.
 
 If there are no cleaning stations on the surface, the train will proceed to the depot and will not be used until it is cleared.
 
@@ -68,20 +67,20 @@ In some rare cases, a supply station with a lower priority can be used instead o
 
 ##### comps-tt
 
-One or more types of trains allowed at this station (separated by a space).
+One or more types of trains that are allowed at this station (separated by a space).
 
 Train type is a string where the character corresponds to the type of car (from left to right):
 L or < — locomotive directed forward,
 > — locomotive directed backwards,
 C — cargo wagon,
-F — tank,
+F — fluid wagon,
 A — artillery.
 
 For example:
-<CC — locomotive-car-car freight train
-<CC <FF — ...
+<CC — Station will accept freight trains with a configuration of locomotive-cargo-cargo 
+<CC <FF — Station will accept freight trains with a configuration of both locomotive-cargo-cargo and locomotive-fluid-fluid freight train
 
-Empty field — any type of train.
+Empty field — Leaving the setting blank means the station will accept any type of train.
 
 
 ##### informatron
@@ -89,8 +88,8 @@ Empty field — any type of train.
 Rail Logistics Dispatcher [item=viirld-dispatcher] — is a small building (looks like a light bulb) that is placed
 next to the station.
 
-The dispatcher has two ports (visible in Alt-mode): input and output. With the help of them, the dispatcher receives information about the cargo
-at the station and transmits information about trains and deliveries.
+The dispatcher has two ports (visible in Alt-mode): input and output. These ports allow the dispatcher to receive information about the cargo
+at the station and transmit information about trains and deliveries.
 
 Manager operating modes:
 
@@ -126,7 +125,7 @@ Manager operating modes:
 
 [font=heading-2]Additional functionality[/font]
 
-[font=default-bold]Turn manipulators.[/font] Supply stations have the ability to clear loaders by temporarily reversing them.
+[font=default-bold]Turn Inserters.[/font] Supply stations have the ability to clear inserters by temporarily reversing them.
 This greatly facilitates the creation of multi-cargo supply stations.
 
 [font=default-bold]Tamp when loading.[/font] When loading multiple goods, sometimes a situation arises that a bundle of cargo is divided into different
@@ -136,11 +135,11 @@ wagons blocking the insertion of another cargo. This option "tamp" the pack into
 
 [font=default-bold]Signal mode.[/font] Enables sending a train on a green signal at a station.
 
-[font=default-bold]Equality in the schedule.[/font] Usually, when loading, it is allowed to load more cargo (due to the size of the inserter pack).
-This option is needed for loading accuracy.
+[font=default-bold]Equality in the schedule.[/font] Usually, when loading, the station might load more cargo than is strictly requested (due to the size of the inserter stack).
+This option can be enabled when needed for additional loading accuracy.
 
 
-[font=heading-2]Why do we need a dispatcher if there is an LTN?[/font]
+[font=heading-2]Why do we need a dispatcher if LTN (Logistics Train Network) already exists?[/font]
 
 The dispatcher is optimized for multi-item deliveries: all interfering problems have been resolved.
 It has a friendly and intuitive interface.
