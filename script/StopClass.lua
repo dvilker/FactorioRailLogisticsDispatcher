@@ -221,6 +221,7 @@ function StopClass:_updateBidi()
                             min = nil, -- fills later
                             error = nil,
                             errorTick = nil,
+                            errorTt = nil,
                             dynamic = true,
                             _used = true,
                             _min = 0, -- fills later
@@ -288,8 +289,10 @@ function StopClass:_updateBidi()
                     self.errorMaskInvalid = true
                 end
             elseif signal._count < 0 then
-                request = request or {}
-                request[typeAndName] = signal
+                if signal._request > 0.000001 then
+                    request = request or {}
+                    request[typeAndName] = signal
+                end
             end
         end
     end
@@ -507,13 +510,13 @@ function StopClass:trainArrived(trainEntity)
                     self:_updateDeliveryChanges()
                     self:updateOutputPort()
                 else
-                    self.stopEntity.force.print({ "viirld.err-train-not-by-schedule", trainEntity.id, self.stopEntity.unit_number })
+                    self.stopEntity.force.print({ "viirld.err-train-not-by-schedule", trainEntity.front_stock.unit_number, self.stopEntity.unit_number })
                 end
             else
-                self.stopEntity.force.print({ "viirld.err-unknown-delivery", trainEntity.id, self.stopEntity.unit_number })
+                self.stopEntity.force.print({ "viirld.err-unknown-delivery", trainEntity.front_stock.unit_number, self.stopEntity.unit_number })
             end
         else
-            self.stopEntity.force.print({ "viirld.err-unknown-train", trainEntity.id, self.stopEntity.unit_number })
+            self.stopEntity.force.print({ "viirld.err-unknown-train", trainEntity.front_stock.unit_number, self.stopEntity.unit_number })
         end
     end
     self:updateVisual()
