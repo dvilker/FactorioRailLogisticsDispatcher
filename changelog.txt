@@ -2,11 +2,11 @@
 Version 0.0.12
 Date 2022.12.05
 Changes: 
-    - add pyindustry optional dependency
-    - add Electric Train optional dependency
-        - fixed Electric Train getting stuck needing to go to the fuel station
-    - improve en locale
-    - Beta testing of requests and offers priorities
+    - Add pyindustry optional dependency (by WristWatch)
+    - Add Electric Train optional dependency (by WristWatch)
+    - Fixed Electric Train getting stuck needing to go to the fuel station (by WristWatch)
+    - Improve EN locale (by WristWatch)
+    - Beta testing of request and supply station priorities
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.11
 Date: 2022.12.01
