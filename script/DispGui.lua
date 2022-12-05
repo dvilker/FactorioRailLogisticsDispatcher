@@ -945,7 +945,7 @@ function DispGui:updateStopInfo()
                 rowModel.cells[3].caption = "-"
             end
             rowModel.cells[4].caption = state or ""
-            rowModel.cells[4].tooltip = stateTt
+            rowModel.cells[4].tooltip = stateTt or ""
         end
 
         for uid, delivery in pairs(stop.deliveries) do
