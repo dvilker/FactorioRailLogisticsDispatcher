@@ -10,8 +10,8 @@ This mod is similar to the famous LTN mod with the following differences:
 | This mod                                                                          | LTN                                                                             |
 |-----------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
 | A separate entity (dispatcher) that is installed next to the station              | Special station entity                                                          |
-| Full blueprint and Undo support                                                  | Connections are lost in some cases                                              |
-| Dispatcher has GUI and can also be configured with a permanent combinator         | Needs constant combinator for setup                                             |
+| Full blueprint and Undo support                                                   | Connections are lost in some cases                                              |
+| Dispatcher has GUI and can also be configured with a constant combinator          | Needs constant combinator for setup                                              |
 | Optimized for multi-cargo deliveries (first motivation to write this mod)         | Supports multi-cargo delivery, but due to bugs it is impossible to fully use it |
 | MIT license. Modders of all countries unite! (second motivation) | Restrictive license                                                             |
 
