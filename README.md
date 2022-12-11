@@ -56,6 +56,7 @@ Use `build/build.js` for making mod-zip file and for processing some files (loca
 
 1. Viidi - Author and initiator of this mod.
 2. WristWatch - English, fixes.
+3. modo_lv - Nullius compatibility.
 
 ## License
 
