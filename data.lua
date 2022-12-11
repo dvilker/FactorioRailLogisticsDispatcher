@@ -191,7 +191,7 @@ do
         -- Enable recipe and place it just after regular station
         recipe.order = "nullius-eca"
         -- Use the same costs (minus the train stop) and metadata as for LTN
-        recipe.category = "medium-crafting"
+        recipe.category = "tiny-crafting"
         recipe.always_show_made_in = true
         recipe.energy_required = 3
         recipe.ingredients = {
