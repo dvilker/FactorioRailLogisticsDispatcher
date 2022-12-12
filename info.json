@@ -1,11 +1,11 @@
 {
   "name": "RailLogisticsDispatcher",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "title": "Rail Logistics Dispatcher",
   "author": "Viidi",
   "contact": "https://github.com/dvilker/FactorioRailLogisticsDispatcher",
   "homepage": "https://mods.factorio.com/mod/RailLogisticsDispatcher",
-  "description": "Adds a dispatcher (building) to automate railway logistics based on offers and requests.\n\nThe mod is optimized for multi-delivery deliveries, has an intuitive interface and is published under a free license.\n\nContributors: WristWatch",
+  "description": "Adds a dispatcher (building) to automate railway logistics based on offers and requests.\n\nThe mod is optimized for multi-delivery deliveries, has an intuitive interface and is published under a free license.\n\nContributors: WristWatch, modo_lv",
   "factorio_version": "1.1",
   "dependencies": [
     "base >= 1.1.46",

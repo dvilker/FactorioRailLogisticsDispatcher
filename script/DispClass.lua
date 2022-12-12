@@ -312,7 +312,8 @@ function DispClass:setSettings(source)
             local comps = parseTrainCompositions(source.comps)
             self.comps = comps and table.concat(comps, " ")
         end
-        self.priority = source.priority
+        self.priority = source.priority or 0
+
         ---@type table<string, true>
         local signalNames = {}
         local signals = source.signals

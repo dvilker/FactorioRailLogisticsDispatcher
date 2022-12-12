@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.14
+Date: 2022.12.12
+    Changes: 
+    - Added support for Nullius overhaul mod (by modo_lv)
+    - Fix an issue with early stored blueprints
+---------------------------------------------------------------------------------------------------
 Version: 0.0.13
 Date: 2022.12.05
   Changes:

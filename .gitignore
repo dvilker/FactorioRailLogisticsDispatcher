@@ -1,3 +1,4 @@
 build/out
 build/node_modules
 _test.lua
+.idea/
