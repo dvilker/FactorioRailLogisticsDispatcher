@@ -301,7 +301,7 @@ function DispGui:_create(name)
                                 { type = "line" },
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
                                     { type = "label", caption = { "viirld-gui.nets" }, tooltip = { "viirld-gui.nets-tt" } },
-                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = true, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
                                     { type = "label", caption = { "viirld-gui.comps" }, tooltip = { "viirld-gui.comps-tt" } },
                                     { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "viirld-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
                                     { type = "label", caption = { "viirld-gui.priority" }, tooltip = { "viirld-gui.priority-tt" } },
@@ -804,7 +804,11 @@ function DispGui:_handleGuiEvent(event)
             self.data.otherFluidMin = setCount(self.data.otherFluidMin, toNotNegNumber(element.text))
             doUpdateCounters = true
         elseif _name == EL_NETWORKS then
-            self.data.networks = toPosNumber(element.text, 1)
+			if (element.text == "-") then
+				self.data.networks = 0
+			else
+				self.data.networks = tonumber(element.text) or 0
+			end
         elseif _name == EL_PRIORITY then
             self.data.priority = tonumber(element.text) or 0
         elseif _name == EL_COMPS then
