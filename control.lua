@@ -245,7 +245,7 @@ script.on_event(
                 dataToBlueprint(cursor, mapping)
                 return
             end
-            if global.openedBlueprints and global.openedBlueprints[event.player_index] then
+            if global.openedBlueprints and global.openedBlueprints[event.player_index] and global.openedBlueprints[event.player_index].valid then
                 --[[DEBUG]]log("ViiRLD: on_player_setup_blueprint: opened blueprint: " .. var_dump(global.openedBlueprints[event.player_index]))
                 dataToBlueprint(global.openedBlueprints[event.player_index], mapping)
                 return
