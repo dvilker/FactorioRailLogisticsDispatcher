@@ -1,24 +1,24 @@
 ---------------------------------------------------------------------------------------------------
-Version 0.0.15
-Date 2022.12.13
-Changes: 
-    - Fix an issue with update blueprints
+Version: 0.0.15
+Date: 2022.12.13
+  Changes:
+    - Fix an issue with updating blueprints
 ---------------------------------------------------------------------------------------------------
-Version 0.0.14
-Date 2022.12.12
-Changes:
+Version: 0.0.14
+Date: 2022.12.12
+  Changes:
     - Added support for Nullius overhaul mod (by modo_lv)
     - Fix an issue with early stored blueprints
 ---------------------------------------------------------------------------------------------------
-Version 0.0.13
-Date 2022.12.05
-Changes: 
+Version: 0.0.13
+Date: 2022.12.05
+  Changes:
     - Fixed an issue where nothing was delivered to a station with a lower priority at all
     - Minor gui fixes
 ---------------------------------------------------------------------------------------------------
-Version 0.0.12
-Date 2022.12.05
-Changes:
+Version: 0.0.12
+Date: 2022.12.05
+  Changes:
     - Add pyindustry optional dependency (by WristWatch)
     - Add Electric Train optional dependency (by WristWatch)
     - Fixed Electric Train getting stuck needing to go to the fuel station (by WristWatch)
