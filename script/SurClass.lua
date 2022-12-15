@@ -278,6 +278,12 @@ function SurClass:updateStop(stop, doNotMakeDeliveries)
                 self.provide[typeAndName] = nil
             end
         end
+        for typeAndName, requestStops in pairs(self.request) do
+            requestStops[stop.uid] = nil
+            if table_size(requestStops) == 0 then
+                self.request[typeAndName] = nil
+            end
+        end
         self:removeDeliveriesBy(stop)
         if table_size(self.stops) == 0 then
             -- drop surface

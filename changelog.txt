@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.16
+Date: 2022.12.15
+  Changes:
+    - Fixed an issue that all deliveries of the station were deleted, if you delete station, even if the train passed this station
+    - Fixed an issue with the game crashing after deleting a supply station
+---------------------------------------------------------------------------------------------------
 Version: 0.0.15
 Date: 2022.12.13
   Changes:
