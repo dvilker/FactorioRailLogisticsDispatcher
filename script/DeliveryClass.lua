@@ -28,5 +28,7 @@ end
 
 ---@param stopOrTrain StopClass|TrainClass
 function DeliveryClass:isRelated(stopOrTrain)
-    return self.train == stopOrTrain or self.provider == stopOrTrain or self.requester == stopOrTrain
+    return self.train == stopOrTrain
+            or (self.provider == stopOrTrain and not self.providerPassed)
+            or (self.requester == stopOrTrain and not self.requesterPassed)
 end
