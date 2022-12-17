@@ -659,7 +659,7 @@ function DispGui:_handleGuiEvent(event)
                         end
                     end
                 elseif event.button == defines.mouse_button_type.right then
-                    global.mem[forceIndex][self.selectedItem.type][element.tags._value] = nil
+                    global.mem[forceIndex].other[element.tags._value] = nil
                     doUpdateMemButtons = true
                 end
             end
