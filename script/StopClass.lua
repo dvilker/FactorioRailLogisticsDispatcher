@@ -402,7 +402,9 @@ function StopClass:_turnInserters()
         for _, ins in pairs(inserters) do
             if ins.valid then
                 local entityAtPos = car.surface.find_entity(car.name, ins.drop_position)
-                if entityAtPos == car and ins.held_stack.count > 0 then
+                local straightRail = ins.surface.find_entity("straight-rail", ins.drop_position)
+                local curvedRail = ins.surface.find_entity("curved-rail", ins.drop_position)
+                if entityAtPos == car or straightRail ~= nil or curvedRail ~=nil and ins.held_stack.count > 0 then
                     turnedInserters = turnedInserters or {}
                     if not turnedInserters[ins.unit_number] then
                         swapInserter(ins, false)
