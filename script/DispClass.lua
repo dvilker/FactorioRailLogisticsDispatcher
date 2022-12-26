@@ -302,7 +302,7 @@ function DispClass:setSettings(source)
         if source.otherFluidMin == nil or validCountWithUnits(source.otherFluidMin) then
             self.otherFluidMin = source.otherFluidMin
         end
-        if source.networks ~= nil and type(source.networks) == "number" and source.networks > 0 then
+        if source.networks ~= nil and type(source.networks) == "number" and source.networks ~= 0 then
             self.networks = source.networks
             if self.mode == ST_MODE_DEPOT and self.stop and self.stop.train then
                 self.stop.train.networks = self.networks
