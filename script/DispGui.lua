@@ -138,34 +138,43 @@ function DispGui:close()
     self.disp.gui = nil
     self.disp:setSettings(self.data)
 
-    if self.disp.stop and self.disp.stop.stopEntity.valid then
-        if self.disp.stop.stopEntity.connected_rail and self.disp.stop.stopEntity.connected_rail.valid then
-            if self.disp.stop:isValid() then
-                if self.disp.mode == ST_MODE_BIDI then
-                    local hasConnection = false
-                    for _, def in pairs(self.disp.entity.circuit_connection_definitions) do
-                        if def.source_circuit_id == defines.circuit_connector_id.combinator_input
-                                and def.target_entity ~= self.disp.input
-                        then
-                            hasConnection = true
-                            break
+    if self.disp.entity.valid then
+        if self.disp.stop and self.disp.stop.stopEntity.valid then
+            if self.disp.stop.stopEntity.connected_rail and self.disp.stop.stopEntity.connected_rail.valid then
+                if self.disp.stop:isValid() then
+                    if self.disp.mode == ST_MODE_BIDI then
+                        local hasConnection = false
+                        for _, def in pairs(self.disp.entity.circuit_connection_definitions) do
+                            if def.source_circuit_id == defines.circuit_connector_id.combinator_input
+                                    and def.target_entity ~= self.disp.input
+                            then
+                                hasConnection = true
+                                break
+                            end
+                        end
+                        if not hasConnection then
+                            self.disp.entity.surface.create_entity {
+                                type = "flying-text",
+                                name = "tutorial-flying-text",
+                                position = self.disp.entity.position,
+                                text = { "viirld.err-not-input-connected" },
+                            }
                         end
                     end
-                    if not hasConnection then
-                        self.disp.entity.surface.create_entity {
-                            type = "flying-text",
-                            name = "tutorial-flying-text",
-                            position = self.disp.entity.position,
-                            text = { "viirld.err-not-input-connected" },
-                        }
-                    end
+                else
+                    self.disp.entity.surface.create_entity {
+                        type = "flying-text",
+                        name = "tutorial-flying-text",
+                        position = self.disp.entity.position,
+                        text = { "viirld.err-internal" },
+                    }
                 end
             else
                 self.disp.entity.surface.create_entity {
                     type = "flying-text",
                     name = "tutorial-flying-text",
                     position = self.disp.entity.position,
-                    text = { "viirld.err-internal" },
+                    text = { "viirld.err-no-rail" },
                 }
             end
         else
@@ -173,16 +182,9 @@ function DispGui:close()
                 type = "flying-text",
                 name = "tutorial-flying-text",
                 position = self.disp.entity.position,
-                text = { "viirld.err-no-rail" },
+                text = { "viirld.err-no-station" },
             }
         end
-    else
-        self.disp.entity.surface.create_entity {
-            type = "flying-text",
-            name = "tutorial-flying-text",
-            position = self.disp.entity.position,
-            text = { "viirld.err-no-station" },
-        }
     end
 end
 
@@ -301,7 +303,7 @@ function DispGui:_create(name)
                                 { type = "line" },
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
                                     { type = "label", caption = { "viirld-gui.nets" }, tooltip = { "viirld-gui.nets-tt" } },
-                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "textfield", _name = EL_NETWORKS, text = "1", tooltip = { "viirld-gui.nets-tt" }, numeric = true, allow_decimal = false, allow_negative = true, clear_and_focus_on_right_click = true, style = "short_number_textfield", _style1 = STYLE_MARGIN, },
                                     { type = "label", caption = { "viirld-gui.comps" }, tooltip = { "viirld-gui.comps-tt" } },
                                     { type = "textfield", _name = EL_COMPS, text = "", tooltip = { "viirld-gui.comps-tt" }, clear_and_focus_on_right_click = true, _style1 = STYLE_MARGIN, _style2 = { width = 300 } },
                                     { type = "label", caption = { "viirld-gui.priority" }, tooltip = { "viirld-gui.priority-tt" } },
@@ -804,7 +806,7 @@ function DispGui:_handleGuiEvent(event)
             self.data.otherFluidMin = setCount(self.data.otherFluidMin, toNotNegNumber(element.text))
             doUpdateCounters = true
         elseif _name == EL_NETWORKS then
-            self.data.networks = toPosNumber(element.text, 1)
+            self.data.networks = tonumber(element.text) or 1
         elseif _name == EL_PRIORITY then
             self.data.priority = tonumber(element.text) or 0
         elseif _name == EL_COMPS then

@@ -56,6 +56,8 @@ You can set the net mask bit. For example:
 
 For delivery, it is necessary that the masks (bit AND) of the network at the supply station, the request station and the train intersect.
 
+0 — no networks — station will not be used;
+-1 — all networks.
 
 ##### priority-tt
 
