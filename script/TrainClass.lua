@@ -162,11 +162,13 @@ end
 ---@return string @nullable
 function TrainClass:_findDepotNameInSchedule()
     local schedule = --[[---@type TrainSchedule]]self.train.schedule
-    for _, r in pairs(schedule.records) do
-        if r.station and r.wait_conditions then
-            for _, w in pairs(r.wait_conditions) do
-                if w.type == depotScheduleType and w.ticks == depotScheduleTime then
-                    return r.station
+    if schedule then
+        for _, r in pairs(schedule.records) do
+            if r.station and r.wait_conditions then
+                for _, w in pairs(r.wait_conditions) do
+                    if w.type == depotScheduleType and w.ticks == depotScheduleTime then
+                        return r.station
+                    end
                 end
             end
         end
@@ -470,7 +472,13 @@ end
 ---@param depotName string
 ---@param color Color
 function TrainClass:_updateNameAndColor(depotName, color)
-    if not self.depotNameText or rendering.get_text(self.depotNameText) ~= depotName then
+    if self.depotNameText then
+        if rendering.is_valid(self.depotNameText) then
+            rendering.destroy(self.depotNameText)
+        end
+        self.depotNameText = nil
+    end
+    --[[if not self.depotNameText or rendering.get_text(self.depotNameText) ~= depotName then
         if self.depotNameText then
             rendering.destroy(self.depotNameText)
         end
@@ -484,7 +492,7 @@ function TrainClass:_updateNameAndColor(depotName, color)
             color = {1, 1, 1},
             only_in_alt_mode = true,
         })
-    end
+    end]]
     for _, locDir in pairs(self.train.locomotives) do
         for _, loc in pairs(locDir) do
             loc.color = color

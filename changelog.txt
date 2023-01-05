@@ -1,8 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.17
-Date: 2022.12.17
-    Changes:
-        - Fix some inserters not reversing in "Turn Inserters" mode (by WristWatch)
+Date: 2023.01.05
+  Changes:
+    - Fixed game crash if you right-click on the memory button for *
+    - Removed debug train labels
+    - The netmask can now be less than zero. 0 - no networks, -1 - all networks.
+    - Fixed [CRASH] RailLogisticsDispatcher::on_gui_closed. https://github.com/dvilker/FactorioRailLogisticsDispatcher/issues/10
+    - Fixed game crash if you mine train or station. Or if it's destroyed.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.16
 Date: 2022.12.15

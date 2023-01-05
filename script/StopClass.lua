@@ -390,32 +390,23 @@ function StopClass:_tamp()
 end
 
 function StopClass:_turnInserters()
-    local train = self.train.train
-    --train.manual_mode = true
     local turnedInserters = self.turnedInserters
-    for _, car in pairs(train.carriages) do
-        local inserters = car.surface.find_entities_filtered({
-            type = "inserter",
-            position = car.position,
-            radius = 7,
-        })
-        for _, ins in pairs(inserters) do
-            if ins.valid then
-                local entityAtPos = car.surface.find_entity(car.name, ins.drop_position)
-                local straightRail = ins.surface.find_entity("straight-rail", ins.drop_position)
-                local curvedRail = ins.surface.find_entity("curved-rail", ins.drop_position)
-                if entityAtPos == car or straightRail ~= nil or curvedRail ~=nil and ins.held_stack.count > 0 then
-                    turnedInserters = turnedInserters or {}
-                    if not turnedInserters[ins.unit_number] then
-                        swapInserter(ins, false)
-                        turnedInserters[ins.unit_number] = ins
+    if self.inserters then
+        for i, ins in pairs(self.inserters) do
+            if i > 0 then
+                if ins.valid then
+                    if ins.held_stack.count > 0 then
+                        turnedInserters = turnedInserters or {}
+                        if not turnedInserters[ins.unit_number] then
+                            swapInserter(ins, false)
+                            turnedInserters[ins.unit_number] = ins
+                        end
                     end
                 end
             end
         end
     end
     self.turnedInserters = turnedInserters
-    --train.manual_mode = false
 end
 
 ---@param forced boolean
@@ -449,9 +440,17 @@ function StopClass:_fetchInserters(train)
         })
         for _, ins in pairs(inses) do
             if ins.valid then
-                if car.surface.find_entity(car.name, ins.drop_position) == car or car.surface.find_entity(car.name, ins.pickup_position) == car then
+                if ins.drop_target == car or car.surface.find_entity(car.name, ins.drop_position) == car then
                     inserters = inserters or {}
                     inserters[ins.unit_number] = ins
+                    inserters[-ins.unit_number] = nil
+                end
+                if not inserters or not inserters[ins.unit_number] then
+                    if ins.pickup_target == car or car.surface.find_entity(car.name, ins.pickup_position) == car
+                    then
+                        inserters = inserters or {}
+                        inserters[-ins.unit_number] = ins
+                    end
                 end
             end
         end
@@ -582,8 +581,11 @@ function StopClass:trainDepart()
         self.trainFluidContents = nil
         self.statTrains = (self.statTrains or 0) + 1
 
-        if delivery and delivery.requesterPassed and train then
-            train:goToHome()
+        if delivery and delivery.requesterPassed then
+            self.sur:removeDelivery(delivery)
+            if train then
+                train:goToHome()
+            end
         end
     elseif self.isClean then
         if self.train then

@@ -22,21 +22,31 @@ function var_dump(var)
     end
 end
 
-function var_dump_light(var, onlyKeys)
+function var_dump_light(var, level)
+    level = level or 3
     if type(var) == "table" then
-        local sb = { "{" }
-        for k, v in pairs(var) do
-            if #sb > 1 then
-                sb[#sb + 1] = ", "
+        if level >= 1 then
+            local sb = { "{" }
+            local meta = getmetatable(var)
+            if meta then
+                sb[#sb + 1] = "_meta_: "
+                sb[#sb + 1] = var_dump_light(meta, level - 1)
             end
-            sb[#sb + 1] = var_dump_light(k, true)
-            if not onlyKeys then
-                sb[#sb + 1] = ": "
-                sb[#sb + 1] = var_dump_light(v, true)
+            for k, v in pairs(var) do
+                if #sb > 1 then
+                    sb[#sb + 1] = ", "
+                end
+                sb[#sb + 1] = var_dump_light(k, level - 1)
+                if level >= 2 then
+                    sb[#sb + 1] = ": "
+                    sb[#sb + 1] = var_dump_light(v, level - 1)
+                end
             end
+            sb[#sb + 1] = "}"
+            return table.concat(sb)
+        else
+            return "{?}"
         end
-        sb[#sb + 1] = "}"
-        return table.concat(sb)
     elseif type(var) == "string" then
         return '"' .. tostring(var) .. '"'
     else
