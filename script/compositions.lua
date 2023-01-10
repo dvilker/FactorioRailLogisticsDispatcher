@@ -12,7 +12,16 @@ function getTrainComposition(train)
     for _, ca in pairs(train.carriages) do
         if ca.type == 'locomotive' then
             -- todo detect direction
-            comp[#comp + 1] = '<'
+            for _, loc in pairs(train.locomotives.front_movers) do
+                if loc.unit_number == ca.unit_number then
+                   comp[#comp + 1] = '<'
+                end
+            end
+            for _, loc in pairs(train.locomotives.back_movers) do
+                if loc.unit_number == ca.unit_number then
+                   comp[#comp + 1] = '>'
+                end
+            end
         elseif ca.type == 'cargo-wagon' then
             comp[#comp + 1] = 'C'
         elseif ca.type == 'fluid-wagon' then
