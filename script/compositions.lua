@@ -9,10 +9,18 @@
 function getTrainComposition(train)
     ---@type string[]
     local comp = {}
+    ---@type table<number, true>
+    local back_movers_map
+    local back_movers = train.locomotives.back_movers
+    if back_movers and #back_movers then
+        back_movers_map = {}
+        for _, loc in pairs(back_movers) do
+            back_movers_map[loc.unit_number] = true
+        end
+    end
     for _, ca in pairs(train.carriages) do
         if ca.type == 'locomotive' then
-            -- todo detect direction
-            comp[#comp + 1] = '<'
+            comp[#comp + 1] = back_movers_map and back_movers_map[ca.unit_number] and '>' or '<'
         elseif ca.type == 'cargo-wagon' then
             comp[#comp + 1] = 'C'
         elseif ca.type == 'fluid-wagon' then
