@@ -13,31 +13,34 @@ For each type of cargo (solid or liquid), the following parameters are set:
 
 You can also configure the general mode [virtual-signal=signal-anything] — request (<0) and offer (>0) will be taken from the signal on the dispatcher's input port. To activate the general mode, a minimum value must be set for a solid load and/or liquid.
 
-When two stations with a similar request and supply appear in the network, a delivery is created if there is a suitable train available.
+When two stations with a similar request and supply appear in the network, a delivery is created if there is a compatible train available. By default, all trains are assumed to be compatible. However, the dispatcher will not send trains with fluid wagons only to pick up solids, or cargo wagons to pick up fluids (barrels are considered as solids). It is possible to restrict the types of compatible trains in the settings below.
 
 ##### mode-depot-tt
 
-At the depot, trains are waiting for delivery orders.
-The train always follows the depot with the same name from where it left, finding it by the name of the station.
+At the depot, trains wait for delivery orders. 
+Any train arriving at the depot becomes a member of the railway logistics network.
 
-If you want to have different depots for different types of trains, name them differently.
 At the depot, the train is painted in the color of the station, and also receives a network mask.
 The name of the depot to which the train is assigned is applied to the front locomotive.
 
-Any train arriving at the depot becomes a member of the railway logistics network.
-After completing the task, the train goes to the depot, but on the way it can receive a new task, bypassing the depot.
+After completing a delivery, the train will automatically return to the depot. 
+It can receive a new order while en route, bypassing the depot.
 
-If there is a train with cargo in the depot, it will be sent to the cleaning station, if there is one. If not, it will stand and wait until it is emptied.
-If there is a train lacking fuel (configurable in settings) in the depot, it will be sent to the fuel station, if there is one. If not, it will stand and wait until it is refueled.
+Trains will always return to a depot with the same name from which it was dispatched.
+If you want to have different depots for different types of trains, name them differently.
+
+If there is a train with cargo in the depot, it will be sent to the nearest compatible cleaning station, if there is one. If not, it will wait until it is emptied.
+If there is a train lacking fuel (fuel threshold is configurable in settings) in the depot, it will be sent to the nearest compatible fuel station, if there is one. If not, it will  wait until it is refueled.
 
 
 ##### mode-fuel-tt
 
-If the train's fuel/energy supply goes below the minimum allowed value (set in the settings), it is sent to the nearest suitable fuel station, if there is one.
+If the train's fuel/energy supply goes below the minimum allowed value (set in the settings), it is sent to the nearest compatible fuel station, if there is one.
 If there are no fuel stations, then the train will proceed to the depot, where it will wait for fuel to be loaded.
 Usually one fuel station per surface is sufficient.
+
 At the fuel station, it is recommended to refuel the train as soon as possible.
-If the fuel station is the only station in the train schedule, then after refueling it will be sent to the nearest suitable depot, so it is convenient to build new trains at the fuel station.
+If the fuel station is the only station in the train schedule, then after refueling it will be sent to the nearest compatible depot, so it is convenient to build new trains at the fuel station.
 
 
 ##### mode-clean-tt
@@ -61,7 +64,7 @@ For delivery, it is necessary that the masks (bit AND) of the network at the sup
 
 ##### priority-tt
 
-Stations with a higher priority are used for deliveries first. Both for supply stations and request stations.
+Stations with a higher priority are used for deliveries first. This applies to both supply stations and request stations.
 
 In some rare cases, a supply station with a lower priority can be used instead of a higher priority — an implementation feature.
 
@@ -130,12 +133,12 @@ Dispatcher operating modes:
 
 [font=default-bold]Compound deliveries.[/font] Allows multiple types of cargo to be delivered between stations at the same time.
 
-[font=default-bold]Signal mode.[/font] Enables sending a train on a green signal at a station.
+[font=default-bold]Signals mode.[/font] Enables sending a train on a green signal at a station.
 
-[font=default-bold]Equality in the schedule.[/font] Usually, when loading, the station might load more cargo than is strictly requested (due to the size of the inserter stack). This option can be enabled when needed for additional loading accuracy.
+[font=default-bold]Require exact amounts.[/font] Usually, when loading, the station might load more cargo than is strictly requested (due to the size of the inserter stack). This option can be enabled when needed for additional loading accuracy.
 
 
-[font=heading-2]Why use the Rail Logistics Dispatcher over LTN (Logistics Train Network)?[/font]
+[font=heading-2]Why should you use the Rail Logistics Dispatcher over LTN (Logistics Train Network)?[/font]
 
 The dispatcher is optimized for multi-item deliveries: all interfering problems have been resolved.
 It has a friendly and intuitive interface.
