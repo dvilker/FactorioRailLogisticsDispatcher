@@ -21,3 +21,9 @@ if mods["nullius"] then
     -- Place dispatcher in the same place on the research tree as LTN 
     table.insert(data.raw.technology["nullius-broadcasting-1"].prerequisites, name)
 end
+
+if mods["Ultracube"] then
+    local tech = data.raw["technology"]["viirld-dispatcher"]
+    tech.unit = data.raw["technology"]["cube-railway"].unit
+    tech.prerequisites = {"cube-railway"}
+end
