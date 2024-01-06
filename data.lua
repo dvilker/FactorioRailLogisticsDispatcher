@@ -200,6 +200,16 @@ do
         }
     end
 
+    if mods["Ultracube"] then
+        recipe.category = "cube-fabricator-handcraft"
+        recipe.ingredients = {
+            {"cube-advanced-circuit", 1}, 
+            {"copper-cable", 2}, 
+            {"small-lamp", 1}
+        }
+    end
+
+
     local tech = {
         type = "technology",
         name = name,
