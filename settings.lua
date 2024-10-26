@@ -1,5 +1,12 @@
-
 data:extend({
+  {
+    type = "string-setting",
+    name = "viirld-version",
+    order = "aa",
+    setting_type = "startup",
+    default_value = 'v1',
+    allowed_values = {'v1', 'v2'},
+  },
   {
     type = "int-setting",
     name = "viirld-dispatcherSignalSlotCount",

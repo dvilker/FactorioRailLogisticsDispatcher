@@ -11,8 +11,8 @@ local function processMap(namedMap, hint)
     end
 end
 
-if global.surObs then
-    for _, sur in pairs(global.surObs) do
+if storage.surObs then
+    for _, sur in pairs(storage.surObs) do
         processMap(sur.provide, "sur.provide")
         processMap(sur.request, "sur.request")
         processMap(sur.provideUpdate, "sur.provideUpdate")

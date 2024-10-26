@@ -1,24 +1,49 @@
 const archiveName = 'Viirld'
 
 const fileList = [
-    'locale/ru/ru.cfg',
+    'locale/ru/ru.cfg.js',
+    'locale/ru/ruV1.cfg.js',
+    'locale/ru/ruV2.cfg.js',
     'locale/en/en.cfg',
     'migrations/toTypeAndName.lua',
     'migrations/priorities.lua',
-    'script/informatron.lua',
-    'script/compositions.lua',
-    'script/config.lua',
-    'script/const.lua',
-    'script/DeliveryClass.lua',
-    'script/DispClass.lua',
-    'script/DispGui.lua',
-    'script/gui.lua',
-    'script/networks.lua',
-    'script/StopClass.lua',
-    'script/SurClass.lua',
-    'script/TrainClass.lua',
-    'script/units.lua',
-    'script/utils.lua',
+
+    'v1/script/informatron.lua',
+    'v1/script/compositions.lua',
+    'v1/script/config.lua',
+    'v1/script/const.lua',
+    'v1/script/DeliveryClass.lua',
+    'v1/script/DispClass.lua',
+    'v1/script/DispGui.lua',
+    'v1/script/gui.lua',
+    'v1/script/networks.lua',
+    'v1/script/StopClass.lua',
+    'v1/script/SurClass.lua',
+    'v1/script/TrainClass.lua',
+    'v1/script/units.lua',
+    'v1/script/utils.lua',
+    'v1/control.lua',
+    'v1/data.lua',
+    'v1/data-updates.lua',
+    'v1/data-final-fixes.lua',
+
+    'v2/script/compositions.lua',
+    'v2/script/config.lua',
+    'v2/script/const.lua',
+    'v2/script/DeliveryClass.lua',
+    'v2/script/DispClass.lua',
+    'v2/script/DispGui.lua',
+    'v2/script/global.lua',
+    'v2/script/gui.lua',
+    'v2/script/informatron.lua',
+    'v2/script/NetClass.lua',
+    'v2/script/MoverClass.lua',
+    'v2/script/units.lua',
+    'v2/script/utils.lua',
+    'v2/control.lua',
+    'v2/data.lua',
+    'v2/data-updates.lua',
+    'v2/data-final-fixes.lua',
 
     'changelog.txt',
     'control.lua',
@@ -50,8 +75,13 @@ archive.on('error', function (err) {
 archive.pipe(output);
 
 for (let fn of fileList) {
-    if (/^locale\/.*\.cfg$/) {
+    if (/^locale\/.*\.cfg$/.test(fn)) {
         prepareLocaleCfg('../' + fn)
+    }
+    if (/^locale\/.*\.cfg\.js$/.test(fn)) {
+        let targetFileName = fn.replace(/\.js$/, '')
+        prepareLocaleCfgJs('../' + fn, '../' + targetFileName)
+        fn = targetFileName
     }
     if (/\.lua$/.test(fn)) {
         archive.append(getLuaContent('../' + fn), {name: `${archiveName}/${fn}`})
@@ -115,7 +145,61 @@ function prepareLocaleCfg(fileName) {
     }
 }
 
+function evalLang() {
+    const lang = {}
+    eval(arguments[0])
+    return lang
+}
+
+function prepareLocaleCfgJs(fileName, targetFileName) {
+    let js = fs.readFileSync(fileName).toString("utf8")
+    let lang = evalLang(js)
+    for (const lk in lang) {
+        if (lang.hasOwnProperty(lk) && typeof lang[lk] === 'function') {
+            lang[lk] = lang[lk]()
+        }
+    }
+    let langKeys = Object.keys(lang).sort()
+    let divs = []
+    {
+        let div = null
+        for (let lk of langKeys) {
+            let r = /^([^.]+)\.([^.]+)$/.exec(lk)
+            if (!r) {
+                console.warn("Lang key has not dot: ", lk, " File: ", fileName)
+                continue;
+            }
+            if (!div || div.name !== r[1]) {
+                div = {
+                    name: r[1],
+                    items: []
+                }
+                divs.push(div)
+            }
+            div.items.push({
+                name: r[2],
+                text: lang[lk]
+            })
+        }
+    }
+    let contents = ["# Auto generated file. Use build.js to update"]
+    for (let div of divs) {
+        contents.push(``)
+        contents.push(`[${div.name}]`)
+        for (let item of div.items) {
+            contents.push(`${item.name}=${item.text.trim().replace(/^\^/,'').replace(/\n/g, "\\n")}`)
+        }
+    }
+    let newContents = contents.join('\n')
+    let oldContents = fs.existsSync(targetFileName) ? fs.readFileSync(targetFileName).toString("utf8") : ""
+    if (oldContents !== newContents) {
+        fs.writeFileSync(targetFileName, newContents)
+        console.log("File updated: ", targetFileName)
+    }
+}
+
 function getLuaContent(fileName) {
     return fs.readFileSync(fileName).toString("utf8")
-        .replace(/--\[\[DEBUG]]/g, '-- [[DEBUG]]') // Comment --[[DEBUG]]-s
+        .replace(/--\[\[DEBUG]]/gsi, '-- [[DEBUG]]') // Comment --[[DEBUG]]-s
+        .replace(/--\[\[DEBUG_BEGIN]](.*?)--\[\[DEBUG_END]]/gsi, (_, m1) => '--[[DEBUG_START] ]' + m1.replace(/]]/g, '] ]') + '--[[DEBUG_END]]')
 }

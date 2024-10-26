@@ -1,5 +1,5 @@
-if global.surObs then
-    for _, sur in pairs(global.surObs) do
+if storage.surObs then
+    for _, sur in pairs(storage.surObs) do
         for dUid, delivery in pairs(sur.deliveries) do
             if (delivery.requesterPassed and delivery.providerPassed)
                     or not delivery.requester.valid

@@ -1,16 +1,17 @@
 {
   "name": "RailLogisticsDispatcher",
-  "version": "0.0.18",
+  "version": "0.2.1",
   "title": "Rail Logistics Dispatcher",
   "author": "Viidi",
   "contact": "https://github.com/dvilker/FactorioRailLogisticsDispatcher",
   "homepage": "https://mods.factorio.com/mod/RailLogisticsDispatcher",
   "description": "Adds a dispatcher (building) to automate railway logistics based on offers and requests.\n\nThe mod is optimized for multi-delivery deliveries, has an intuitive interface and is published under a free license.\n\nContributors: WristWatch, modo_lv, KillTrot",
-  "factorio_version": "1.1",
+  "factorio_version": "2.0",
   "dependencies": [
     "base >= 1.1.46",
     "? informatron >= 0.2.1",
     "? pyindustry >= 2.0.0",
-    "? ElectricTrain >= 1.1.2"
+    "? ElectricTrain >= 1.1.2",
+    "(?) AdjustWagonCapacity"
   ]
 }

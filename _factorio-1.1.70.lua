@@ -1020,7 +1020,7 @@ defines = defines
   ---@alias EventFilter (LuaEntityClonedEventFilter | LuaEntityDamagedEventFilter | LuaPlayerMinedEntityEventFilter | LuaPreRobotMinedEntityEventFilter | LuaRobotBuiltEntityEventFilter | LuaPostEntityDiedEventFilter | LuaEntityDiedEventFilter | LuaScriptRaisedReviveEventFilter | LuaPrePlayerMinedEntityEventFilter | LuaEntityMarkedForDeconstructionEventFilter | LuaPreGhostDeconstructedEventFilter | LuaPreGhostUpgradedEventFilter | LuaEntityDeconstructionCancelledEventFilter | LuaEntityMarkedForUpgradeEventFilter | LuaSectorScannedEventFilter | LuaRobotMinedEntityEventFilter | LuaScriptRaisedDestroyEventFilter | LuaUpgradeCancelledEventFilter | LuaScriptRaisedBuiltEventFilter | LuaPlayerBuiltEntityEventFilter | LuaPlayerRepairedEntityEventFilter)[]
   ---@alias FluidIdentification string | LuaFluidPrototype | Fluid
   ---@alias ForceCondition "all" | "enemy" | "ally" | "friend" | "not-friend" | "same" | "not-same"
-  ---@alias ForceIdentification string | LuaForce
+  ---@alias ForceIdentification LuaForce
   ---@alias GuiLocation _GuiLocation1 | _GuiLocation2
   ---@alias ItemPrototypeFlags table<"draw-logistic-overlay" | "hidden" | "always-show" | "hide-from-bonus-gui" | "hide-from-fuel-tooltip" | "not-stackable" | "can-extend-inventory" | "primary-place-result" | "mod-openable" | "only-in-cursor" | "spawnable", true>
   ---@alias ItemPrototypeIdentification LuaItemStack | LuaItemPrototype | string
@@ -9988,7 +9988,7 @@ settings = settings
   ---@field type string @One of `"time"`, `"inactivity"`, `"full"`, `"empty"`, `"item_count"`, `"circuit"`, `"robots_inactive"`, `"fluid_count"`, `"passenger_present"`, `"passenger_not_present"`.
   ---@field compare_type string @Either `"and"`, or `"or"`. Tells how this condition is to be compared with the preceding conditions in the corresponding `wait_conditions` array.
   ---@field ticks uint|nil @nilable; Number of ticks to wait when `type` is `"time"`, or number of ticks of inactivity when `type` is `"inactivity"`.
-  ---@field condition CircuitCondition|nil @nilable; Only present when `type` is `"item_count"`, `"circuit"` or `"fluid_count"`, and a circuit condition is configured.
+  ---@field condition CircuitCondition @nilable; Only present when `type` is `"item_count"`, `"circuit"` or `"fluid_count"`, and a circuit condition is configured.
 
 ---@shape WireConnectionDefinition
   ---@field wire defines__wire_type @Wire color, either [defines.wire_type.red](defines.wire_type.red) or [defines.wire_type.green](defines.wire_type.green).
