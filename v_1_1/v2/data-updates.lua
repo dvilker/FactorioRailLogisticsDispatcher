@@ -1,5 +1,0 @@
---for _, ins in pairs(data.raw.inserter) do
---    ins.allow_custom_vectors = true
---    ins.flags[#ins.flags+1]='placeable-off-grid'
---    ins.collision_box = {{-0.2, -0.4}, {0.2, 0.4}}
---end
