@@ -1255,12 +1255,12 @@ function dispMakeDelivery(tnq, requester, provider, trainTypeInfo)
             if not train or not train.valid then
                 break
             end
-            local tt = getTrainType(train)
+            local tt, ttInfo = getTrainType(train)
             if tt ~= trainTypeInfo.typeName then
                 --[[DEBUG]] stopEntity.force.print("RLD Error: Wrong Train Type " .. var_dump(stopEntity))
                 break
             end
-            if not isTrainRightSize(provider, tt) or not isTrainRightSize(requester, tt) then
+            if not isTrainRightSize(provider, ttInfo) or not isTrainRightSize(requester, ttInfo) then
                 break
             end
             local cmp = sqr(depot.stopPosition.x + depot.stopPosition.x) + sqr(requester.stopPosition.y + requester.stopPosition.y)
