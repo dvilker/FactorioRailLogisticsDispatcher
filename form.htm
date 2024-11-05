@@ -1,0 +1,84 @@
+<meta charset="utf-8">
+
+<style>
+    * {
+        font-family: sans-serif;
+    }
+    form {
+        width: 15cm;
+        height: auto;
+        background: silver;
+    }
+    .item-pick {
+        width: 2em;
+        height: 2em;
+        padding: 0;
+    }
+    table {
+        border-collapse: collapse;
+    }
+    td,tr {
+        border: 1px solid darkgray;
+        padding: .3em;
+    }
+</style>
+
+
+<body>
+<form>
+    <div style="display: flex; justify-content: space-between">
+        <div>
+            <div><label><input type="radio" name="mode"> Грузовая станция</label></div>
+            <div><label><input type="radio" name="mode"> Ликвидация станции</label></div>
+            <div><label><input type="radio" name="mode"> Депо</label></div>
+        </div>
+        <div>
+            <div><label><input type="checkbox"> Сигналы в расписании</label></div>
+            <div><label><input type="checkbox"> Равенство в расписании</label></div>
+            <div><label><input type="checkbox"> Разворачивать манипуляторы</label></div>
+            <div><label><input type="checkbox"> Составные доставки груза</label></div>
+            <div><label><input type="checkbox"> Составные доставки жидкости</label></div>
+        </div>
+    </div>
+    <hr>
+    <table style="">
+        <tr>
+            <th></th>
+            <th>С</th>
+            <th>З</th>
+            <th>Запрос</th>
+            <th>Мин</th>
+            <th>Сейчас</th>
+            <th>В пути</th>
+            <th>Ошибка</th>
+        </tr>
+        <tr>
+            <td><button class="item-pick">C</button></td>
+            <td><label><input type="checkbox"> Сн</label></td>
+            <td><label><input type="checkbox"> За:</label></td>
+            <td><input size="4"><button class="item-pick">1</button></td>
+            <td><input size="4"><button class="item-pick">1</button></td>
+            <td style="text-align: right">2312</td>
+            <td style="text-align: right">1000</td>
+            <td style="text-align: right">Мало</td>
+        </tr>        <tr>
+            <td><button class="item-pick">C</button></td>
+            <td><label><input type="checkbox"> Сн</label></td>
+            <td><label><input type="checkbox"> За:</label></td>
+            <td><input size="4"><button class="item-pick">1</button></td>
+            <td><input size="4"><button class="item-pick">1</button></td>
+            <td style="text-align: right">2312</td>
+            <td style="text-align: right">1000</td>
+            <td style="text-align: right">Мало</td>
+        </tr>
+    </table>
+
+    <div>
+        <button class="item-pick">+</button>
+        <button class="">+ * Груз</button>
+        <button class="">+ * Жидкость </button>
+    </div>
+
+
+</form>
+</body>

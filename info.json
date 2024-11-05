@@ -1,0 +1,14 @@
+{
+  "name": "RailLogisticsDispatcher",
+  "version": "2.0.2",
+  "title": "Rail Logistics Dispatcher 2 (beta)",
+  "author": "Viidi",
+  "contact": "https://github.com/dvilker/FactorioRailLogisticsDispatcher",
+  "homepage": "https://mods.factorio.com/mod/RailLogisticsDispatcher",
+  "description": "Adds a dispatcher (building) to automate railway logistics based on provide and request stations.\n\nHas intuitive interface. Was inspired by LTN but went a different way.",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0.11",
+    "(?) AdjustWagonCapacity"
+  ]
+}
