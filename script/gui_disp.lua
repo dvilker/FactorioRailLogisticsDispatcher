@@ -517,9 +517,15 @@ function DispGuiLua.updateDispInfo(gui)
                 row.cells[3].style.font_color = dispSignal.balance >= 0 and PROVIDE_COLOR or UNDER_MIN_COLOR
                 row.cells[3].style.font = dispSignal.balance > 0 and 'default-bold' or 'default'
             elseif dispSignal.requestCount then
-                row.cells[3].caption = "−" .. formatNumberInt(-dispSignal.balance, false)
-                row.cells[3].style.font_color = dispSignal.requestCount >= 0 and REQUEST_COLOR or UNDER_MIN_COLOR
-                row.cells[3].style.font = dispSignal.requestCount > 0 and 'default-bold' or 'default'
+                if dispSignal.balance <= 0 then
+                    row.cells[3].caption = "−" .. formatNumberInt(-dispSignal.balance, false)
+                    row.cells[3].style.font_color = dispSignal.requestCount >= 0 and REQUEST_COLOR or UNDER_MIN_COLOR
+                    row.cells[3].style.font = dispSignal.requestCount > 0 and 'default-bold' or 'default'
+                else
+                    row.cells[3].caption = "+" .. formatNumberInt(dispSignal.balance, false)
+                    row.cells[3].style.font_color = UNDER_MIN_COLOR
+                    row.cells[3].style.font = 'default'
+                end
             else
                 row.cells[3].caption = ""
                 row.cells[3].style.font_color = UNDER_MIN_COLOR
