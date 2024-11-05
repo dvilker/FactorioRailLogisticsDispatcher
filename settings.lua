@@ -30,4 +30,11 @@ data:extend({
     minimum_value = 1,
     maximum_value = 120,
   },
+  {
+    type = "bool-setting",
+    name = "viirld-debug",
+    order = "az",
+    setting_type = "runtime-global",
+    default_value = false
+  },
 })

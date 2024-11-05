@@ -86,6 +86,14 @@ lang['mod-setting-description.viirld-updateTicks'] = {
         Note that each station is updated no more than once every 60 ticks.
         `,
 }
+lang['mod-setting-name.viirld-debug'] = {
+    ru: `Отладка`,
+    en: `Debug`,
+}
+lang['mod-setting-description.viirld-debug'] = {
+    ru: `Включает некоторые отладочные сообщения и обозначения.`,
+    en: `Enables some debugging messages and indicators.`,
+}
 
 // Entities
 

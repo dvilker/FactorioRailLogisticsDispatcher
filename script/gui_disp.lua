@@ -344,9 +344,9 @@ function DispGuiLua.open(event)
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                                 { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "right" } },
                             } },
-                            --[[DEBUG]] { type = "line" },
-                            --[[DEBUG]] { type = "label", caption = "Debug", style = "caption_label" },
-                            --[[DEBUG]] { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false } },
+                            { type = "line", _skip = (not debugMode) or nil },
+                            { type = "label", caption = "Debug", style = "caption_label", _skip = (not debugMode) or nil },
+                            { type = "label", _name = EL_DEBUG, caption = "", _style1 = { single_line = false }, _skip = (not debugMode) or nil },
                         } },
                     } }
                 } },
@@ -628,56 +628,56 @@ function DispGuiLua.updateDispInfo(gui)
         --guiTableEndUpdate(gui.model, EL_DEPOT_STAT_TABLE)
     end
 
-    --[[DEBUG_BEGIN]]
-    ---@type string[]
-    local debugLines = {}
-    debugLines[#debugLines + 1] = "uid: " .. tostring(disp.uid)
-    debugLines[#debugLines + 1] = "net: " .. tostring(disp.settings.network)
-    debugLines[#debugLines + 1] = "storage.activeDisps: " .. tostring(storage.activeDisps[disp.uid] and "yes" or "no")
-    debugLines[#debugLines + 1] = "lastUpdateTick: " .. tostring(disp.lastUpdateTick)
-    if disp.inserters then
-        debugLines[#debugLines + 1] = "Inserters: " .. tostring(table_size(disp.inserters))
-    end
-    if disp.turnedInserters then
-        debugLines[#debugLines + 1] = "Turned Inserters: " .. tostring(table_size(disp.turnedInserters))
-    end
-    -- [[DEBUG]]log("updateDispInfo(): disp.signals = " .. var_dump(disp.signals))
-    for tnq, sig in pairs(disp.signals) do
-        local prefix = "[" .. tnq .. "] "
-        debugLines[#debugLines + 1] = prefix .. "tnq: " .. var_dump(tnq)
-        for k, v in pairs(sig) do
-            debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
+    if debugMode and named[EL_DEBUG] then
+        ---@type string[]
+        local debugLines = {}
+        debugLines[#debugLines + 1] = "uid: " .. tostring(disp.uid)
+        debugLines[#debugLines + 1] = "net: " .. tostring(disp.settings.network)
+        debugLines[#debugLines + 1] = "storage.activeDisps: " .. tostring(storage.activeDisps[disp.uid] and "yes" or "no")
+        debugLines[#debugLines + 1] = "lastUpdateTick: " .. tostring(disp.lastUpdateTick)
+        if disp.inserters then
+            debugLines[#debugLines + 1] = "Inserters: " .. tostring(table_size(disp.inserters))
         end
-        if disp.transit and disp.transit[tnq] then
-            debugLines[#debugLines + 1] = prefix .. "TRANSIT=" .. tostring(disp.transit[tnq])
+        if disp.turnedInserters then
+            debugLines[#debugLines + 1] = "Turned Inserters: " .. tostring(table_size(disp.turnedInserters))
         end
-        if disp.org.provide
-                and disp.org.provide[disp.settings.network]
-                and disp.org.provide[disp.settings.network][tnq]
-                and disp.org.provide[disp.settings.network][tnq][disp.uid]
-        then
-            debugLines[#debugLines + 1] = prefix .. "PROVIDE IN NETWORK"
-        end
-        local netQueue = disp.org.requestQueue[disp.settings.network]
-        if netQueue then
-            local queue = netQueue[tnq]
-            if queue then
-                for uid, qDisp in pairs(queue.queuedDisps) do
-                    debugLines[#debugLines + 1] = prefix .. "QUEUE " .. uid .. ": " .. var_dump(qDisp.stopName) .. (qDisp == disp and " - this" or "")
+        -- [[DEBUG]]log("updateDispInfo(): disp.signals = " .. var_dump(disp.signals))
+        for tnq, sig in pairs(disp.signals) do
+            local prefix = "[" .. tnq .. "] "
+            debugLines[#debugLines + 1] = prefix .. "tnq: " .. var_dump(tnq)
+            for k, v in pairs(sig) do
+                debugLines[#debugLines + 1] = prefix .. k .. ": " .. var_dump(v)
+            end
+            if disp.transit and disp.transit[tnq] then
+                debugLines[#debugLines + 1] = prefix .. "TRANSIT=" .. tostring(disp.transit[tnq])
+            end
+            if disp.org.provide
+                    and disp.org.provide[disp.settings.network]
+                    and disp.org.provide[disp.settings.network][tnq]
+                    and disp.org.provide[disp.settings.network][tnq][disp.uid]
+            then
+                debugLines[#debugLines + 1] = prefix .. "PROVIDE IN NETWORK"
+            end
+            local netQueue = disp.org.requestQueue[disp.settings.network]
+            if netQueue then
+                local queue = netQueue[tnq]
+                if queue then
+                    for uid, qDisp in pairs(queue.queuedDisps) do
+                        debugLines[#debugLines + 1] = prefix .. "QUEUE " .. uid .. ": " .. var_dump(qDisp.stopName) .. (qDisp == disp and " - this" or "")
+                    end
                 end
             end
         end
-    end
-    if disp.transit then
-        for tnq, v in pairs(disp.transit) do
-            if not disp.signals[tnq] then
-                local prefix = "[" .. tnq .. "] "
-                debugLines[#debugLines + 1] = prefix .. "!TRANSIT=" .. tostring(v) .. " (" .. var_dump(tnq) .. ")"
+        if disp.transit then
+            for tnq, v in pairs(disp.transit) do
+                if not disp.signals[tnq] then
+                    local prefix = "[" .. tnq .. "] "
+                    debugLines[#debugLines + 1] = prefix .. "!TRANSIT=" .. tostring(v) .. " (" .. var_dump(tnq) .. ")"
+                end
             end
         end
+        named[EL_DEBUG].caption = table.concat(debugLines, "\n")
     end
-    named[EL_DEBUG].caption = table.concat(debugLines, "\n")
-    --[[DEBUG_END]]
 end
 
 ---@param gui DispGui
@@ -760,7 +760,7 @@ function DispGuiLua._updateMemButtons(gui)
     local forcePref = storageGetForcePrefs(gui.player.force.index)
 
     if gui.selectedItem then
-        --[[DEBUG]]log("self.selectedItem: " .. var_dump(gui.selectedItem))
+        -- [[DEBUG]]log("self.selectedItem: " .. var_dump(gui.selectedItem))
         for _, el in pairs(shares[EL_ITEM_MEM_BUTTON]) do
             local v = forcePref.itemMem[gui.selectedItem.type][el.tags._value]
             el.style = v and "viirld_mem_active" or "viirld_mem"

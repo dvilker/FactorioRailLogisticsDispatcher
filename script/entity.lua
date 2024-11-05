@@ -1444,27 +1444,29 @@ function dispFindInserters(disp)
             end
         end
     end
-    if foundInserters or testedInserters then
-        disp._insertersDraw = disp._insertersDraw or {}
-    end
-    if foundInserters then
-        for un, ins in pairs(foundInserters) do
-            disp._insertersDraw[#disp._insertersDraw + 1] = rendering.draw_text {
-                surface = ins.surface,
-                text = un > 0 and 'L' or "U",
-                color = { 1, 0, 0 },
-                target = ins
-            }
+    if debugMode then
+        if foundInserters or testedInserters then
+            disp._insertersDraw = disp._insertersDraw or {}
         end
-    end
-    if testedInserters then
-        for _, ins in pairs(testedInserters) do
-            disp._insertersDraw[#disp._insertersDraw + 1] = rendering.draw_text {
-                surface = ins.surface,
-                text = '_',
-                color = { 1, 0, 0 },
-                target = ins
-            }
+        if foundInserters then
+            for un, ins in pairs(foundInserters) do
+                disp._insertersDraw[#disp._insertersDraw + 1] = rendering.draw_text {
+                    surface = ins.surface,
+                    text = un > 0 and 'L' or "U",
+                    color = { 1, 0, 0 },
+                    target = ins
+                }
+            end
+        end
+        if testedInserters then
+            for _, ins in pairs(testedInserters) do
+                disp._insertersDraw[#disp._insertersDraw + 1] = rendering.draw_text {
+                    surface = ins.surface,
+                    text = '_',
+                    color = { 1, 0, 0 },
+                    target = ins
+                }
+            end
         end
     end
     disp.inserters = foundInserters

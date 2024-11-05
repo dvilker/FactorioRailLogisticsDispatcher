@@ -52,6 +52,7 @@
 ---@field _dragTarget GuiName|nil
 ---@field _autoSharesFrom number|nil
 ---@field _align Alignment|nil
+---@field _skip true|nil
 ---@field column_count number|nil
 ---@field elem_value string|SignalID|nil
 ---@field state boolean|nil
@@ -269,10 +270,12 @@ local function addElement(target, def, model)
             end
         end
         for i, sub in pairs(defSub) do
-            if defRow and sub._align then
-                element.style.column_alignments[i] = sub._align
+            if not sub._skip then
+                if defRow and sub._align then
+                    element.style.column_alignments[i] = sub._align
+                end
+                addElement(element, sub, model)
             end
-            addElement(element, sub, model)
         end
         if def.type == "tabbed-pane" then
             --for _, sub in pairs(defSub) do

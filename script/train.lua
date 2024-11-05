@@ -152,7 +152,9 @@ function trainUpdateStation(train, forceRemove)
 
     if forceRemove or not train.station or (exists and train.station ~= exists.station) then
         if exists then
-            exists.text.destroy()
+            if exists.text then
+                exists.text.destroy()
+            end
             storage.trainStation[train.id] = nil
             trainDeparted(train, exists.station)
         end
@@ -161,12 +163,12 @@ function trainUpdateStation(train, forceRemove)
     if train.station and not forceRemove then
         storage.trainStation[train.id] = {
             station = train.station,
-            text = rendering.draw_text {
+            text = debugMode and rendering.draw_text {
                 text = tostring(train.id),
                 target = train.station,
                 surface = train.front_stock.surface,
                 color = { 255, 255, 255 },
-            }
+            } or nil,
         }
         trainArrived(train)
     end
