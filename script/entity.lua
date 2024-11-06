@@ -1099,7 +1099,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
 
                             -- todo: find in dirty depot trains
 
-                            local orgProvideTnq = orgProvide[tnq]
+                            local orgProvideTnq = orgProvide and orgProvide[tnq]
                             if not orgProvideTnq or (table_size(orgProvideTnq) == 1 and next(orgProvideTnq) == disp.uid) then
                                 disp.errors = errorsAdd(disp.errors, tnq, { "viirld.ERR-NO_PROVIDE" }, { "viirld.ERR-NO_PROVIDE-tt", tnq })
                                 rqAddToQueue(disp, tnq)

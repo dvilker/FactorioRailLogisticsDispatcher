@@ -1,33 +1,43 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.5
+Date: 06.11.2024
+  Bugfixes:
+    - Fixed: Crash if create request station before supply station.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.4
-vDate: 2024.11.05
+Date: 05.11.2024
+  Bugfixes:
+    - Fixed: Crash if train length constraints are set.
+---------------------------------------------------------------------------------------------------
+Version: 2.0.4
+Date: 05.11.2024
   Changes:
     - Fix: Crash if train length constraints are set.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.3
-vDate: 2024.11.05
+Date: 05.11.2024
   Changes:
     - Fix: Removed debug messages and drawings.
     - Fix: "--" balance if requester has more content that requests.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.2
-Date: 2024.11.05
+Date: 05.11.2024
   Changes:
     - Fix: Autosave while dispatcher window is opened.
     - Fix: Put blueprint over exists dispatcher.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.1
-Date: 2024.11.05
+Date: 05.11.2024
   Changes:
     - Rewrite for Factorio 2.0
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.18
-Date: 2023.01.10
+Date: 10.01.2023
   Changes:
     - Fixed problem with back movers
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.17
-Date: 2023.01.05
+Date: 05.01.2023
   Changes:
     - Fixed game crash if you right-click on the memory button for *
     - Removed debug train labels
@@ -36,30 +46,30 @@ Date: 2023.01.05
     - Fixed game crash if you mine train or station. Or if it's destroyed.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.16
-Date: 2022.12.15
+Date: 15.12.2022
   Changes:
     - Fixed an issue that all deliveries of the station were deleted, if you delete station, even if the train passed this station
     - Fixed an issue with the game crashing after deleting a supply station
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.15
-Date: 2022.12.13
+Date: 13.12.2022
   Changes:
     - Fix an issue with updating blueprints
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.14
-Date: 2022.12.12
+Date: 12.12.2022
   Changes:
     - Added support for Nullius overhaul mod (by modo_lv)
     - Fix an issue with early stored blueprints
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.13
-Date: 2022.12.05
+Date: 05.12.2022
   Changes:
     - Fixed an issue where nothing was delivered to a station with a lower priority at all
     - Minor gui fixes
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.12
-Date: 2022.12.05
+Date: 05.12.2022
   Changes:
     - Add pyindustry optional dependency (by WristWatch)
     - Add Electric Train optional dependency (by WristWatch)
@@ -68,35 +78,35 @@ Date: 2022.12.05
     - Beta testing of request and supply station priorities
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.11
-Date: 2022.12.01
+Date: 01.12.2022
   Changes:
     - Fixed a bug when the dispatcher did not work, if before that it was removed by the bot and restored
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.10
-Date: 2022.11.29
+Date: 29.11.2022
   Changes:
     - Fixed a bug when updating blueprint
     - Added red light - if something is wrong
     - Added hint if rails are missing
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.9
-Date: 2022.11.29
+Date: 29.11.2022
   Changes:
     - Fixed a bug when copying settings if the parameters of requests and supplies were specified out of order
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.8
-Date: 2022.11.25
+Date: 25.11.2022
   Changes:
     - Fixed undefined behavior if there is an item and liquid with the same name in the game
     - Minor fixes
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.7
-Date: 2022.11.24
+Date: 24.11.2022
   Changes:
     - Technology now costs as Rail Signals multiplied by 1.5
     - With "pyindustry" mod technology costs as Rail Signals and recipe contains Electronic circuit instead Advanced circuit
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.6
-Date: 2022.11.21
+Date: 21.11.2022
   Changes:
     - Beta release
