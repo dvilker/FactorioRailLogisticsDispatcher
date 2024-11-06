@@ -504,7 +504,7 @@ local function entityHandleBuiltDispatcher(entity)
 
     local settings, err, isEmpty = dispCombinatorToSettings(entity)
     if err and not isEmpty then
-        disp.entity.force.print({ "viirld.ERR-WRONG_SETTINGS", err })
+        entity.force.print({ "viirld.ERR-WRONG_SETTINGS", err })
     end
 
     ---@type DispClass
@@ -562,7 +562,7 @@ local function entityHandleRemoveDispatcher(entity)
                 deli.requester.deliveries[deli.uid] = nil
             end
             storage.deliveries[deli.uid] = nil
-            disp.org.force.print({ "viirld.ERR-DELETED_DELIVERY", deli.uid, deli.provider or deli.provider.stopEntity or "?", deli.requester or deli.requester.stopEntity or "?" })
+            disp.org.force.print({ "viirld.ERR-DELETED_DELIVERY", deli.uid, deli.provider and deli.provider.stopEntity and deli.provider.stopEntity.unit_number or "?", deli.requester and deli.requester.stopEntity and deli.requester.stopEntity.unit_number or "?" })
         end
 
         if disp.stopEntity then

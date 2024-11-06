@@ -780,8 +780,8 @@ lang['viirld.ERR-WRONG_SETTINGS'] = {
 }
 
 lang['viirld.ERR-DELETED_DELIVERY'] = {
-    ru: `Доставка __1__ удалена, поезд может застрять: __2__ → __3__`,
-    en: `Delivery __1__ removed, train may get stuck: __2__ → __3__`,
+    ru: `Доставка __1__ удалена, поезд может застрять: [train-stop=__2__] → [train-stop=__3__]`,
+    en: `Delivery __1__ removed, train may get stuck: [train-stop=__2__] → [train-stop=__3__]`,
 }
 
 lang['viirld.ERR--DIRTY'] = {

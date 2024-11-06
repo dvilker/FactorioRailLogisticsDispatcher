@@ -139,6 +139,7 @@ function trainUpdateSchedule(train, delivery, depotName)
         },
     }
 
+    train.group = nil
     train.schedule = {
         current = 1,
         records = recs,
@@ -265,6 +266,7 @@ function trainArrived(train)
         if deli then
             disp.entity.force.print({ "viirld.ERR_MSG-UNEXPECTED_DEPOT", disp.stopEntity.unit_number })
         else
+            train.group = nil
             train.schedule = {
                 current = 1,
                 records = {

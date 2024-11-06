@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.6
+Date: 06.11.2024
+  Changes:
+    - Unassign train group.
+  Bugfixes:
+    - Fixed: Crash while pasting the copied dispatcher.
+    - Fixed: Crash while dropping delivery.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.5
 Date: 06.11.2024
   Bugfixes:
