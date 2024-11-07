@@ -128,43 +128,11 @@ local guiChangedEventByType = {
     ["slider"] = "onValueChanged",
 }
 
----@param target LuaGuiElement
 ---@param def GuiDef
 ---@param model GuiModel
----@return LuaGuiElement
-local function addElement(target, def, model)
-    if def.type == "checkbox" then
-        def.state = def.state or false
-    end
-    ---@type Tags
-    local tags = def.tags
-    if def._name then
-        tags = tags or {}
-        tags._name = def._name
-    end
-    if def._share then
-        tags = tags or {}
-        tags._share = def._share
-    end
-    if def._value then
-        tags = tags or {}
-        tags._value = def._value
-    end
-    local defSub = def._sub
-    def._sub = nil
-    local defRow = def._row
-    def._row = nil
-
-    if def.type == "table" and not defRow and not def.column_count then
-        local sub = {}
-        defRow = {}
-        for i = 1, #defSub, 2 do
-            sub[#sub + 1] = defSub[i]
-            defRow[#defRow + 1] = defSub[i + 1]
-        end
-        defSub = sub
-    end
-
+---@param tags Tags
+---@return Tags
+local function processDefFunctions(def, model, tags)
     if def.onChanged then
         local eventName = guiChangedEventByType[def.type]
         if not eventName then
@@ -203,6 +171,48 @@ local function addElement(target, def, model)
             def[prop] = nil
         end
     end
+    return tags
+end
+
+---@param target LuaGuiElement
+---@param def GuiDef
+---@param model GuiModel
+---@return LuaGuiElement
+local function addElement(target, def, model)
+    if def.type == "checkbox" then
+        def.state = def.state or false
+    end
+    ---@type Tags
+    local tags = def.tags
+    if def._name then
+        tags = tags or {}
+        tags._name = def._name
+    end
+    if def._share then
+        tags = tags or {}
+        tags._share = def._share
+    end
+    if def._value then
+        tags = tags or {}
+        tags._value = def._value
+    end
+    local defSub = def._sub
+    def._sub = nil
+    local defRow = def._row
+    def._row = nil
+
+    if def.type == "table" and not defRow and not def.column_count then
+        local sub = {}
+        defRow = {}
+        for i = 1, #defSub, 2 do
+            sub[#sub + 1] = defSub[i]
+            defRow[#defRow + 1] = defSub[i + 1]
+        end
+        defSub = sub
+    end
+
+    tags = processDefFunctions(def, model, tags)
+
     if not model.root and not model.cells --[[ Not a table ]] then
         tags = tags or {}
         tags._model = model.uid
@@ -249,6 +259,9 @@ local function addElement(target, def, model)
         end
     end
     if defRow and def._name then
+        for _, rowDef in pairs(defRow) do
+            rowDef.tags = processDefFunctions(rowDef, model, rowDef.tags)
+        end
         model.tables[def._name] = model.tables[def._name] or {
             updateIndex = 0,
             rows = {},
