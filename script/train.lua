@@ -254,6 +254,10 @@ function trainArrived(train)
                     disp.entity.force.print({ "viirld.ERR_MSG-TRAIN_ARRIVED_REQUESTER_TWICE", disp.stopEntity.unit_number })
                 end
                 deli.requesterPassedTick = game.tick
+                if deli.provider and deli.provider.deliveries[deli.uid] then
+                    deli.provider.deliveries[deli.uid] = nil
+                    dispUpdate(deli.provider, false, true, true)
+                end
                 disp.deliveries[deli.uid] = nil
                 storage.deliveries[deli.uid] = nil
             end

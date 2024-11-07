@@ -19,6 +19,8 @@ defaultQuality = "normal"
 SIG_P = { type = "virtual", name = "signal-P", quality = defaultQuality }
 SIG_R = { type = "virtual", name = "signal-R", quality = defaultQuality }
 SIG_L = { type = "virtual", name = "signal-L", quality = defaultQuality }
+SIG_C = { type = "virtual", name = "signal-C", quality = defaultQuality }
+SIG_F = { type = "virtual", name = "signal-F", quality = defaultQuality }
 SIG_E = { type = "virtual", name = "signal-E", quality = defaultQuality }
 
 

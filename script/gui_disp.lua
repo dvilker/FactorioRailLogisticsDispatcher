@@ -1,6 +1,7 @@
 ---@class DispGui: GuiSelf
 ---@field player LuaPlayer
----@field disp DispClass
+---@field disp DispClass|nil
+---@field ghost LuaEntity|nil
 ---@field data DispSettings
 ---@field model GuiModel
 ---@field ioRows table<string, GuiModel>
@@ -100,24 +101,37 @@ local FOCUS_TO_MIN_ANY_FLUID = 4
 
 ---@param event OnGuiOpened
 function DispGuiLua.open(event)
+    local player = game.get_player(event.player_index)
+
     ---@type DispClass
-    local disp = storage.disps[event.entity.unit_number]
-    if not disp then
+    local disp
+    ---@type LuaEntity
+    local ghost
+
+    if event.entity.name == "viirld-dispatcher" then
+        disp = storage.disps[event.entity.unit_number]
+    elseif event.entity.type == "entity-ghost" and event.entity.ghost_name == "viirld-dispatcher" then
+        ghost = event.entity
+    end
+    if not disp and not ghost then
+        player.opened = nil
         return
     end
 
     ---@type DispGui
     local gui = {
-        player = game.get_player(event.player_index),
-        entity = dispEntity,
+        player = player,
         disp = disp,
+        ghost = ghost,
         ioRows = {},
         deliveryRows = {},
         statRows = {},
         depotStatRows = {},
         eventHandlers = "DispGuiLua",
     }
-    disp.gui = gui
+    if disp then
+        disp.gui = gui
+    end
     DispGuiLua._loadData(gui)
     local STYLE_MARGIN = { left_margin = 12 }
     gui.model = createGuiModel(
@@ -306,15 +320,17 @@ function DispGuiLua.open(event)
                             } },
                             { type = "line" },
                             { type = "label", caption = { "viirld-gui.EL_DELIVERIES_TABLE-TITLE" }, style = "caption_label" },
-                            { type = "table", column_count = 3, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
+                            { type = "table", column_count = 4, _name = EL_DELIVERIES_TABLE, vertical_centering = false, _style1 = { width = 400 },
                               draw_vertical_lines = false, draw_horizontal_lines = true, draw_horizontal_line_after_headers = true, _sub = {
                                 { type = "label", caption = { "viirld-gui.EL_DELIVERIES_TABLE-H-FROM" }, style = "heading_2_label", _style1 = { minimal_width = 150 } },
                                 { type = "label", caption = { "viirld-gui.EL_DELIVERIES_TABLE-H-TO" }, style = "heading_2_label", _style1 = { minimal_width = 150 } },
-                                { type = "label", caption = { "viirld-gui.EL_DELIVERIES_TABLE-H-TIME" }, style = "heading_2_label" },
+                                { type = "label", caption = { "viirld-gui.EL_DELIVERIES_TABLE-H-TIME" }, style = "heading_2_label", _style1 = { minimal_width = 64, horizontal_align = "center" } },
+                                { type = "label", caption = "", style = "heading_2_label", _style1 = { width = 36 } },
                             }, _row = {
                                 { type = "label", caption = "", _style1 = { single_line = false } },
                                 { type = "label", caption = "", _style1 = { single_line = false } },
-                                { type = "label", caption = "", _style1 = { minimal_width = 70, horizontal_align = "center" } },
+                                { type = "label", caption = "", _style1 = { minimal_width = 64, horizontal_align = "center" } },
+                                { type = "sprite-button", onClick = DispGuiLua._on_EL_DELETE_DELIVERY_click, style = "viirld_delete_button", tooltip = { "viirld-gui.EL_DELETE_DELIVERY-tt" }, sprite = "utility/trash_white" },
                             } },
                             { type = "line" },
                             { type = "flow", direction = "horizontal", _sub = {
@@ -363,12 +379,25 @@ end
 ---@param gui DispGui
 function DispGuiLua.updateStationName(gui)
     local disp = gui.disp
-    gui.model.named[EL_TITLE].caption = { "viirld-gui.WINDOW_TITLE", disp.stopName or "?" }
+    if disp then
+        gui.model.named[EL_TITLE].caption = { "viirld-gui.WINDOW_TITLE", disp.stopName or "?" }
+    elseif gui.ghost then
+        gui.model.named[EL_TITLE].caption = { "viirld-gui.WINDOW_TITLE-ghost" }
+    end
 end
 
 ---@param gui DispGui
 function DispGuiLua._loadData(gui)
-    gui.data = table.deepcopy(gui.disp.settings)
+    if gui.disp then
+        gui.data = table.deepcopy(gui.disp.settings)
+    elseif gui.ghost then
+        gui.data = dispCombinatorToSettings(gui.ghost)
+        if not gui.data then
+            gui.data = dispDefaultSettings()
+        end
+    else
+        error("!disp!ghost")
+    end
     gui.itemByIndex = {}
     for _, it in pairs(gui.data.items) do
         if it.index then
@@ -496,20 +525,22 @@ function DispGuiLua.updateDispInfo(gui)
             row.cells[1].caption = "[" .. tnq .. "]"
         end
     end
-    if disp.signals then
-        for tnq, _ in pairs(disp.signals) do
-            registerName(tnq)
+    if disp then
+        if disp.signals then
+            for tnq, _ in pairs(disp.signals) do
+                registerName(tnq)
+            end
         end
-    end
-    if disp.transit then
-        for tnq, _ in pairs(disp.transit) do
-            registerName(tnq)
+        if disp.transit then
+            for tnq, _ in pairs(disp.transit) do
+                registerName(tnq)
+            end
         end
     end
     guiTableEndUpdate(gui.model, EL_IO_TABLE)
     local rows = guiTableGetRows(gui.model, EL_IO_TABLE)
     for tnq, row in pairs(rows) do
-        local dispSignal = disp.signals[tnq]
+        local dispSignal = disp and disp.signals[tnq]
         if dispSignal then
             row.cells[2].caption = formatNumberInt(dispSignal.circuitValue or 0, false)
             if dispSignal.provideCount then
@@ -535,12 +566,12 @@ function DispGuiLua.updateDispInfo(gui)
             row.cells[2].caption = ""
             row.cells[3].caption = ""
         end
-        if disp.transit[tnq] then
+        if disp and disp.transit[tnq] then
             row.cells[4].caption = formatNumberInt(disp.transit[tnq], false)
         else
             row.cells[4].caption = "-"
         end
-        local err = disp.errors and disp.errors[tnq]
+        local err = disp and disp.errors and disp.errors[tnq]
         if err then
             err._used = true
         end
@@ -550,7 +581,7 @@ function DispGuiLua.updateDispInfo(gui)
 
     local hasErrors = false
     guiTableBeginUpdate(gui.model, EL_ERR_TABLE)
-    if disp.errors then
+    if disp and disp.errors then
         for code, err in pairs(disp.errors) do
             if not err._used then
                 local row = guiTableAddOrGetRow(gui.model, EL_ERR_TABLE, code)
@@ -568,36 +599,44 @@ function DispGuiLua.updateDispInfo(gui)
     guiSetVisible(gui.model.shares[EL_ERR_TABLE], hasErrors)
 
     guiTableBeginUpdate(gui.model, EL_DELIVERIES_TABLE)
-    for uid, delivery in pairs(disp.deliveries) do
-        local row = guiTableAddOrGetRow(gui.model, EL_DELIVERIES_TABLE, uid)
-        do
-            ---@type string[]
-            local text = {}
-            text[#text + 1] = delivery.provider.stopName or "?"
-            if delivery.providerPassedTick then
-                text[#text + 1] = "."
+    if disp then
+        for uid, delivery in pairs(disp.deliveries) do
+            local row = guiTableAddOrGetRow(gui.model, EL_DELIVERIES_TABLE, uid)
+            do
+                ---@type string[]
+                local text = {}
+                text[#text + 1] = delivery.provider.stopName or "?"
+                if delivery.providerPassedTick then
+                    text[#text + 1] = "."
+                end
+                for tnq, count in pairs(delivery.contents) do
+                    text[#text + 1] = "\n    [" .. tnq .. "] " .. formatNumberInt(count, false)
+                end
+                row.cells[1].caption = table.concat(text)
             end
-            for tnq, count in pairs(delivery.contents) do
-                text[#text + 1] = "\n    [" .. tnq .. "] " .. formatNumberInt(count, false)
+            do
+                ---@type string[]
+                local text = {}
+                text[#text + 1] = delivery.requester.stopName or "?"
+                if delivery.requesterPassedTick then
+                    text[#text + 1] = "."
+                end
+                row.cells[2].caption = table.concat(text)
             end
-            row.cells[1].caption = table.concat(text)
+            local time = game.tick - (delivery.startTick or 0)
+            row.cells[3].caption = util.formattime(time)
+            local tags = row.cells[4].tags
+            tags._value = uid
+            row.cells[4].tags = tags
+            row.cells[4].style = (time > timeOfStuckDelivery) and "viirld_hili_delete_button" or "viirld_delete_button"
+            row.cells[4].sprite = (time > timeOfStuckDelivery) and "utility/trash" or "utility/trash_white"
         end
-        do
-            ---@type string[]
-            local text = {}
-            text[#text + 1] = delivery.requester.stopName or "?"
-            if delivery.requesterPassedTick then
-                text[#text + 1] = "."
-            end
-            row.cells[2].caption = table.concat(text)
-        end
-        row.cells[3].caption = util.formattime(game.tick - (delivery.startTick or 0))
     end
     guiTableEndUpdate(gui.model, EL_DELIVERIES_TABLE)
 
-    named[EL_STAT_TRAINS].caption = { "viirld-gui.EL_STAT_TRAINS", formatNumberInt(disp.statTrains or 0, false) }
+    named[EL_STAT_TRAINS].caption = { "viirld-gui.EL_STAT_TRAINS", formatNumberInt(disp and disp.statTrains or 0, false) }
 
-    if disp.settings.modeEndpoint then
+    if disp and disp.settings.modeEndpoint then
         guiTableBeginUpdate(gui.model, EL_CARGO_STAT_TABLE)
         if disp.stat then
             for tnq, stat in pairs(disp.stat) do
@@ -634,7 +673,7 @@ function DispGuiLua.updateDispInfo(gui)
         --guiTableEndUpdate(gui.model, EL_DEPOT_STAT_TABLE)
     end
 
-    if debugMode and named[EL_DEBUG] then
+    if debugMode and disp and named[EL_DEBUG] then
         ---@type string[]
         local debugLines = {}
         debugLines[#debugLines + 1] = "uid: " .. tostring(disp.uid)
@@ -973,9 +1012,13 @@ end
 function DispGuiLua._on_EL_APPLY_click(gui)
     local selectedButton = gui.selectedButton
     DispGuiLua._normalizeData(gui)
-    dispSetSettings(gui.disp, gui.data)
-    -- TODO globalUpdateNextTick(gui.disp)
-    gui.data = table.deepcopy(gui.disp.settings)
+    if gui.disp then
+        dispSetSettings(gui.disp, gui.data)
+        gui.data = table.deepcopy(gui.disp.settings)
+    elseif gui.ghost then
+        dispSettingsToCombinator(gui.data, gui.ghost)
+    end
+    DispGuiLua._loadData(gui)
     DispGuiLua._dataToForm(gui)
     gui.selectedButton = selectedButton
     gui.doUpdateVisible = true
@@ -988,9 +1031,15 @@ end
 ---@param gui DispGui
 function DispGuiLua.close(gui)
     DispGuiLua._normalizeData(gui)
-    dispSetSettings(gui.disp, gui.data)
+    if gui.disp then
+        dispSetSettings(gui.disp, gui.data)
+    elseif gui.ghost then
+        dispSettingsToCombinator(gui.data, gui.ghost)
+    end
     destroyGuiModel(gui.model)
-    gui.disp.gui = nil
+    if gui.disp then
+        gui.disp.gui = nil
+    end
     -- todo globalUpdateNextTick(gui.disp)
 
     --if self.disp.entity.valid then
@@ -1046,7 +1095,7 @@ end
 ---@param gui DispGui
 function DispGuiLua._on_EL_ROLLBACK_click(gui)
     local selectedButton = gui.selectedButton
-    gui.data = table.deepcopy(gui.disp.settings)
+    DispGuiLua._loadData(gui)
     DispGuiLua._dataToForm(gui)
     DispGuiLua.updateDispInfo(gui)
     gui.selectedButton = selectedButton
@@ -1311,6 +1360,24 @@ end
 function DispGuiLua._on_EL_MIN_ANY_FLUID_UNIT_click(gui, event)
     gui.data.minAnyFluid = guiNextUnit(event.element, gui.data.minAnyFluid, "fluid")
     gui.doUpdateCounters = true
+end
+
+---@param gui DispGui
+---@param gui DispGui
+---@param event OnGuiClick
+function DispGuiLua._on_EL_DELETE_DELIVERY_click(gui, event)
+    local deli = gui.disp.deliveries[event.element.tags._value]
+    if deli then
+        storage.deliveries[deli.uid] = nil
+        if deli.provider then
+            deli.provider.deliveries[deli.uid] = nil
+            dispUpdate(deli.provider, false, true, true)
+        end
+        if deli.requester then
+            deli.requester.deliveries[deli.uid] = nil
+            dispUpdate(deli.requester, false, true, true)
+        end
+    end
 end
 
 ---@param gui DispGui

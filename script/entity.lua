@@ -4,7 +4,7 @@ local function dispConnectStop(disp, stopEntity)
     if disp.stopEntity ~= stopEntity then
         disp.stopEntity = stopEntity
         disp.stopPosition = stopEntity.position -- todo update if train stop teleportation
-        _dispUpdateStopName(disp)
+        dispUpdateStopName(disp)
         disp.stopName = stopEntity.backer_name
 
         storage.disps[disp.stopEntity.unit_number] = disp
@@ -102,7 +102,14 @@ function dispSettingsToCombinator(settings, combinator)
         constant = flags,
     }
 
-    combinator.combinator_description = settings.stationTemplate or ""
+    if combinator.name == "viirld-dispatcher" then
+        combinator.combinator_description = settings.stationTemplate or ""
+    elseif combinator.type == "entity-ghost" then
+        local tags = combinator.tags
+        tags = tags or {}
+        tags["viidrld-stationTemplate"] = settings.stationTemplate or ""
+        combinator.tags = tags
+    end
 
     if settings.minAnyItem then
         conds[#conds + 1] = {
@@ -296,7 +303,12 @@ function dispCombinatorToSettings(combinator)
             local internalFlagHasStationTemplate = bit32.band(flags, bit32.lshift(1, 15)) > 0 or nil
 
             if internalFlagHasStationTemplate then
-                settings.stationTemplate = combinator.combinator_description
+                if combinator.name == "viirld-dispatcher" then
+                    settings.stationTemplate = combinator.combinator_description
+                elseif combinator.type == "entity-ghost" then
+                    local tags = combinator.tags
+                    settings.stationTemplate = tags and tags["viidrld-stationTemplate"]
+                end
                 if settings.stationTemplate == "" then
                     settings.stationTemplate = nil
                 end
@@ -470,14 +482,30 @@ function _dispUpdateOutPort(disp)
             filters[#filters + 1] = { value = SIG_R, min = 1, }
         end
     end
+    if disp.stoppedTrain and disp.stoppedTrainType then
+        local tt = storage.trainTypes[disp.stoppedTrainType]
+        filters[#filters + 1] = { value = SIG_L, min = tt.length, }
+        filters[#filters + 1] = { value = SIG_C, min = tt.itemWagonCount, }
+        filters[#filters + 1] = { value = SIG_F, min = table_size(tt.fluidCapacityPerWagons), }
+    end
     if disp.errors then
         filters[#filters + 1] = { value = SIG_E, min = 1, }
     end
     disp.outPort.get_or_create_control_behavior().get_section(1).filters = filters
 end
 
+---@return DispSettings
+function dispDefaultSettings()
+    return {
+        items = {},
+        outTargetCounts = true,
+        network = 1,
+    }
+end
+
 ---@param entity LuaEntity
-local function entityHandleBuiltDispatcher(entity)
+---@param tags Tags
+local function entityHandleBuiltDispatcher(entity, tags)
     local org = getOrCreateOrg(entity.force, entity.surface)
 
     ---@type LuaEntity
@@ -503,8 +531,17 @@ local function entityHandleBuiltDispatcher(entity)
     outPortB.add_section()
 
     local settings, err, isEmpty = dispCombinatorToSettings(entity)
-    if err and not isEmpty then
-        entity.force.print({ "viirld.ERR-WRONG_SETTINGS", err })
+    if err then
+        if not isEmpty then
+            entity.force.print({ "viirld.ERR-WRONG_SETTINGS", err })
+        end
+    else
+        if tags then
+            local stationTemplate = tags["viidrld-stationTemplate"]
+            if stationTemplate then
+                settings.stationTemplate = stationTemplate
+            end
+        end
     end
 
     ---@type DispClass
@@ -514,11 +551,7 @@ local function entityHandleBuiltDispatcher(entity)
         entity = entity,
         stopEntity = nil,
         outPort = outPort,
-        settings = settings or {
-            items = {},
-            outTargetCounts = true,
-            network = 1,
-        },
+        settings = settings or dispDefaultSettings(),
         signals = {},
         transit = {},
         deliveries = {},
@@ -624,9 +657,10 @@ local function entityHandleRemoveStop(entity)
 end
 
 ---@param entity LuaEntity
-function entityHandleBuilt(entity)
+---@param tags Tags
+function entityHandleBuilt(entity, tags)
     if entity.name == "viirld-dispatcher" then
-        entityHandleBuiltDispatcher(entity)
+        entityHandleBuiltDispatcher(entity, tags)
     elseif entity.type == "train-stop" then
         entityHandleBuiltStop(entity)
     end
@@ -654,13 +688,13 @@ function dispSetSettings(disp, settings)
 
     disp.settings = newSettings
 
-    _dispUpdateStopName(disp)
+    dispUpdateStopName(disp)
     _dispUpdateActive(disp)
     dispUpdate(disp, false, false, true)
 end
 
 ---@param disp DispClass
-function _dispUpdateStopName(disp)
+function dispUpdateStopName(disp)
     if not disp.stopEntity or not disp.settings.stationTemplate then
         return
     end
@@ -809,6 +843,10 @@ end
 ---@param updatePort boolean|nil
 ---@return number @ made deliveries
 function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
+    if not disp.entity.valid then
+        return 0
+    end
+
     local madeDeliveries = 0
     local wasNotErrors = not disp.errors
 

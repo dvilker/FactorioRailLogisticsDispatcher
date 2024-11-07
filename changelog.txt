@@ -1,8 +1,15 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.7
 Date: 07.11.2024
+  Changes:
+    - Disable manual station renaming if the Station Name option is set.
+    - Ability to delete deliveries.
+    - Added stopped train parameters on the output port.
+    - Added description of signals on the output port in the output settings tooltip.
+    - Ability to edit settings of Dispatcher ghost (in some cases Station name will be lost).
   Bugfixes:
-    - Fixed: Crash while adding a wagon to a train at the depot.
+    - Crash while adding a wagon to a train at the depot.
+    - Crash while clearing or deleting surface.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.6
 Date: 06.11.2024

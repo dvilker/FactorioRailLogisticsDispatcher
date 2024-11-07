@@ -351,16 +351,38 @@ lang['viirld-gui.EL_OUT_MODE_TARGET_CONTENTS'] = {
     ru: `Выводить требуемое содержимое`,
     en: `Output required content`,
 }
+const outputSignals = {
+    ru: `Также на выход подаются сигналы:
+        [virtual-signal=signal-P] — При наличии поезда, если это станция снабжения. От слова Provider.
+        [virtual-signal=signal-R] — При наличии поезда, если это станция запроса. От слова Requester.
+        [virtual-signal=signal-E] — При каких-либо ошибках.
+        [virtual-signal=signal-L] — Длина поезда, включая локомотивы.
+        [virtual-signal=signal-C] — Число грузовых вагонов.
+        [virtual-signal=signal-F] — Число цистерн.
+        `,
+    en: `eThe following signals are also sent to the output port:
+        [virtual-signal=signal-P] — When there is a train, if this is a supply station. From the word Provider.
+        [virtual-signal=signal-R] — When there is a train, if this is a request station. From the word Requester.
+        [virtual-signal=signal-E] — When there are any errors.
+        [virtual-signal=signal-L] — Length of the train, including locomotives.
+        [virtual-signal=signal-C] — Number of cargo cars.
+        [virtual-signal=signal-F] — Number of tank cars.
+    `
+}
 lang['viirld-gui.EL_OUT_MODE_TARGET_CONTENTS-tt'] = {
     ru: `
         На выходном порту будет отображено требуемое для отправки содержимое поезда.
         
         Например, на станции снабжения будет отражен загружаемый груз. А на станции запроса — пусто — в поезде ничего не должно оставаться.
+        
+        ${outputSignals.ru}
         `,
-    en: `
+        en: `
         The output port will display the contents of the train that are required to be sent.
         
         For example, the supply station will display the cargo being loaded. And the request station will be empty — there should be nothing left in the train.
+        
+        ${outputSignals.en}
     `,
 }
 lang['viirld-gui.EL_OUT_MODE_EXCHANGE'] = {
@@ -374,6 +396,8 @@ lang['viirld-gui.EL_OUT_MODE_EXCHANGE-tt'] = {
         Например, на станции снабжения будет отражен загружаемый груз со знаком плюс. А на станции запроса — то же, но со знаком минус.
         
         Обратите внимание, что опция «${lang['viirld-gui.EL_OUT_MODE_NEGATE'].ru}» может изменить знак: погрузить — <0 и выгрузить — >0.
+
+        ${outputSignals.ru}
         `,
     en: () => `
         The output port will display the cargo that needs to be loaded (>0) or unloaded (<0) to send the train.
@@ -381,6 +405,8 @@ lang['viirld-gui.EL_OUT_MODE_EXCHANGE-tt'] = {
         For example, the supply station will display the loaded cargo with a plus sign. And the request station will display the same, but with a minus sign.
         
         Note that the option "${lang['viirld-gui.EL_OUT_MODE_NEGATE'].en}" can change the sign: load — <0 and unload — >0.
+        
+        ${outputSignals.en}
         `,
 }
 lang['viirld-gui.EL_OUT_MODE_NEGATE'] = {
@@ -677,6 +703,18 @@ lang['viirld-gui.EL_DELIVERIES_TABLE-H-TIME'] = {
     ru: `Время`,
     en: `Time`,
 }
+lang['viirld-gui.EL_DELETE_DELIVERY-tt'] = {
+    ru: `
+        Удалить доставку.
+        
+        Делает так, что диспетчер забывает про эту доставку. На поезд не влияет — он, если есть, продолжает следовать по маршруту.
+        `,
+    en: `
+        Delete delivery.
+        
+        Makes the dispatcher forget about this delivery. Does not affect the train — it, if there is one, continues to follow the route.        
+        `,
+}
 lang['viirld-gui.EL_CARGO_STAT_TABLE-TITLE'] = {
     ru: `Статистика`,
     en: `Statistics`,
@@ -712,6 +750,10 @@ lang['viirld-gui.EL_CARGO_STAT_TABLE-H-LASTTIME'] = {
 lang['viirld-gui.WINDOW_TITLE'] = {
     ru: `Диспетчер станции __1__`,
     en: `__1__ station dispatcher`,
+}
+lang['viirld-gui.WINDOW_TITLE-ghost'] = {
+    ru: `Призрак диспетчера станции`,
+    en: `Ghost of station dispatcher`,
 }
 lang['viirld-gui.EL_ITEM_MEM_BUTTON'] = {
     ru: `Память:`,

@@ -5,6 +5,7 @@ correctScheduleAtProvider = true
 countingInsertersContent = true
 ---@type number
 updateTicks = 2
+timeOfStuckDelivery = 60 * 300
 
 debugMode = false
 

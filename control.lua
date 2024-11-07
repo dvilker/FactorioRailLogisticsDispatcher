@@ -45,7 +45,7 @@ end)
 
 ---@param event OnPlayerRotatedEntity
 script.on_event(defines.events.on_player_rotated_entity, function(event)
-    if event.entity.valid and event.entity.name == 'viirld-dispatcher' then
+    if event.entity.name == "viirld-dispatcher" or (event.entity.type == "entity-ghost" and event.entity.ghost_name == "viirld-dispatcher") then
         if event.entity.direction == defines.direction.north then
             event.entity.direction = defines.direction.west
         elseif event.entity.direction == defines.direction.south then
@@ -62,20 +62,31 @@ end)
 script.on_event(
         defines.events.on_entity_settings_pasted,
         function(event)
-            if event.destination.name == "viirld-dispatcher" then
-                if event.source.name == "viirld-dispatcher" then
-                    local source = storage.disps[event.source.unit_number]
-                    local destination = storage.disps[event.destination.unit_number]
-                    if source and destination then
-                        dispSetSettings(destination, source.settings)
-                    end
-                else
-                    -- restore
+            ---@type DispSettings
+            local source
+            if event.source.name == "viirld-dispatcher" then
+                local disp = storage.disps[event.source.unit_number]
+                source = disp and disp.settings
+            elseif event.source.type == "entity-ghost" and event.source.ghost_name == "viirld-dispatcher" then
+                source = dispCombinatorToSettings(event.source)
+            end
+            if not source then
+                if event.destination.name == "viirld-dispatcher" then
                     local destination = storage.disps[event.destination.unit_number]
                     if destination then
+                        -- restore
                         dispSettingsToCombinator(destination.settings, destination.entity)
                     end
                 end
+                return
+            end
+            if event.destination.name == "viirld-dispatcher" then
+                local destination = storage.disps[event.destination.unit_number]
+                if destination then
+                    dispSetSettings(destination, source)
+                end
+            elseif event.destination.type == "entity-ghost" and event.destination.ghost_name == "viirld-dispatcher" then
+                dispSettingsToCombinator(source, event.destination)
             end
         end
 )
@@ -84,7 +95,7 @@ script.on_event(
 local function onEntityBuilt(event)
     local entity = event.entity
     if entity and entity.valid and (entity.type == "train-stop" or entity.name == "viirld-dispatcher") then
-        entityHandleBuilt(entity)
+        entityHandleBuilt(entity, event.tags)
         if entity.train then
             trainUpdateStation(entity.train)
         end
@@ -129,17 +140,17 @@ script.on_event(
                 if org then
                     forceOrg[event.surface_index] = nil
                     for _, disp in pairs(org.disps) do
-                        storage.disps[disp.outPort.unit_number] = nil
-                        storage.disps[disp.stopEntity.unit_number] = nil
-                        storage.disps[disp.entity.unit_number] = nil
+                        storage.disps[disp.outPort and disp.outPort.valid and disp.outPort.unit_number or -1] = nil
+                        storage.disps[disp.stopEntity and disp.stopEntity.valid and disp.stopEntity.unit_number or -1] = nil
+                        storage.disps[disp.entity and disp.entity.valid and disp.entity.unit_number or -1] = nil
                         storage.disps[disp.uid] = nil
                         storage.activeDisps[disp.uid] = nil
+                        for uid, d in pairs(storage.disps) do
+                            if d == disp then
+                                storage.disps[uid] = nil
+                            end
+                        end
                     end
-                end
-            end
-            for k, mover in pairs(storage.movers) do
-                if mover.train.front_stock.surface_index == event.surface_index then
-                    storage.movers[k] = nil
                 end
             end
             for k, delivery in pairs(storage.deliveries) do
@@ -151,6 +162,20 @@ script.on_event(
             end
         end
 )
+
+---@param event OnPlayerSetupBlueprint
+script.on_event(
+        defines.events.on_player_setup_blueprint,
+        function(event)
+            local stack = event.stack
+            for index, entity in pairs(event.mapping.get()) do
+                if entity.name == "viirld-dispatcher" then
+                    stack.set_blueprint_entity_tag(index, "viidrld-stationTemplate", entity.combinator_description)
+                end
+            end
+        end
+)
+
 
 --endregion
 
@@ -170,7 +195,7 @@ script.on_event(
         defines.events.on_gui_opened,
         function(event)
             if event.gui_type == defines.gui_type.entity and event.entity then
-                if event.entity.name == "viirld-dispatcher" then
+                if event.entity.name == "viirld-dispatcher" or event.entity.type == "entity-ghost" and event.entity.ghost_name == "viirld-dispatcher" then
                     DispGuiLua.open(event)
                 end
             end
@@ -182,8 +207,11 @@ script.on_event(
         defines.events.on_entity_renamed,
         function(event)
             local disp = storage.disps[event.entity.unit_number]
-            if disp and disp.gui then
-                DispGuiLua.updateStationName(disp.gui)
+            if disp then
+                if disp.gui then
+                    DispGuiLua.updateStationName(disp.gui)
+                end
+                dispUpdateStopName(disp)
             end
         end
 )

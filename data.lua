@@ -312,9 +312,27 @@ local activeColor = { 0, 0.3, 0 }
 style.viirld_mem_active = {
     type = "button_style",
     parent = "viirld_mem",
+    font = "default-bold",
     default_font_color = activeColor,
     hovered_font_color = activeColor,
     clicked_font_color = activeColor,
+}
+
+style.viirld_delete_button = {
+    type = "button_style",
+    parent = "frame_button",
+    size = 24,
+    padding = 0,
+    top_margin = 6,
+    invert_colors_of_picture_when_hovered_or_toggled = true,
+}
+
+style.viirld_hili_delete_button = {
+    type = "button_style",
+    parent = "red_button",
+    size = 24,
+    padding = 0,
+    top_margin = 6,
 }
 
 style.viirld_draggable_space_header = {
