@@ -206,62 +206,28 @@ script.on_event(
         end
 )
 
-
---
---script.on_event(
---        defines.events.on_train_created,
---        ---@overload fun (event: EventData)
---        ---@param event OnTrainCreated
---        function(event)
---            --[[DEBUG]]log("on_train_created: train " .. var_dump(event.train.id) .. ": " .. var_dump(event))
---            local trainInfo = MoverClass.getTrainInfoFromSchedule(event.train)
---            if trainInfo then
---                MoverClass.handleCreate(event.train, trainInfo)
---            end
---            if event.old_train_id_1 then
---                MoverClass.handleRemove(event.old_train_id_1)
---            end
---            if event.old_train_id_2 then
---                MoverClass.handleRemove(event.old_train_id_2)
---            end
---            --event.old_train_id_1
---
---            --local train = event.train
---            --train.schedule = { current = 1, records = {
---            --    {
---            --        station = "Depot",
---            --        wait_conditions = {
---            --            {
---            --                type = "circuit",
---            --                compare_type = "or",
---            --                condition = {
---            --                    comparator = "≤",
---            --                    first_signal = { type = "fluid", name = "viirld2-network-signal" },
---            --                    constant = 441,
---            --                }
---            --
---            --            },
---            --            {
---            --                type = "circuit",
---            --                compare_type = "or",
---            --                condition = {
---            --                    comparator = "≤",
---            --                    first_signal = { type = "fluid", name = "viirld2-delivery-signal" },
---            --                    constant = 441,
---            --                }
---            --
---            --            },
---            --        }
---            --    }
---            --} }
---            --if event.old_train_id_1 then
---            --    MoverClass.handleRemoved(train.front_stock.surface.index, event.old_train_id_1)
---            --end
---            --if event.old_train_id_2 then
---            --    MoverClass.handleRemoved(train.front_stock.surface.index, event.old_train_id_2)
---            --end
---        end
---)
+---@param event OnTrainCreated
+script.on_event(
+        defines.events.on_train_created,
+        function(event)
+            local trainOnStation = (event.old_train_id_1 and storage.trainStation[event.old_train_id_1])
+                    or (event.old_train_id_2 and storage.trainStation[event.old_train_id_2])
+            if trainOnStation then
+                local disp = storage.disps[trainOnStation.station.unit_number]
+                local train = event.train
+                disp.stoppedTrain = train
+                disp.stoppedTrainType = getTrainType(train)
+                if event.old_train_id_1 then
+                    storage.trainStation[event.old_train_id_1] = nil
+                end
+                if event.old_train_id_2 then
+                    storage.trainStation[event.old_train_id_2] = nil
+                end
+                storage.trainStation[train.id] = trainOnStation
+                trainUpdateStation(train)
+            end
+        end
+)
 ----
 --script.on_event(
 --        defines.events.on_entity_settings_pasted,
