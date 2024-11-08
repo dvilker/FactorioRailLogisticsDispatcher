@@ -95,6 +95,12 @@ script.on_event(
 local function onEntityBuilt(event)
     local entity = event.entity
     if entity and entity.valid and (entity.type == "train-stop" or entity.name == "viirld-dispatcher") then
+        for _, model in pairs(storage.guiModels) do
+            ---@type DispGui
+            if model.self and (model.self.ghost and not model.self.ghost.valid or model.self.disp and not model.self.disp.entity.valid) then
+                DispGuiLua.close(model.self, true)
+            end
+        end
         entityHandleBuilt(entity, event.tags)
         if entity.train then
             trainUpdateStation(entity.train)
@@ -125,6 +131,13 @@ script.on_event(
                     if entity == entity.train.front_stock and entity == entity.train.back_stock then
                         --[[DEBUG]]log("entityRemoved: Fully removed train " .. var_dump(entity.train.id))
                         --MoverClass.handleRemove(entity.train.id)
+                    end
+                elseif entity.type == "entity-ghost" and entity.ghost_name == "viirld-dispatcher" then
+                    for _, model in pairs(storage.guiModels) do
+                        ---@type DispGui
+                        if model.self and (model.self.ghost and not model.self.ghost.valid or model.self.disp and not model.self.disp.entity.valid) then
+                            DispGuiLua.close(model.self, true)
+                        end
                     end
                 end
             end

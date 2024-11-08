@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.9
+Date: 08.11.2024
+  Changes:
+    - Added tooltips with quantities in other units in the station contents section.
+  Bugfixes:
+    - Crash if close window of destroyed dispatcher.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.8
 Date: 08.11.2024
   Bugfixes:

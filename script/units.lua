@@ -8,6 +8,7 @@
 ---@field tooltip LocalisedString
 ---@field float boolean|nil
 ---@field calc fun (count: number, name: string): number
+---@field reverseCalc fun (count: number, name: string): number
 ---@field toString fun (count: number): LocalisedString
 ---@field combinatorCode  UnitCombinatorCode
 
@@ -150,6 +151,9 @@ function getCountUnits()
             calc = function(count)
                 return count
             end,
+            reverseCalc = function(count)
+                return count
+            end,
             toString = function(count)
                 count = math.floor(count)
                 return formatNumber(count, true)
@@ -166,6 +170,9 @@ function getCountUnits()
             calc = function(count, name)
                 return count * prototypes.item[name].stack_size
             end,
+            reverseCalc = function(count, name)
+                return count / prototypes.item[name].stack_size
+            end,
             toString = function(count)
                 count = math.floor(count)
                 return { "viirld-units.x-stack-str", formatNumber(count, true) }
@@ -181,7 +188,10 @@ function getCountUnits()
                 float = true,
                 combinatorCode = combinatorCodes[3],
                 calc = function(count, name)
-                    return math.floor(count * wagonStackCount * prototypes.item[name].stack_size)
+                    return count * wagonStackCount * prototypes.item[name].stack_size
+                end,
+                reverseCalc = function(count, name)
+                    return count / (wagonStackCount * prototypes.item[name].stack_size)
                 end,
                 toString = function(count)
                     count = math.floor(count * 100) / 100
@@ -203,6 +213,9 @@ function getCountUnits()
                 combinatorCode = combinatorCodes[2],
                 calc = function(count, name)
                     return math.floor(count * wagonCapacity)
+                end,
+                reverseCalc = function(count, name)
+                    return count / wagonCapacity
                 end,
                 toString = function(count)
                     count = math.floor(count * 100) / 100
@@ -264,4 +277,35 @@ function getUnitByCombinatorCode(combinatorCode, type)
         end
     end
     return nil
+end
+
+
+---@param count number
+---@param type "item"|"fluid"
+---@param name string
+---@return LocalisedString
+function getUnitReverseTooltip(count, type, name)
+    local units = getCountUnits()
+    local result = {""}
+    if type == "item" then
+        for code, unit in pairs(units) do
+            if code < FLUID_INDEX_FROM then
+                local cnt = math.floor(unit.reverseCalc(count, name) * 100) / 100
+                result[#result + 1] = { "viirld-units.x-reverse-count-line", cnt, unit.caption }
+                result[#result + 1] = "\n"
+            end
+        end
+    elseif type == "fluid" then
+        for code, unit in pairs(units) do
+            if (code < ITEM_INDEX_FROM or code >= FLUID_INDEX_FROM) then
+                local cnt = math.floor(unit.reverseCalc(count, name) * 100) / 100
+                result[#result + 1] = { "viirld-units.x-reverse-count-line", cnt, unit.caption }
+                result[#result + 1] = "\n"
+            end
+        end
+    end
+    if #result > 1 then
+        result[#result] = nil
+    end
+    return result
 end

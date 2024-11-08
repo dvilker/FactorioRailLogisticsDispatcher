@@ -1026,3 +1026,8 @@ lang['viirld-units.x-fluid-wagon-str'] = {
     ru: `__1__в`,
     en: `__1__w`,
 }
+
+lang['viirld-units.x-reverse-count-line'] = {
+    ru: `= __1__ __2__`,
+    en: `= __1__ __2__`,
+}

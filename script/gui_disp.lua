@@ -543,17 +543,21 @@ function DispGuiLua.updateDispInfo(gui)
         local dispSignal = disp and disp.signals[tnq]
         if dispSignal then
             row.cells[2].caption = formatNumberInt(dispSignal.circuitValue or 0, false)
+            row.cells[2].tooltip = getUnitReverseTooltip(dispSignal.circuitValue or 0, dispSignal.type, dispSignal.name)
             if dispSignal.provideCount then
                 row.cells[3].caption = "+" .. formatNumberInt(dispSignal.balance, false)
+                row.cells[3].tooltip = getUnitReverseTooltip(dispSignal.balance, dispSignal.type, dispSignal.name)
                 row.cells[3].style.font_color = dispSignal.balance >= 0 and PROVIDE_COLOR or UNDER_MIN_COLOR
                 row.cells[3].style.font = dispSignal.balance > 0 and 'default-bold' or 'default'
             elseif dispSignal.requestCount then
                 if dispSignal.balance <= 0 then
                     row.cells[3].caption = "−" .. formatNumberInt(-dispSignal.balance, false)
+                    row.cells[3].tooltip = getUnitReverseTooltip(-dispSignal.balance, dispSignal.type, dispSignal.name)
                     row.cells[3].style.font_color = dispSignal.requestCount >= 0 and REQUEST_COLOR or UNDER_MIN_COLOR
                     row.cells[3].style.font = dispSignal.requestCount > 0 and 'default-bold' or 'default'
                 else
                     row.cells[3].caption = "+" .. formatNumberInt(dispSignal.balance, false)
+                    row.cells[3].tooltip = getUnitReverseTooltip(dispSignal.balance, dispSignal.type, dispSignal.name)
                     row.cells[3].style.font_color = UNDER_MIN_COLOR
                     row.cells[3].style.font = 'default'
                 end
@@ -561,10 +565,13 @@ function DispGuiLua.updateDispInfo(gui)
                 row.cells[3].caption = ""
                 row.cells[3].style.font_color = UNDER_MIN_COLOR
                 row.cells[3].style.font = 'default'
+                row.cells[3].tooltip = nil
             end
         else
             row.cells[2].caption = ""
+            row.cells[2].tooltip = nil
             row.cells[3].caption = ""
+            row.cells[3].tooltip = nil
         end
         if disp and disp.transit[tnq] then
             row.cells[4].caption = formatNumberInt(disp.transit[tnq], false)
@@ -1029,7 +1036,15 @@ function DispGuiLua._on_EL_APPLY_click(gui)
 end
 
 ---@param gui DispGui
-function DispGuiLua.close(gui)
+---@param justForgot boolean
+function DispGuiLua.close(gui, justForgot)
+    if justForgot then
+        destroyGuiModel(gui.model)
+        if gui.disp then
+            gui.disp.gui = nil
+        end
+        return
+    end
     DispGuiLua._normalizeData(gui)
     if gui.disp then
         dispSetSettings(gui.disp, gui.data)

@@ -374,7 +374,7 @@ function formatNumber(amount, appendSuffix)
 end
 
 ---@param num number
----@return num
+---@return number
 function round(num)
     if num >= 0 then
         return math.floor(num + 0.5)

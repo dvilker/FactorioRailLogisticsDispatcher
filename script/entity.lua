@@ -573,6 +573,9 @@ local function entityHandleRemoveDispatcher(entity)
     ---@type DispClass
     local disp = storage.disps[entity.unit_number]
     if disp then
+        if disp.gui then
+            DispGuiLua.close(disp.gui, true)
+        end
         storage.disps[disp.uid] = nil
         storage.disps[disp.outPort.unit_number] = nil
         storage.activeDisps[disp.uid] = nil
