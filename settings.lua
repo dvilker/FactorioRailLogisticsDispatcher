@@ -32,6 +32,13 @@ data:extend({
   },
   {
     type = "bool-setting",
+    name = "viirld-use-hack-to-save-interrupts",
+    order = "ag",
+    setting_type = "runtime-global",
+    default_value = true
+  },
+  {
+    type = "bool-setting",
     name = "viirld-debug",
     order = "az",
     setting_type = "runtime-global",

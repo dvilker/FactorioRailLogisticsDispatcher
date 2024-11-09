@@ -190,6 +190,17 @@ script.on_event(
 )
 
 
+---@param event OnForceCreated
+script.on_event(
+        defines.events.on_force_created,
+        function(event)
+            if storage.scheduleHelperSurface then
+                event.force.set_surface_hidden(storage.scheduleHelperSurface, true)
+            end
+        end
+)
+
+
 --endregion
 
 

@@ -86,6 +86,26 @@ lang['mod-setting-description.viirld-updateTicks'] = {
         Note that each station is updated no more than once every 60 ticks.
         `,
 }
+lang['mod-setting-name.viirld-use-hack-to-save-interrupts'] = {
+    ru: `Сохранять прерывания поездов (хак)`,
+    en: `Save interrupts (hack)"`,
+}
+lang['mod-setting-description.viirld-use-hack-to-save-interrupts'] = {
+    ru: `
+        Lua-api не дает возможности сохранять или изменять прерывания поезда — они просто удаляются при изменении расписания.
+        
+        Пока команда Factorio не добавит такую возможность, можно использовать обходной путь (хак).
+        
+        Некоторые моды могут мешать работе этого хака, поэтому он может работать нестабильно. 
+        `,
+    en: `
+        The lua api does not provide a way to save or change train interruptions — they are simply deleted when the schedule is changed.
+
+        Until Factorio adds such a feature, a workaround (hack) can be used.
+
+        Some mods may interfere with this hack, so it may not work reliably.
+        `,
+}
 lang['mod-setting-name.viirld-debug'] = {
     ru: `Отладка`,
     en: `Debug`,
@@ -1012,7 +1032,7 @@ lang['viirld-units.x-cargo-wagon-tt'] = {
 }
 lang['viirld-units.x-cargo-wagon-str'] = {
     ru: `__1__в`,
-    en: `__1__s`,
+    en: `__1__w`,
 }
 lang['viirld-units.x-fluid-wagon'] = {
     ru: `×[entity=__1__]`,

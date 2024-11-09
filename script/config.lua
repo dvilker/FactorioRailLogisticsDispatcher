@@ -6,6 +6,7 @@ countingInsertersContent = true
 ---@type number
 updateTicks = 2
 timeOfStuckDelivery = 60 * 300
+useHackToSaveInterrupts = true
 
 debugMode = false
 
@@ -16,6 +17,8 @@ function configUpdate()
     correctScheduleAtProvider = settings.global["viirld-correctScheduleAtProvider"].value
 
     countingInsertersContent = settings.global["viirld-countingInsertersContent"].value
+
+    useHackToSaveInterrupts = settings.global["viirld-use-hack-to-save-interrupts"].value
 
     if settings.global["viirld-updateTicks"].value ~= updateTicks then
         updateTicks = settings.global["viirld-updateTicks"].value

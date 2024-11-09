@@ -140,10 +140,13 @@ function trainUpdateSchedule(train, delivery, depotName)
     }
 
     train.group = nil
-    train.schedule = {
-        current = 1,
-        records = recs,
-    }
+    setTrainScheduleWithPreserveInterrupts(
+            train,
+            {
+                current = 1,
+                records = recs,
+            }
+    )
 end
 
 ---@param train LuaTrain
@@ -248,7 +251,7 @@ function trainArrived(train)
                 disp.deliveries[deli.uid] = nil
             elseif deli.requester == disp then
                 if not deli.providerPassedTick then
-                    disp.entity.force.print( { "viirld.ERR_MSG-TRAIN_ARRIVED_REQUESTER_WO_PROVIDER", disp.stopEntity.unit_number })
+                    disp.entity.force.print({ "viirld.ERR_MSG-TRAIN_ARRIVED_REQUESTER_WO_PROVIDER", disp.stopEntity.unit_number })
                 end
                 if deli.requesterPassedTick then
                     disp.entity.force.print({ "viirld.ERR_MSG-TRAIN_ARRIVED_REQUESTER_TWICE", disp.stopEntity.unit_number })
@@ -262,7 +265,7 @@ function trainArrived(train)
                 storage.deliveries[deli.uid] = nil
             end
         elseif disp.settings.modeEndpoint then
-            disp.entity.force.print({ "viirld.ERR_MSG-UNKNOWN_DELIVERY" , deliveryUid, disp.stopEntity.unit_number })
+            disp.entity.force.print({ "viirld.ERR_MSG-UNKNOWN_DELIVERY", deliveryUid, disp.stopEntity.unit_number })
         end
     end
 
@@ -271,25 +274,28 @@ function trainArrived(train)
             disp.entity.force.print({ "viirld.ERR_MSG-UNEXPECTED_DEPOT", disp.stopEntity.unit_number })
         else
             train.group = nil
-            train.schedule = {
-                current = 1,
-                records = {
+            setTrainScheduleWithPreserveInterrupts(
+                    train,
                     {
-                        station = disp.stopName,
-                        wait_conditions = {
+                        current = 1,
+                        records = {
                             {
-                                type = "circuit",
-                                condition = {
-                                    first_signal = { type = "virtual", name = "viirld-delivery" },
-                                    second_signal = {},
-                                    comparator = "=",
+                                station = disp.stopName,
+                                wait_conditions = {
+                                    {
+                                        type = "circuit",
+                                        condition = {
+                                            first_signal = { type = "virtual", name = "viirld-delivery" },
+                                            second_signal = {},
+                                            comparator = "=",
+                                        },
+                                        compare_type = "and",
+                                    },
                                 },
-                                compare_type = "and",
-                            },
+                            }
                         },
                     }
-                },
-            }
+            )
         end
     end
     dispUpdate(disp, false, true, true)

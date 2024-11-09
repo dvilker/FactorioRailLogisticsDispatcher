@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.10
+Date: 09.11.2024
+  Changes:
+    - Preserving train interruptions with a workaround (A hack is used until a standard feature is added). Can be disabled in the mod settings.
+  Bugfixes:
+    - "s" -> "w" for wagons in EN locale.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.9
 Date: 08.11.2024
   Changes:
