@@ -137,13 +137,13 @@ function DispGuiLua.open(event)
     gui.model = createGuiModel(
             gui.player.gui.screen,
             gui,
-            { type = "frame", onClosed = DispGuiLua.close, direction = "vertical", auto_center = true, _style1 = { minimal_height = 600 }, _sub = {
+            { type = "frame", onClosed = DispGuiLua._on_close, direction = "vertical", auto_center = true, _style1 = { minimal_height = 600 }, _sub = {
                 { type = "flow", _sub = {
                     { type = "label", style = "frame_title", _name = EL_TITLE, caption = "?", _dragTarget = "" },
                     { type = "empty-widget", style = "viirld_draggable_space_header", _dragTarget = "" },
                     { type = "button", caption = { "viirld-gui.EL_ROLLBACK" }, style = "viirld_frame_button", _name = EL_ROLLBACK, onClick = DispGuiLua._on_EL_ROLLBACK_click },
                     { type = "button", caption = { "viirld-gui.EL_APPLY" }, style = "viirld_frame_button", _name = EL_APPLY, onClick = DispGuiLua._on_EL_APPLY_click },
-                    { type = "sprite-button", onClick = DispGuiLua.close, style = "close_button", sprite = "utility/close", hovered_sprite = "utility/close_black" },
+                    { type = "sprite-button", onClick = DispGuiLua._on_close, style = "close_button", sprite = "utility/close", hovered_sprite = "utility/close_black" },
                 } },
                 { type = "flow", direction = "horizontal", _name = DIV_TABS, _sub = {
                     { type = "frame", style = "entity_frame", _style1 = { vertically_stretchable = true }, direction = "vertical", _sub = {
@@ -158,17 +158,17 @@ function DispGuiLua.open(event)
 
                                 { type = "table", column_count = 2, _autoSharesFrom = 2, _sub = {
                                     { type = "label", _share = EL_NETWORK, caption = { "viirld-gui.EL_NETWORK" }, tooltip = { "viirld-gui.EL_NETWORK-tt" } },
-                                    { type = "textfield", _share = EL_NETWORK, _name = EL_NETWORK, onChanged = DispGuiLua._on_EL_NETWORK, onConfirmed = DispGuiLua.close, text = "1", tooltip = { "viirld-gui.EL_NETWORK-tt" }, _style2 = { width = 100 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "textfield", _share = EL_NETWORK, _name = EL_NETWORK, onChanged = DispGuiLua._on_EL_NETWORK, onConfirmed = DispGuiLua._on_close, text = "1", tooltip = { "viirld-gui.EL_NETWORK-tt" }, _style2 = { width = 100 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
 
                                     { type = "label", _share = EL_LEN, caption = { "viirld-gui.EL_LEN" }, enabled = false, tooltip = { "viirld-gui.EL_LEN-tt" } },
                                     { type = "flow", direction = "horizontal", _style1 = STYLE_MARGIN, _style2 = { vertical_align = "center" }, _sub = {
-                                        { type = "textfield", _name = EL_LEN_MIN, _share = EL_LEN, enabled = false, onChanged = DispGuiLua._on_EL_LEN, onConfirmed = DispGuiLua.close, text = "1", tooltip = { "viirld-gui.EL_LEN-tt" }, _style1 = { width = 50 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield" },
+                                        { type = "textfield", _name = EL_LEN_MIN, _share = EL_LEN, enabled = false, onChanged = DispGuiLua._on_EL_LEN, onConfirmed = DispGuiLua._on_close, text = "1", tooltip = { "viirld-gui.EL_LEN-tt" }, _style1 = { width = 50 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield" },
                                         { type = "label", _share = EL_LEN, caption = "–", enabled = false, tooltip = { "viirld-gui.EL_LEN-tt" }, },
-                                        { type = "textfield", _name = EL_LEN_MAX, _share = EL_LEN, enabled = false, onChanged = DispGuiLua._on_EL_LEN, onConfirmed = DispGuiLua.close, text = "1", tooltip = { "viirld-gui.EL_LEN-tt" }, _style1 = { width = 50 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield" },
+                                        { type = "textfield", _name = EL_LEN_MAX, _share = EL_LEN, enabled = false, onChanged = DispGuiLua._on_EL_LEN, onConfirmed = DispGuiLua._on_close, text = "1", tooltip = { "viirld-gui.EL_LEN-tt" }, _style1 = { width = 50 }, numeric = true, allow_decimal = false, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield" },
                                     } },
 
                                     { type = "label", _share = EL_STATION_TEMPLATE, caption = { "viirld-gui.EL_STATION_TEMPLATE" }, tooltip = { "viirld-gui.EL_STATION_TEMPLATE-tt" } },
-                                    { type = "textfield", _share = EL_STATION_TEMPLATE, _name = EL_STATION_TEMPLATE, onChanged = DispGuiLua._on_EL_STATION_TEMPLATE, onConfirmed = DispGuiLua.close, text = "1", tooltip = { "viirld-gui.EL_STATION_TEMPLATE-tt" }, _style2 = { width = 120 }, icon_selector = true, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
+                                    { type = "textfield", _share = EL_STATION_TEMPLATE, _name = EL_STATION_TEMPLATE, onChanged = DispGuiLua._on_EL_STATION_TEMPLATE, onConfirmed = DispGuiLua._on_close, text = "1", tooltip = { "viirld-gui.EL_STATION_TEMPLATE-tt" }, _style2 = { width = 120 }, icon_selector = true, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
                                 } },
                             } },
                             { type = "flow", direction = "vertical", _style1 = STYLE_MARGIN, _sub = {
@@ -216,13 +216,13 @@ function DispGuiLua.open(event)
                                         { type = "empty-widget" },
                                         { type = "checkbox", _name = EL_ITEM_ALLOW_REQUEST, onChanged = DispGuiLua._on_EL_ITEM_ALLOW_REQUEST, caption = { "viirld-gui.EL_ITEM_ALLOW_REQUEST" }, tooltip = { "viirld-gui.EL_ITEM_ALLOW_REQUEST-tt" }, _style1 = { top_margin = 12 } },
                                         { type = "flow", direction = "horizontal", _style1 = { top_margin = 12 }, _sub = {
-                                            { type = "textfield", _name = EL_ITEM_REQUEST, _share = EL_ITEM_ALLOW_REQUEST, onChanged = DispGuiLua._on_EL_ITEM_REQUEST, onConfirmed = DispGuiLua.close, text = "1000", tooltip = { "viirld-gui.EL_ITEM_REQUEST-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
+                                            { type = "textfield", _name = EL_ITEM_REQUEST, _share = EL_ITEM_ALLOW_REQUEST, onChanged = DispGuiLua._on_EL_ITEM_REQUEST, onConfirmed = DispGuiLua._on_close, text = "1000", tooltip = { "viirld-gui.EL_ITEM_REQUEST-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
                                             { type = "button", _name = EL_ITEM_REQUEST_UNIT, _share = EL_ITEM_ALLOW_REQUEST, onClick = DispGuiLua._on_EL_ITEM_REQUEST_UNIT_click, tooltip = { "viirld-gui.EL_ITEM_REQUEST-tt" }, style = "viirld_unit" },
                                         } },
                                         { type = "empty-widget" },
                                         { type = "label", caption = { "viirld-gui.EL_ITEM_MIN" }, _share = EL_ITEM_ALLOW_REQUEST, tooltip = { "viirld-gui.EL_ITEM_MIN-tt" }, _style1 = { left_margin = 45 } },
                                         { type = "flow", direction = "horizontal", _sub = {
-                                            { type = "textfield", _name = EL_ITEM_MIN, _share = EL_ITEM_ALLOW_REQUEST, onChanged = DispGuiLua._on_EL_ITEM_REQUEST_MIN, onConfirmed = DispGuiLua.close, text = "500", tooltip = { "viirld-gui.EL_ITEM_MIN-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
+                                            { type = "textfield", _name = EL_ITEM_MIN, _share = EL_ITEM_ALLOW_REQUEST, onChanged = DispGuiLua._on_EL_ITEM_REQUEST_MIN, onConfirmed = DispGuiLua._on_close, text = "500", tooltip = { "viirld-gui.EL_ITEM_MIN-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", _style1 = STYLE_MARGIN, },
                                             { type = "button", _name = EL_ITEM_MIN_UNIT, _share = EL_ITEM_ALLOW_REQUEST, onClick = DispGuiLua._on_EL_ITEM_REQUEST_MIN_UNIT_click, tooltip = { "viirld-gui.EL_ITEM_MIN-tt" }, style = "viirld_unit" },
                                         } },
                                         { type = "empty-widget" },
@@ -253,7 +253,7 @@ function DispGuiLua.open(event)
                                         { type = "checkbox", _name = EL_ALLOW_ANY_ITEM_REQUEST, onChanged = DispGuiLua._on_EL_ALLOW_ANY_ITEM_REQUEST, caption = { "viirld-gui.EL_ALLOW_ANY_ITEM_REQUEST" }, tooltip = { "viirld-gui.EL_ALLOW_ANY_ITEM_REQUEST-tt" }, _style1 = { top_margin = 12, left_margin = 20 } },
                                         { type = "flow", direction = "horizontal", _style1 = { top_margin = 12, left_margin = 12, vertical_align = "center" }, _sub = {
                                             { type = "label", enabled = false, caption = { "viirld-gui.EL_MIN_ANY_ITEM" }, _share = EL_MIN_ANY_ITEM, tooltip = { "viirld-gui.EL_MIN_ANY_ITEM-tt" } },
-                                            { type = "textfield", enabled = false, _name = EL_MIN_ANY_ITEM, _share = EL_MIN_ANY_ITEM, onChanged = DispGuiLua._on_EL_MIN_ANY_ITEM, onConfirmed = DispGuiLua.close, text = "1000", tooltip = { "viirld-gui.EL_MIN_ANY_ITEM-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", },
+                                            { type = "textfield", enabled = false, _name = EL_MIN_ANY_ITEM, _share = EL_MIN_ANY_ITEM, onChanged = DispGuiLua._on_EL_MIN_ANY_ITEM, onConfirmed = DispGuiLua._on_close, text = "1000", tooltip = { "viirld-gui.EL_MIN_ANY_ITEM-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", },
                                             { type = "button", enabled = false, _name = EL_MIN_ANY_ITEM_UNIT, _share = EL_MIN_ANY_ITEM, onClick = DispGuiLua._on_EL_MIN_ANY_ITEM_UNIT_click, tooltip = { "viirld-gui.EL_MIN_ANY_ITEM-tt" }, style = "viirld_unit" },
                                         } },
                                         { type = "empty-widget" },
@@ -268,7 +268,7 @@ function DispGuiLua.open(event)
                                         { type = "checkbox", _name = EL_ALLOW_ANY_FLUID_REQUEST, onChanged = DispGuiLua._on_EL_ALLOW_ANY_FLUID_REQUEST, caption = { "viirld-gui.EL_ALLOW_ANY_FLUID_REQUEST" }, tooltip = { "viirld-gui.EL_ALLOW_ANY_FLUID_REQUEST-tt" }, _style1 = { top_margin = 12, left_margin = 20 } },
                                         { type = "flow", direction = "horizontal", _style1 = { top_margin = 12, left_margin = 12, vertical_align = "center" }, _sub = {
                                             { type = "label", caption = { "viirld-gui.EL_MIN_ANY_FLUID" }, _share = EL_MIN_ANY_FLUID, tooltip = { "viirld-gui.EL_MIN_ANY_FLUID-tt" } },
-                                            { type = "textfield", _name = EL_MIN_ANY_FLUID, _share = EL_MIN_ANY_FLUID, onChanged = DispGuiLua._on_EL_MIN_ANY_FLUID, onConfirmed = DispGuiLua.close, text = "1000", tooltip = { "viirld-gui.EL_MIN_ANY_FLUID-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", },
+                                            { type = "textfield", _name = EL_MIN_ANY_FLUID, _share = EL_MIN_ANY_FLUID, onChanged = DispGuiLua._on_EL_MIN_ANY_FLUID, onConfirmed = DispGuiLua._on_close, text = "1000", tooltip = { "viirld-gui.EL_MIN_ANY_FLUID-tt" }, numeric = true, allow_decimal = true, allow_negative = false, clear_and_focus_on_right_click = true, style = "viirld_number_textfield", },
                                             { type = "button", _name = EL_MIN_ANY_FLUID_UNIT, _share = EL_MIN_ANY_FLUID, onClick = DispGuiLua._on_EL_MIN_ANY_FLUID_UNIT_click, tooltip = { "viirld-gui.EL_MIN_ANY_FLUID-tt" }, style = "viirld_unit" },
                                         } },
                                         { type = "empty-widget" },
@@ -1033,6 +1033,11 @@ function DispGuiLua._on_EL_APPLY_click(gui)
     gui.doUpdateCounters = true
     gui.doUpdateItemForm = true
     gui.doUpdateMemButtons = true
+end
+
+---@param gui DispGui
+function DispGuiLua._on_close(gui)
+    DispGuiLua.close(gui, false)
 end
 
 ---@param gui DispGui

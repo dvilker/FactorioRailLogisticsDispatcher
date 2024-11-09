@@ -1531,7 +1531,7 @@ function dispTurnInserters(disp, doReturn, forcedReturn)
                         if turnedIns.direction then
                             turnedIns.inserter.direction = turnedIns.direction
                         end
-                        turnedIns.inserter.direction = turnedIns.inserter.direction -- todo need?
+                        turnedIns.inserter.direction = turnedIns.inserter.direction
                         disp.turnedInserters[k] = nil
                     end
                 else
@@ -1560,7 +1560,7 @@ function dispTurnInserters(disp, doReturn, forcedReturn)
                                 }
                                 ins.pickup_position = turnedIns.drop_position
                                 ins.drop_position = turnedIns.pickup_position
-                                ins.direction = ins.direction -- todo need?
+                                ins.direction = ins.direction
                             else
                                 turnedIns = {
                                     inserter = ins,
@@ -1568,11 +1568,6 @@ function dispTurnInserters(disp, doReturn, forcedReturn)
                                 }
                                 ins.direction = util.oppositedirection(ins.direction)
                             end
-                            local p = ins.position
-                            turnedIns.p = p
-                            turnedIns.drop = { x = turnedIns.drop_position.x - p.x, y = turnedIns.drop_position.y - p.y }
-                            turnedIns.pickup = { x = turnedIns.pickup_position.x - p.x, y = turnedIns.pickup_position.y - p.y }
-
                             turnedInserters[ins.unit_number] = turnedIns
                         end
                     end

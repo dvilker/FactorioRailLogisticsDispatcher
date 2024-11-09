@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.12
+Date: 09.11.2024
+  Bugfixes:
+    - Game crashes due to "Turn inserters" option enabled on vanilla inserters.
+    - The settings were not saved if the window was closed without clicking Apply.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.11
 Date: 09.11.2024
   Changes:
