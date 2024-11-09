@@ -39,6 +39,13 @@ data:extend({
   },
   {
     type = "bool-setting",
+    name = "viirld-set-train-group",
+    order = "ah",
+    setting_type = "runtime-global",
+    default_value = true
+  },
+  {
+    type = "bool-setting",
     name = "viirld-debug",
     order = "az",
     setting_type = "runtime-global",

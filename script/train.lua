@@ -273,7 +273,6 @@ function trainArrived(train)
         if deli then
             disp.entity.force.print({ "viirld.ERR_MSG-UNEXPECTED_DEPOT", disp.stopEntity.unit_number })
         else
-            train.group = nil
             setTrainScheduleWithPreserveInterrupts(
                     train,
                     {
@@ -296,6 +295,7 @@ function trainArrived(train)
                         },
                     }
             )
+            train.group = setTrainGroup and disp.stopName or nil
         end
     end
     dispUpdate(disp, false, true, true)

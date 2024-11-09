@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.11
+Date: 09.11.2024
+  Changes:
+    - Possibility to using a train group (= name of the Depot station). The group is temporarily deleted during delivery and restored at the depot. Can be disabled in the mod settings.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.10
 Date: 09.11.2024
   Changes:

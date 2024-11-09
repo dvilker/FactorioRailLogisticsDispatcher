@@ -88,7 +88,7 @@ lang['mod-setting-description.viirld-updateTicks'] = {
 }
 lang['mod-setting-name.viirld-use-hack-to-save-interrupts'] = {
     ru: `Сохранять прерывания поездов (хак)`,
-    en: `Save interrupts (hack)"`,
+    en: `Save interrupts (hack)`,
 }
 lang['mod-setting-description.viirld-use-hack-to-save-interrupts'] = {
     ru: `
@@ -104,6 +104,22 @@ lang['mod-setting-description.viirld-use-hack-to-save-interrupts'] = {
         Until Factorio adds such a feature, a workaround (hack) can be used.
 
         Some mods may interfere with this hack, so it may not work reliably.
+        `,
+}
+lang['mod-setting-name.viirld-set-train-group'] = {
+    ru: `Устанавливать группу поездов в депо`,
+    en: `Set train group in the depot`,
+}
+lang['mod-setting-description.viirld-set-train-group'] = {
+    ru: `
+        По прибытии в депо поезду будет назначена группа, название которой совпадает с названием станции Депо.
+        
+        На время доставки поезд будет выходить из группы и снова возвращаться в нее в Депо.
+    `,
+    en: `
+        Upon arrival at the depot, the train will be assigned a group whose name matches the name of the Depot station.
+
+        During delivery, the train will leave the group and return to it again at the Depot.
         `,
 }
 lang['mod-setting-name.viirld-debug'] = {
