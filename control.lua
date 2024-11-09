@@ -265,18 +265,28 @@ script.on_event(
             local trainOnStation = (event.old_train_id_1 and storage.trainStation[event.old_train_id_1])
                     or (event.old_train_id_2 and storage.trainStation[event.old_train_id_2])
             if trainOnStation then
-                local disp = storage.disps[trainOnStation.station.unit_number]
-                local train = event.train
-                disp.stoppedTrain = train
-                disp.stoppedTrainType = getTrainType(train)
-                if event.old_train_id_1 then
-                    storage.trainStation[event.old_train_id_1] = nil
+                if trainOnStation.station.valid then
+                    local disp = storage.disps[trainOnStation.station.unit_number]
+                    local train = event.train
+                    disp.stoppedTrain = train
+                    disp.stoppedTrainType = getTrainType(train)
+                    if event.old_train_id_1 then
+                        storage.trainStation[event.old_train_id_1] = nil
+                    end
+                    if event.old_train_id_2 then
+                        storage.trainStation[event.old_train_id_2] = nil
+                    end
+                    storage.trainStation[train.id] = trainOnStation
+                    trainUpdateStation(train)
+                else
+                    if event.old_train_id_1 then
+                        storage.trainStation[event.old_train_id_1] = nil
+                    end
+                    if event.old_train_id_2 then
+                        storage.trainStation[event.old_train_id_2] = nil
+                    end
+                    trainUpdateStation(event.train, true)
                 end
-                if event.old_train_id_2 then
-                    storage.trainStation[event.old_train_id_2] = nil
-                end
-                storage.trainStation[train.id] = trainOnStation
-                trainUpdateStation(train)
             end
         end
 )
