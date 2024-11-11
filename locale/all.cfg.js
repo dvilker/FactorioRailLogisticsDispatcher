@@ -130,6 +130,22 @@ lang['mod-setting-description.viirld-debug'] = {
     ru: `Включает некоторые отладочные сообщения и обозначения.`,
     en: `Enables some debugging messages and indicators.`,
 }
+lang['mod-setting-name.viirld-pauseNewDispatchers'] = {
+    ru: `Пауза на новых диспетчерах`,
+    en: `Pause new dispatchers`,
+}
+lang['mod-setting-description.viirld-pauseNewDispatchers'] = {
+    ru: `
+        Ставить вновь поставленные диспетчеры на паузу, если они имеют настройки (скопированы или воссозданы их призрака).
+        
+        Это может предотвратить создание доставок на только что скопированный диспетчер.
+        `,
+    en: `
+        Pause newly installed dispatchers if they have settings (copied or recreated from their ghost).
+
+        This can prevent deliveries from being created to the newly copied dispatcher.
+        `,
+}
 
 // Entities
 
@@ -210,6 +226,53 @@ lang['virtual-signal-description.viirld-delivery-pause'] = {
 //
 // "Выберите предмет или жидкость.",
 
+
+lang['viirld-gui.EL_PAUSE'] = {
+    ru: `Поставить на паузу`,
+    en: `Pause`,
+}
+lang['viirld-gui.EL_PAUSE-paused'] = {
+    ru: `[virtual-signal=viirld-delivery-pause] Снять с паузы`,
+    en: `[virtual-signal=viirld-delivery-pause] Unpause`,
+}
+lang['viirld-gui.EL_PAUSE-tt'] = {
+    ru: `
+        Пауза приостановит создание доставок на этой станции.
+        
+        В настройках вы можете включить или выключить автоматическую установку на паузу новых диспетчеров.
+        
+        Автоматизировать постановку на паузу можно с помощью сигнала [virtual-signal=viirld-delivery-pause].
+        
+        Нельзя снять с паузы кнопкой, если она установлена сигналом.
+        `,
+    en: `
+        It will pause the creation of deliveries at this station.
+        
+        In the settings you can enable or disable automatic pausing of new dispatchers.
+        
+        Automatic pausing can be done using the signal [virtual-signal=viirld-delivery-pause].
+        
+        You cannot unpause with a button if it is set by the signal.
+        `,
+}
+
+lang['viirld.paused'] = {
+    ru: `На паузе`,
+    en: `Paused`,
+}
+lang['viirld.unpaused'] = {
+    ru: `Снято с паузы`,
+    en: `Unpaused`,
+}
+lang['viirld.pause-by-signal'] = {
+    ru: `На паузе из-за сигнала`,
+    en: `Paused by signal [virtual-signal=viirld-delivery-pause]`,
+}
+
+lang['controls.viirld-pause-key'] = {
+    ru: `Поставить/снять с паузы диспетчер`,
+    en: `Pause/Unpause dispatcher`,
+}
 
 lang['viirld-gui.EL_ROLLBACK'] = {
     ru: `Откатить`,
@@ -978,7 +1041,26 @@ lang['viirld.ERR-NEED_CHECK-tt'] = {
         It is necessary to check whether the problems with the [__1__] request have been completely resolved. This takes a little time.
         `,
 }
-
+lang['viirld.ERR-PAUSED'] = {
+    ru: `На паузе`,
+    en: `Paused`,
+}
+lang['viirld.ERR-PAUSED-tt'] = {
+    ru: `
+        Не будут создаваться доставки с этой станцией.
+        
+        Поставить или снять с паузы можно с помощью кнопки выше или с помощью сигнала [virtual-signal=viirld-delivery-pause], поданного на вход диспетчеру.
+        
+        Вновь построенные диспетчеры ставятся на паузу, в случае если имеют настройки (скопированы или воссозданы их призрака). Это можно выключить в настройках.
+        `,
+    en: `
+        No deliveries will be created with this station.
+    
+        You can pause or unpause using the button above or using the signal [virtual-signal=viirld-delivery-pause] sent to the dispatcher input.
+        
+        Newly built dispatchers are paused if they have settings (copied or recreated from their ghost). This can be turned off in the settings.
+        `,
+}
 
 lang['viirld.ERR-NO_TRAIN'] = {
     ru: `Нет поезда`,
@@ -1043,8 +1125,8 @@ lang['viirld-units.x-cargo-wagon'] = {
     en: `×[entity=__1__]`,
 }
 lang['viirld-units.x-cargo-wagon-tt'] = {
-    ru: `Вагон`,
-    en: `Wagon`,
+    ru: `Вагон = __1__×[img=viirld_stack]`,
+    en: `Wagon = __1__×[img=viirld_stack]`,
 }
 lang['viirld-units.x-cargo-wagon-str'] = {
     ru: `__1__в`,
@@ -1055,8 +1137,8 @@ lang['viirld-units.x-fluid-wagon'] = {
     en: `×[entity=__1__]`,
 }
 lang['viirld-units.x-fluid-wagon-tt'] = {
-    ru: `Вагон`,
-    en: `Wagon`,
+    ru: `Вагон = __1__`,
+    en: `Wagon = __1__`,
 }
 lang['viirld-units.x-fluid-wagon-str'] = {
     ru: `__1__в`,

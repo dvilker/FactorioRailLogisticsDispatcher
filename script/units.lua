@@ -184,7 +184,7 @@ function getCountUnits()
             local wagonStackCount = prototypes.entity["cargo-wagon"].get_inventory_size(defines.inventory.cargo_wagon)
             countUnits0[ITEM_INDEX_FROM + 1] = {
                 caption = { "viirld-units.x-cargo-wagon", "cargo-wagon" },
-                tooltip = { "viirld-units.x-cargo-wagon-tt" },
+                tooltip = { "viirld-units.x-cargo-wagon-tt", wagonStackCount },
                 float = true,
                 combinatorCode = combinatorCodes[3],
                 calc = function(count, name)
@@ -207,7 +207,7 @@ function getCountUnits()
             local wagonCapacity = prototypes.entity["fluid-wagon"].fluid_capacity
             countUnits0[FLUID_INDEX_FROM] = {
                 caption = { "viirld-units.x-fluid-wagon", "fluid-wagon" },
-                tooltip = { "viirld-units.x-fluid-wagon-tt" },
+                tooltip = { "viirld-units.x-fluid-wagon-tt", wagonCapacity },
                 fluid = true,
                 float = true,
                 combinatorCode = combinatorCodes[2],

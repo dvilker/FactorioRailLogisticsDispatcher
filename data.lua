@@ -228,9 +228,9 @@ do
         name = "viirld-delivery-pause",
         icons = {
             {
-                icon = data.raw["virtual-signal"]["signal-red"].icon,
-                icon_size = data.raw["virtual-signal"]["signal-red"].icon_size,
-                icon_mipmaps = data.raw["virtual-signal"]["signal-red"].icon_mipmaps,
+                icon = data.raw["virtual-signal"]["signal-yellow"].icon,
+                icon_size = data.raw["virtual-signal"]["signal-yellow"].icon_size,
+                icon_mipmaps = data.raw["virtual-signal"]["signal-yellow"].icon_mipmaps,
             },
             {
                 icon = data.raw["item"]["train-stop"].icon,
@@ -365,3 +365,13 @@ style.viirld_tabbed_pane = table.deepcopy(style.tabbed_pane)
 style.viirld_tabbed_pane.tab_content_frame.right_padding = 7
 style.viirld_tabbed_pane.tab_content_frame.left_padding = 7
 style.viirld_tabbed_pane.tab_content_frame.bottom_padding = 7
+
+
+data:extend({
+    {
+        type = "custom-input",
+        name = "viirld-pause-key",
+        key_sequence = "F",
+        consuming = "none",
+    }
+})

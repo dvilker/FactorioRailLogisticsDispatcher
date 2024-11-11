@@ -393,3 +393,15 @@ script.on_event(
 ----)
 --
 --guiSetup()
+
+---@param event CustomInputEvent
+script.on_event("viirld-pause-key", function(event)
+    local player = game.players[event.player_index]
+    local sel = player.selected
+    if sel and sel.name == "viirld-dispatcher" then
+        local disp = storage.disps[sel.unit_number]
+        if disp then
+            dispToggleUserPause(disp, player)
+        end
+    end
+end)

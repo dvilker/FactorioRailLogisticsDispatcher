@@ -22,9 +22,16 @@ data:extend({
     default_value = true
   },
   {
+    type = "bool-setting",
+    name = "viirld-pauseNewDispatchers",
+    order = "af",
+    setting_type = "runtime-global",
+    default_value = true
+  },
+  {
     type = "int-setting",
     name = "viirld-updateTicks",
-    order = "af",
+    order = "ag",
     setting_type = "runtime-global",
     default_value = 2,
     minimum_value = 1,
@@ -33,21 +40,21 @@ data:extend({
   {
     type = "bool-setting",
     name = "viirld-use-hack-to-save-interrupts",
-    order = "ag",
-    setting_type = "runtime-global",
-    default_value = true
-  },
-  {
-    type = "bool-setting",
-    name = "viirld-set-train-group",
     order = "ah",
     setting_type = "runtime-global",
     default_value = true
   },
   {
     type = "bool-setting",
+    name = "viirld-set-train-group",
+    order = "ai",
+    setting_type = "runtime-global",
+    default_value = true
+  },
+  {
+    type = "bool-setting",
     name = "viirld-debug",
-    order = "az",
+    order = "aj",
     setting_type = "runtime-global",
     default_value = false
   },

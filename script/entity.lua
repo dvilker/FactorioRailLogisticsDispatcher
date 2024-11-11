@@ -555,6 +555,7 @@ local function entityHandleBuiltDispatcher(entity, tags)
         signals = {},
         transit = {},
         deliveries = {},
+        _isPausedByUser = (settings and pauseNewDispatchers) and true or nil,
     }
 
     storage.disps[entity.unit_number] = disp
@@ -698,7 +699,7 @@ end
 
 ---@param disp DispClass
 function dispUpdateStopName(disp)
-    if not disp.stopEntity or not disp.settings.stationTemplate then
+    if not disp.stopEntity or not disp.settings.stationTemplate or disp.settings.stationTemplate == "" then
         return
     end
 
@@ -821,7 +822,7 @@ end
 ---@param disp DispClass
 ---@return boolean
 function dispIsPaused(disp)
-    if disp._isPausedByUpdate then
+    if disp._isPausedByUpdate or disp._isPausedByUser then
         return true
     end
     if disp._isPausedTick ~= game.tick then
@@ -836,8 +837,43 @@ end
 ---@return boolean
 function _dispSetIsPausedByUpdate(disp, pausedByUpdate)
     disp._isPausedByUpdate = pausedByUpdate
-    disp._isPaused = pausedByUpdate
+    disp._isPaused = disp._isPausedByUpdate or disp._isPausedByUser
     disp._isPausedTick = game.tick
+    return disp._isPaused
+end
+
+---@param disp DispClass
+---@param player LuaPlayer|nil
+---@return boolean
+function dispToggleUserPause(disp, player)
+    disp._isPausedByUser = (not disp._isPausedByUser) or nil
+
+    dispUpdate(disp, false, false, true)
+
+    if player then
+        disp.entity.surface.play_sound({position=disp.entity.position, path="utility/rotated_medium"})
+        if disp._isPausedByUser then
+            player.create_local_flying_text {
+                text = { "viirld.paused" },
+                create_at_cursor = true,
+                time_to_live = 120
+            }
+        else
+            if dispIsPaused(disp) then
+                player.create_local_flying_text {
+                    text = { "", { "viirld.unpaused" }, "\n", { "viirld.pause-by-signal" }},
+                    create_at_cursor = true,
+                    time_to_live = 120
+                }
+            else
+                player.create_local_flying_text {
+                    text = { "viirld.unpaused" },
+                    create_at_cursor = true,
+                    time_to_live = 120
+                }
+            end
+        end
+    end
 end
 
 ---@param disp DispClass
@@ -923,7 +959,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
             end
         end
 
-        _dispSetIsPausedByUpdate(disp, paused)
+        paused = _dispSetIsPausedByUpdate(disp, paused)
 
         ---@type table<TypeNameQuality, number>
         local trainContents = {}

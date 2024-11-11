@@ -91,8 +91,7 @@ local EL_ERR_TABLE = 5009
 
 local EL_STAT_TRAINS = 6001
 
-local EL_APPLY = 9001
-local EL_ROLLBACK = 9002
+local EL_PAUSE = 9003
 
 local FOCUS_TO_ITEM_REQUEST = 1
 local FOCUS_TO_ANY_MIN = 2
@@ -141,8 +140,9 @@ function DispGuiLua.open(event)
                 { type = "flow", _sub = {
                     { type = "label", style = "frame_title", _name = EL_TITLE, caption = "?", _dragTarget = "" },
                     { type = "empty-widget", style = "viirld_draggable_space_header", _dragTarget = "" },
-                    { type = "button", caption = { "viirld-gui.EL_ROLLBACK" }, style = "viirld_frame_button", _name = EL_ROLLBACK, onClick = DispGuiLua._on_EL_ROLLBACK_click },
-                    { type = "button", caption = { "viirld-gui.EL_APPLY" }, style = "viirld_frame_button", _name = EL_APPLY, onClick = DispGuiLua._on_EL_APPLY_click },
+                    { type = "button", caption = { "viirld-gui.EL_PAUSE" }, style = "viirld_frame_button", tooltip = { "viirld-gui.EL_PAUSE-tt" }, _name = EL_PAUSE, onClick = DispGuiLua._on_EL_PAUSE_click },
+                    { type = "button", caption = { "viirld-gui.EL_ROLLBACK" }, style = "viirld_frame_button", onClick = DispGuiLua._on_EL_ROLLBACK_click },
+                    { type = "button", caption = { "viirld-gui.EL_APPLY" }, style = "viirld_frame_button", onClick = DispGuiLua._on_EL_APPLY_click },
                     { type = "sprite-button", onClick = DispGuiLua._on_close, style = "close_button", sprite = "utility/close", hovered_sprite = "utility/close_black" },
                 } },
                 { type = "flow", direction = "horizontal", _name = DIV_TABS, _sub = {
@@ -509,6 +509,8 @@ function DispGuiLua._updateVisibleAndEnabled(gui)
     named[EL_CARGO_STAT_TABLE].visible = data.modeEndpoint or false
     named[EL_DEPOT_STAT_TABLE].visible = --[[data.modeDepot or]] false
 
+    named[EL_PAUSE].visible = gui.disp and true or false
+
     DispGuiLua._updateCounters(gui)
 end
 
@@ -516,6 +518,9 @@ end
 function DispGuiLua.updateDispInfo(gui)
     local disp = gui.disp
     local named = gui.model.named
+
+    local paused = disp and dispIsPaused(disp)
+    named[EL_PAUSE].caption = paused and { "viirld-gui.EL_PAUSE-paused" } or { "viirld-gui.EL_PAUSE" }
 
     guiTableBeginUpdate(gui.model, EL_IO_TABLE)
     ---@param tnq TypeNameQuality
@@ -588,6 +593,14 @@ function DispGuiLua.updateDispInfo(gui)
 
     local hasErrors = false
     guiTableBeginUpdate(gui.model, EL_ERR_TABLE)
+    if disp and paused then
+        local row = guiTableAddOrGetRow(gui.model, EL_ERR_TABLE, "-paused")
+        row.cells[2].caption = { "viirld.ERR-PAUSED" }
+        row.cells[2].tooltip = { "viirld.ERR-PAUSED-tt" }
+        row.cells[3].caption = ""
+        row.cells[3].tooltip = { "viirld.ERR-PAUSED-tt" }
+        hasErrors = true
+    end
     if disp and disp.errors then
         for code, err in pairs(disp.errors) do
             if not err._used then
@@ -1110,6 +1123,11 @@ function DispGuiLua.close(gui, justForgot)
     --        }
     --    end
     --end
+end
+
+---@param gui DispGui
+function DispGuiLua._on_EL_PAUSE_click(gui)
+    dispToggleUserPause(gui.disp, gui.player)
 end
 
 ---@param gui DispGui

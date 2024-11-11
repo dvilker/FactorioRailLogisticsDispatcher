@@ -113,6 +113,7 @@
 ---@field lastUpdateTick number
 ---@field _isPaused boolean|nil
 ---@field _isPausedByUpdate boolean|nil
+---@field _isPausedByUser boolean|nil
 ---@field _isPausedTick number|nil
 ---@field stoppedTrain LuaTrain|nil @ stopped train if any (complex updated)
 ---@field stoppedTrainType TrainType|nil

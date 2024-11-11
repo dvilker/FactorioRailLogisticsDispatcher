@@ -8,6 +8,7 @@ updateTicks = 2
 timeOfStuckDelivery = 60 * 300
 useHackToSaveInterrupts = true
 setTrainGroup = true
+pauseNewDispatchers = true
 
 debugMode = false
 
@@ -21,6 +22,7 @@ function configUpdate()
 
     useHackToSaveInterrupts = settings.global["viirld-use-hack-to-save-interrupts"].value
     setTrainGroup = settings.global["viirld-set-train-group"].value
+    pauseNewDispatchers = settings.global["viirld-pauseNewDispatchers"].value
 
     if settings.global["viirld-updateTicks"].value ~= updateTicks then
         updateTicks = settings.global["viirld-updateTicks"].value

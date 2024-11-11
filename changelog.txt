@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.14
+Date: 12.11.2024
+  Changes:
+    - Enhance units tooltips (add counts).
+    - The pause signal is now yellow (the color of the paused dispatcher).
+    - You can pause the dispatcher using a button or signal. Deliveries with such a station will not be created.
+    - Newly built dispatchers with settings will be automatically paused to avoid creating deliveries on the copied dispatcher. This can be disabled in the settings.
+    - The dispatcher can be paused and unpaused using the F key, hovering the mouse over the dispatcher.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.13
 Date: 09.11.2024
   Bugfixes:
