@@ -181,9 +181,11 @@ script.on_event(
         defines.events.on_player_setup_blueprint,
         function(event)
             local stack = event.stack
-            for index, entity in pairs(event.mapping.get()) do
-                if entity.name == "viirld-dispatcher" then
-                    stack.set_blueprint_entity_tag(index, "viidrld-stationTemplate", entity.combinator_description)
+            if stack then
+                for index, entity in pairs(event.mapping.get()) do
+                    if entity.name == "viirld-dispatcher" then
+                        stack.set_blueprint_entity_tag(index, "viidrld-stationTemplate", entity.combinator_description)
+                    end
                 end
             end
         end
