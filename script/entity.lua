@@ -1221,15 +1221,22 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                                             hasCompatibleTrain = true
                                             ---@type number
                                             local travelCount = math.min(providerDispSignal.provideCount, dispSignal.requestCount)
+                                            ---@type number
+                                            local freeSpace = 0
                                             if dispSignal.type == "item" then
-                                                travelCount = math.min(travelCount, prototypes.item[dispSignal.name].stack_size * trainTypeInfo.itemCapacity)
+                                                local stackCount = prototypes.item[dispSignal.name].stack_size * trainTypeInfo.itemCapacity
+                                                travelCount = math.min(travelCount, stackCount)
+                                                freeSpace = stackCount - travelCount
                                             elseif dispSignal.type == "fluid" then
                                                 travelCount = math.min(travelCount, trainTypeInfo.fluidCapacity)
+                                                freeSpace = trainTypeInfo.fluidCapacity - travelCount
                                             end
                                             local cmp = {
+                                                providerDisp.settings.modeDepot and 1 or 0, -- for dirty train in depot
                                                 providerDisp.settings.flagLiquidation and 1 or 0,
                                                 providerDisp.stopEntity.train_stop_priority or -1,
                                                 travelCount,
+                                                -freeSpace,
                                                 sqr(disp.stopPosition.x + providerDisp.stopPosition.x) + sqr(disp.stopPosition.y + providerDisp.stopPosition.y)
                                             }
                                             if compareNumberTuples(cmp, bestProviderDispCmp) > 0 then

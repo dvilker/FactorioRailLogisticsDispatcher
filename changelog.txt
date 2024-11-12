@@ -6,7 +6,9 @@ Date: 12.11.2024
     - The pause signal is now yellow (the color of the paused dispatcher).
     - You can pause the dispatcher using a button or signal. Deliveries with such a station will not be created.
     - Newly built dispatchers with settings will be automatically paused to avoid creating deliveries on the copied dispatcher. This can be disabled in the settings.
-    - The dispatcher can be paused and unpaused using the F key, hovering the mouse over the dispatcher.
+    - The dispatcher can be paused and unpaused using the F key, hovering the mouse over the dispatcher. This can be disabled in the controls settings.
+    - The depot now has no stopping rule and it is possible to set interruptions for refueling or cleaning. In an existing game, you need to remove the stopping rule yourself.
+    - A little more precise selection of the appropriate size of train for delivery. It does not matter if you have one type of train: for cargo and for liquid.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.13
 Date: 09.11.2024

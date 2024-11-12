@@ -280,17 +280,7 @@ function trainArrived(train)
                         records = {
                             {
                                 station = disp.stopName,
-                                wait_conditions = {
-                                    {
-                                        type = "circuit",
-                                        condition = {
-                                            first_signal = { type = "virtual", name = "viirld-delivery" },
-                                            second_signal = {},
-                                            comparator = "=",
-                                        },
-                                        compare_type = "and",
-                                    },
-                                },
+                                wait_conditions = {},
                             }
                         },
                     }
