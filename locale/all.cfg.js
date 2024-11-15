@@ -153,10 +153,6 @@ lang['entity-name.viirld-dispatcher'] = {
     ru: `Диспетчер ЖД логистики`,
     en: `Rail Logistics Dispatcher`,
 }
-lang['entity-name.viirld-io'] = {
-    ru: `Скрытый порт диспетчера`,
-    en: `Hidden port of the dispatcher`,
-}
 
 lang['entity-description.viirld-dispatcher'] = {
     ru: `
@@ -455,6 +451,7 @@ const outputSignals = {
         [virtual-signal=signal-P] — При наличии поезда, если это станция снабжения. От слова Provider.
         [virtual-signal=signal-R] — При наличии поезда, если это станция запроса. От слова Requester.
         [virtual-signal=signal-E] — При каких-либо ошибках.
+        [virtual-signal=signal-D] — Число активных доставок с этой станцией.
         [virtual-signal=signal-L] — Длина поезда, включая локомотивы.
         [virtual-signal=signal-C] — Число грузовых вагонов.
         [virtual-signal=signal-F] — Число цистерн.
@@ -463,6 +460,7 @@ const outputSignals = {
         [virtual-signal=signal-P] — When there is a train, if this is a supply station. From the word Provider.
         [virtual-signal=signal-R] — When there is a train, if this is a request station. From the word Requester.
         [virtual-signal=signal-E] — When there are any errors.
+        [virtual-signal=signal-D] — Number of active deliveries with this station.
         [virtual-signal=signal-L] — Length of the train, including locomotives.
         [virtual-signal=signal-C] — Number of cargo cars.
         [virtual-signal=signal-F] — Number of tank cars.

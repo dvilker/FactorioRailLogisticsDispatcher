@@ -45,6 +45,14 @@ end)
 
 ---@param event OnPlayerRotatedEntity
 script.on_event(defines.events.on_player_rotated_entity, function(event)
+    --if event.entity.name == "decider-combinator" then
+        --log("R "..var_dump(event.entity.get_or_create_control_behavior().parameters))
+        --local params = event.entity.get_or_create_control_behavior().parameters
+        --for k, v in pairs(params.outputs) do
+        --    v.constant = -10
+        --end
+        --event.entity.get_or_create_control_behavior().parameters= table.deepcopy(params)
+    --end
     if event.entity.name == "viirld-dispatcher" or (event.entity.type == "entity-ghost" and event.entity.ghost_name == "viirld-dispatcher") then
         if event.entity.direction == defines.direction.north then
             event.entity.direction = defines.direction.west
@@ -153,7 +161,6 @@ script.on_event(
                 if org then
                     forceOrg[event.surface_index] = nil
                     for _, disp in pairs(org.disps) do
-                        storage.disps[disp.outPort and disp.outPort.valid and disp.outPort.unit_number or -1] = nil
                         storage.disps[disp.stopEntity and disp.stopEntity.valid and disp.stopEntity.unit_number or -1] = nil
                         storage.disps[disp.entity and disp.entity.valid and disp.entity.unit_number or -1] = nil
                         storage.disps[disp.uid] = nil

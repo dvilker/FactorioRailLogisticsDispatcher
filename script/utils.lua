@@ -500,7 +500,7 @@ function setTrainScheduleWithPreserveInterrupts(train, schedule)
     local ghosts = blueprintStack.build_blueprint {
         surface = helperSurface,
         force = loco.force,
-        position = { 0, 4, },
+        position = { 16, 16, },
         build_mode = defines.build_mode.forced,
         skip_fog_of_war = true,
         raise_built = false,

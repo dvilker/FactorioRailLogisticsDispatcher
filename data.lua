@@ -8,6 +8,7 @@ local empty4 = {
 }
 
 do
+    -- TODO Unused now, remove after may 2025
     -- io ports
     local name = 'viirld-io'
     local entity = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])

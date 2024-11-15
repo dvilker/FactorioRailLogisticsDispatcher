@@ -227,8 +227,8 @@ function dispSettingsToCombinator(settings, combinator)
         }
     end
     conds[#conds + 1] = {
-        comparator = "=",
-        compare_type = "and",
+        comparator = "≠",
+        compare_type = "or",
         constant = -2000,
     }
 
@@ -273,8 +273,8 @@ function dispCombinatorToSettings(combinator)
                 return nil, "First cond is not 2000"
             end
         elseif i == lastCondI then
-            if not cond.constant or cond.constant ~= -2000 or cond.first_signal or cond.compare_type ~= "and" or cond.comparator ~= "=" then
-                return nil, "Last cond is not empty=-2000"
+            if not cond.constant or cond.constant ~= -2000 or cond.first_signal or (cond.comparator ~= "=" and cond.comparator ~= "≠") then
+                return nil, "Last cond is not empty=-2000 " .. cond.comparator
             end
         elseif cond.first_signal and cond.first_signal.type == "virtual" and cond.first_signal.name == "signal-B" then
             if flagParsed then
@@ -451,9 +451,43 @@ end
 
 ---@param disp DispClass
 function _dispUpdateOutPort(disp)
-    local filters = {}
+    local outputs = {}
 
     local deli = disp.delivery
+
+    if deli then
+        if deli.provider == disp then
+            outputs[#outputs + 1] = {
+                signal = SIG_P,
+                constant = 1,
+                copy_count_from_input = false,
+            }
+        elseif deli.requester == disp then
+            outputs[#outputs + 1] = {
+                signal = SIG_R,
+                constant = 1,
+                copy_count_from_input = false,
+            }
+        end
+    end
+
+    if disp.errors then
+        outputs[#outputs + 1] = { signal = SIG_E, constant = 1, copy_count_from_input = false, }
+    end
+
+    if table_size(disp.deliveries) > 0 then
+        outputs[#outputs + 1] = { signal = SIG_D, constant = table_size(disp.deliveries), copy_count_from_input = false, }
+    end
+
+    outputs[#outputs + 1] = { copy_count_from_input = false, } -- hide another icons
+
+    if disp.stoppedTrain and disp.stoppedTrainType then
+        local tt = storage.trainTypes[disp.stoppedTrainType]
+        outputs[#outputs + 1] = { signal = SIG_L, constant = tt.length, copy_count_from_input = false, }
+        outputs[#outputs + 1] = { signal = SIG_C, constant = tt.itemWagonCount, copy_count_from_input = false, }
+        outputs[#outputs + 1] = { signal = SIG_F, constant = table_size(tt.fluidCapacityPerWagons), copy_count_from_input = false, }
+    end
+
     local mul
     if deli then
         if deli.provider == disp then
@@ -469,29 +503,15 @@ function _dispUpdateOutPort(disp)
     end
     if mul then
         for tnq, count in pairs(deli.contents) do
-            filters[#filters + 1] = {
-                value = parseTypeNameQuality(tnq, true),
-                min = count * mul,
+            outputs[#outputs + 1] = {
+                signal = parseTypeNameQuality(tnq),
+                constant = count * mul,
+                copy_count_from_input = false,
             }
         end
     end
-    if deli then
-        if deli.provider == disp then
-            filters[#filters + 1] = { value = SIG_P, min = 1, }
-        elseif deli.requester == disp then
-            filters[#filters + 1] = { value = SIG_R, min = 1, }
-        end
-    end
-    if disp.stoppedTrain and disp.stoppedTrainType then
-        local tt = storage.trainTypes[disp.stoppedTrainType]
-        filters[#filters + 1] = { value = SIG_L, min = tt.length, }
-        filters[#filters + 1] = { value = SIG_C, min = tt.itemWagonCount, }
-        filters[#filters + 1] = { value = SIG_F, min = table_size(tt.fluidCapacityPerWagons), }
-    end
-    if disp.errors then
-        filters[#filters + 1] = { value = SIG_E, min = 1, }
-    end
-    disp.outPort.get_or_create_control_behavior().get_section(1).filters = filters
+
+    _dispUpdateLight(disp, outputs)
 end
 
 ---@return DispSettings
@@ -507,28 +527,6 @@ end
 ---@param tags Tags
 local function entityHandleBuiltDispatcher(entity, tags)
     local org = getOrCreateOrg(entity.force, entity.surface)
-
-    ---@type LuaEntity
-    local outPort = entity.surface.create_entity {
-        name = "viirld-io",
-        position = entity.position,
-        --name = "constant-combinator",
-        --position = { x = entity.position.x + .5, y = entity.position.y + .5 },
-        force = entity.force,
-    }
-    outPort.minable = false
-    outPort.get_wire_connector(defines.wire_connector_id.circuit_green, true).connect_to(
-            entity.get_wire_connector(defines.wire_connector_id.combinator_output_green, true)
-    )
-    outPort.get_wire_connector(defines.wire_connector_id.circuit_red, true).connect_to(
-            entity.get_wire_connector(defines.wire_connector_id.combinator_output_red, true)
-    )
-    ---@type LuaConstantCombinatorControlBehavior
-    local outPortB = outPort.get_or_create_control_behavior()
-    while outPortB.sections_count > 0 do
-        outPortB.remove_section(outPortB.sections_count)
-    end
-    outPortB.add_section()
 
     local settings, err, isEmpty = dispCombinatorToSettings(entity)
     if err then
@@ -550,22 +548,18 @@ local function entityHandleBuiltDispatcher(entity, tags)
         org = org,
         entity = entity,
         stopEntity = nil,
-        outPort = outPort,
         settings = settings or dispDefaultSettings(),
         signals = {},
         transit = {},
         deliveries = {},
-        _isPausedByUser = (settings and pauseNewDispatchers) and true or nil,
+        _isPausedByUser = (settings and pauseNewDispatchers and settings.modeEndpoint) and true or nil,
     }
 
     storage.disps[entity.unit_number] = disp
-    storage.disps[outPort.unit_number] = disp
     org.disps[disp.uid] = disp
 
     dispUpdateStop(disp)
     _dispUpdateActive(disp)
-    _dispUpdateLight(disp)
-
     _dispUpdateOutPort(disp)
 end
 
@@ -578,7 +572,6 @@ local function entityHandleRemoveDispatcher(entity)
             DispGuiLua.close(disp.gui, true)
         end
         storage.disps[disp.uid] = nil
-        storage.disps[disp.outPort.unit_number] = nil
         storage.activeDisps[disp.uid] = nil
         disp.org.disps[disp.uid] = nil
         disp.org.depotDisps[disp.uid] = nil
@@ -605,7 +598,6 @@ local function entityHandleRemoveDispatcher(entity)
         if disp.stopEntity then
             dispDisconnectStop(disp)
         end
-        disp.outPort.destroy({ raise_destroy = false })
         local stops = disp.entity.surface.find_entities_filtered({
             type = "train-stop",
             position = disp.entity.position,
@@ -685,8 +677,9 @@ function dispSetSettings(disp, settings)
 
     local newSettings, err = dispCombinatorToSettings(disp.entity)
     if err then
-        disp.entity.force.print({ "viirld-gui.ERR-WRONG_SETTINGS", err })
+        disp.entity.force.print({ "viirld.ERR-WRONG_SETTINGS", err })
         dispSettingsToCombinator(disp.settings, disp.entity)
+        _dispUpdateOutPort(disp)
         return
     end
 
@@ -778,7 +771,8 @@ function _dispUpdateActive(disp)
 end
 
 ---@param disp DispClass
-function _dispUpdateLight(disp)
+---@param outputs DeciderCombinatorOutput[]|nil
+function _dispUpdateLight(disp, outputs)
     local color = COMBINATOR_COLOR_OFF
     if not disp.stopEntity then
         color = COMBINATOR_COLOR_OFF
@@ -815,8 +809,16 @@ function _dispUpdateLight(disp)
     local cond = params.conditions[1]
     if cond then
         cond.comparator = color
-        b.parameters = table.deepcopy(params)
     end
+    if outputs then
+        local lastCondition = params.conditions[#params.conditions]
+        if lastCondition then
+            lastCondition.comparator = "≠"
+            lastCondition.compare_type = "or"
+        end
+        params.outputs = outputs
+    end
+    b.parameters = table.deepcopy(params)
 end
 
 ---@param disp DispClass
@@ -851,7 +853,7 @@ function dispToggleUserPause(disp, player)
     dispUpdate(disp, false, false, true)
 
     if player then
-        disp.entity.surface.play_sound({position=disp.entity.position, path="utility/rotated_medium"})
+        disp.entity.surface.play_sound({ position = disp.entity.position, path = "utility/rotated_medium" })
         if disp._isPausedByUser then
             player.create_local_flying_text {
                 text = { "viirld.paused" },
@@ -861,7 +863,7 @@ function dispToggleUserPause(disp, player)
         else
             if dispIsPaused(disp) then
                 player.create_local_flying_text {
-                    text = { "", { "viirld.unpaused" }, "\n", { "viirld.pause-by-signal" }},
+                    text = { "", { "viirld.unpaused" }, "\n", { "viirld.pause-by-signal" } },
                     create_at_cursor = true,
                     time_to_live = 120
                 }
@@ -1237,7 +1239,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                                                 providerDisp.stopEntity.train_stop_priority or -1,
                                                 travelCount,
                                                 -freeSpace,
-                                                sqr(disp.stopPosition.x + providerDisp.stopPosition.x) + sqr(disp.stopPosition.y + providerDisp.stopPosition.y)
+                                                sqr(disp.stopPosition.x - providerDisp.stopPosition.x) + sqr(disp.stopPosition.y - providerDisp.stopPosition.y)
                                             }
                                             if compareNumberTuples(cmp, bestProviderDispCmp) > 0 then
                                                 bestProviderDisp = providerDisp
@@ -1251,6 +1253,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
 
                             if bestProviderDisp then
                                 dispMakeDelivery(tnq, disp, bestProviderDisp, bestTrainTypeInfo)
+                                rqRemoveFromQueue(disp, tnq)
                                 madeDeliveries = madeDeliveries + 1
                                 trainsLimit = trainsLimit - 1
                                 if disp.errors and disp.errors[tnq] then
@@ -1347,7 +1350,7 @@ function dispMakeDelivery(tnq, requester, provider, trainTypeInfo)
             if not isTrainRightSize(provider, ttInfo) or not isTrainRightSize(requester, ttInfo) then
                 break
             end
-            local cmp = sqr(depot.stopPosition.x + depot.stopPosition.x) + sqr(requester.stopPosition.y + requester.stopPosition.y)
+            local cmp = sqr(depot.stopPosition.x - provider.stopPosition.x) + sqr(depot.stopPosition.y - provider.stopPosition.y)
             if not bestDepotCmp or bestDepotCmp > cmp then
                 bestDepot = depot
                 bestTrain = train

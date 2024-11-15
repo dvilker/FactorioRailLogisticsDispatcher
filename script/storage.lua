@@ -102,7 +102,7 @@
 ---@field stopEntity LuaEntity|nil
 ---@field stopName string
 ---@field stopPosition MapPosition|nil
----@field outPort LuaEntity
+---@field outPort LuaEntity|nil @ deprecated
 ---@field settings DispSettings
 ---@field signals table<TypeNameQuality, DispSignal> @ current state of signals
 ---@field transit table<TypeNameQuality, number> @ in transit >0 - to station,  <0 - from station

@@ -6,7 +6,7 @@ function trainParseSchedule(train)
         for _, rec in ipairs(schedule.records) do
             if rec.wait_conditions and table_size(rec.wait_conditions) == 1 and rec.station and rec.station ~= "" then
                 local wc = rec.wait_conditions[1]
-                if wc.type == "circuit" and wc.condition.comparator == "="
+                if wc.type == "circuit" and wc.condition and wc.condition.comparator == "="
                         and wc.condition.first_signal.type == "virtual" and wc.condition.first_signal.name == "viirld-delivery"
                         and wc.condition.constant then
                     return rec.station, wc.condition.constant
