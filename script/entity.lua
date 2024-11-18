@@ -684,6 +684,9 @@ function dispSetSettings(disp, settings)
     end
 
     disp.settings = newSettings
+    if not disp.settings.modeEndpoint then
+        disp._isPausedByUser = nil
+    end
 
     dispUpdateStopName(disp)
     _dispUpdateActive(disp)
@@ -743,7 +746,7 @@ function dispUpdateStopName(disp)
     elseif disp.settings.modeDepot then
         newName = disp.settings.stationTemplate
     end
-    if newName then
+    if newName and disp.stopEntity.backer_name ~= newName then
         disp.stopEntity.backer_name = newName
         disp.stopName = disp.stopEntity.backer_name
         if disp.gui then
@@ -824,6 +827,9 @@ end
 ---@param disp DispClass
 ---@return boolean
 function dispIsPaused(disp)
+    if not disp.settings.modeEndpoint then
+        return false
+    end
     if disp._isPausedByUpdate or disp._isPausedByUser then
         return true
     end
@@ -848,7 +854,11 @@ end
 ---@param player LuaPlayer|nil
 ---@return boolean
 function dispToggleUserPause(disp, player)
-    disp._isPausedByUser = (not disp._isPausedByUser) or nil
+    if disp.settings.modeEndpoint then
+        disp._isPausedByUser = (not disp._isPausedByUser) or nil
+    else
+        disp._isPausedByUser = nil
+    end
 
     dispUpdate(disp, false, false, true)
 
@@ -861,7 +871,13 @@ function dispToggleUserPause(disp, player)
                 time_to_live = 120
             }
         else
-            if dispIsPaused(disp) then
+            if not disp.settings.modeEndpoint then
+                player.create_local_flying_text {
+                    text = { "viirld.pause_not_supported" },
+                    create_at_cursor = true,
+                    time_to_live = 120
+                }
+            elseif dispIsPaused(disp) then
                 player.create_local_flying_text {
                     text = { "", { "viirld.unpaused" }, "\n", { "viirld.pause-by-signal" } },
                     create_at_cursor = true,
@@ -1256,6 +1272,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                                 rqRemoveFromQueue(disp, tnq)
                                 madeDeliveries = madeDeliveries + 1
                                 trainsLimit = trainsLimit - 1
+                                updatePort = true
                                 if disp.errors and disp.errors[tnq] then
                                     disp.errors = errorsAdd(disp.errors, tnq, { "viirld.ERR-NEED_CHECK" }, { "viirld.ERR-NEED_CHECK-tt", tnq })
                                 end

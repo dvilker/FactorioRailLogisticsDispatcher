@@ -9,6 +9,8 @@ Date: 15.11.2024
     - Internal improvement that will reduce the number of entities and allow the output port state to be displayed in a tooltip on the right.
     - The dispatcher now tries to select the nearest available train and supply station to create a delivery.
     - Signal D for active deliveries count.
+    - The pause only applies to freight stations.
+    - Improved minimum tooltip.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.14
 Date: 12.11.2024

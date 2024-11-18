@@ -260,6 +260,10 @@ lang['viirld.unpaused'] = {
     ru: `Снято с паузы`,
     en: `Unpaused`,
 }
+lang['viirld.pause_not_supported'] = {
+    ru: () => `Пауза действует только в режимах ${lang["viirld-gui.EL_MODE_ENDPOINT"].ru} и ${lang["viirld-gui.EL_MODE_LIQUIDATION"].ru}`,
+    en: () => `Pause works only in the ${lang["viirld-gui.EL_MODE_ENDPOINT"].en} and ${lang["viirld-gui.EL_MODE_LIQUIDATION"].en} modes`,
+}
 lang['viirld.pause-by-signal'] = {
     ru: `На паузе из-за сигнала`,
     en: `Paused by signal [virtual-signal=viirld-delivery-pause]`,
@@ -634,6 +638,11 @@ lang['viirld-gui.EL_ITEM_ALLOW_REQUEST-tt'] = {
         Он должен быть подключен к сундукам и/или резервуарам станции.
         
         Настройка минимума позволит возить не менее указанного значения за одну доставку.
+        
+        Например, минимум 50 стопок: доставка будет создана, когда:
+        - на станции запроса будет недоставать 50 или более стопок ресурса,
+        - на станции снабжения будет 50 или более стопок ресурса,
+        - будет свободен поезд подходящего размера.
         `,
     en: `
         The station will request the selected resource.
@@ -642,6 +651,11 @@ lang['viirld-gui.EL_ITEM_ALLOW_REQUEST-tt'] = {
         It must be connected to the chests and/or tanks of the station.
         
         Setting the minimum will allow you to carry no less than the specified value per delivery.
+        
+        For example, minimum 50 stacks: a delivery will be created when:
+        - the request station is missing 50 or more stacks of the resource,
+        - the supply station has 50 or more stacks of the resource,
+        - a train of the appropriate size is available.
     `,
 }
 lang['viirld-gui.EL_ITEM_REQUEST-tt'] = {
@@ -690,6 +704,11 @@ lang['viirld-gui.EL_ALLOW_ANY_ITEM_REQUEST-tt'] = {
         Входной порт должен быть подключен к сундукам станции.
         
         Настройка минимума (общая для всех грузов) позволит возить не менее указанного значения за одну доставку.
+        
+        Например, минимум 50 стопок: доставка будет создана, когда:
+        - на станции запроса будет недоставать 50 или более стопок ресурса,
+        - на станции снабжения будет 50 или более стопок ресурса,
+        - будет свободен поезд подходящего размера.
         `,
     en: `
         The station will request cargo based on the signal on the dispatcher's input port.
@@ -698,6 +717,11 @@ lang['viirld-gui.EL_ALLOW_ANY_ITEM_REQUEST-tt'] = {
         The input port must be connected to the station's chests.
         
         The minimum setting (common to all cargo) will allow you to carry at least the specified value per delivery.
+        
+        For example, minimum 50 stacks: a delivery will be created when:
+        - the request station is missing 50 or more stacks of the resource,
+        - the supply station has 50 or more stacks of the resource,
+        - a train of the appropriate size is available.
         `,
 }
 lang['viirld-gui.EL_MIN_ANY_ITEM'] = {
