@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.16
+Date: 24.11.2024
+  Bugfixes:
+    - Fixed: Station name template support parameters now (existing blueprints need to be recreated from entities (not ghosts).
+    - Fixed: Crash when modify train at station not connected to dispatcher.
+    - Fixed: Crash when opening GUI with large queue.
+  Changes:
+    - Removing delivery condition from train schedule at requester.
+    - Incompatibility marker with TrainScheduleSignals mod (corrupts schedule).
+---------------------------------------------------------------------------------------------------
 Version: 2.0.15
 Date: 15.11.2024
   Bugfixes:

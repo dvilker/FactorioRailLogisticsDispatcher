@@ -1024,13 +1024,9 @@ lang['viirld.RQ-no'] = {
     ru: `Нет очереди`,
     en: `No queue`,
 }
-lang['viirld.RQ-line'] = {
-    ru: `^\n__1__. __2__`,
-    en: `^\n__1__. __2__`,
-}
-lang['viirld.RQ-line_me'] = {
-    ru: `^\n__1__. __2__ — эта станция`,
-    en: `^\n__1__. __2__ — this station`
+lang['viirld.RQ-me'] = {
+    ru: ` — эта станция`,
+    en: ` — this station`,
 }
 
 lang['viirld.ERR-NO_PROVIDE'] = {

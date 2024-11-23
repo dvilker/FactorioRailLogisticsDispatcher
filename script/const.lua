@@ -50,3 +50,26 @@ COLOR_DARK_GREEN = { r = 0, g = .25, b = 0, a = .05 }
 
 COLOR_OFF = 0
 color = "#ffaaff"
+
+--train_state_string = {
+--    --- Braking before a rail signal.
+--    [defines.train_state.arrive_signal] = "arrive_signal",
+--    --- Braking before a station.
+--    [defines.train_state.arrive_station] = "arrive_station",
+--    --- Same as no_path but all candidate train stops are full
+--    [defines.train_state.destination_full] = "destination_full",
+--    --- Can move if user explicitly sits in and rides the train.
+--    [defines.train_state.manual_control] = "manual_control",
+--    --- Switched to manual control and has to stop.
+--    [defines.train_state.manual_control_stop] = "manual_control_stop",
+--    --- Has no path and is stopped.
+--    [defines.train_state.no_path] = "no_path",
+--    --- Doesn't have anywhere to go.
+--    [defines.train_state.no_schedule] = "no_schedule",
+--    --- Normal state -- following the path.
+--    [defines.train_state.on_the_path] = "on_the_path",
+--    --- Waiting at a signal.
+--    [defines.train_state.wait_signal] = "wait_signal",
+--    --- Waiting at a station.
+--    [defines.train_state.wait_station] = "wait_station",
+--}

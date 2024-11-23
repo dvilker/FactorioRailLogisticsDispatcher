@@ -102,14 +102,7 @@ function dispSettingsToCombinator(settings, combinator)
         constant = flags,
     }
 
-    if combinator.name == "viirld-dispatcher" then
-        combinator.combinator_description = settings.stationTemplate or ""
-    elseif combinator.type == "entity-ghost" then
-        local tags = combinator.tags
-        tags = tags or {}
-        tags["viidrld-stationTemplate"] = settings.stationTemplate or ""
-        combinator.tags = tags
-    end
+    setCombinatorDescription(combinator, settings.stationTemplate or "")
 
     if settings.minAnyItem then
         conds[#conds + 1] = {
@@ -303,12 +296,7 @@ function dispCombinatorToSettings(combinator)
             local internalFlagHasStationTemplate = bit32.band(flags, bit32.lshift(1, 15)) > 0 or nil
 
             if internalFlagHasStationTemplate then
-                if combinator.name == "viirld-dispatcher" then
-                    settings.stationTemplate = combinator.combinator_description
-                elseif combinator.type == "entity-ghost" then
-                    local tags = combinator.tags
-                    settings.stationTemplate = tags and tags["viidrld-stationTemplate"]
-                end
+                settings.stationTemplate = getCombinatorDescription(combinator)
                 if settings.stationTemplate == "" then
                     settings.stationTemplate = nil
                 end
@@ -535,6 +523,7 @@ local function entityHandleBuiltDispatcher(entity, tags)
         end
     else
         if tags then
+            -- legacy. For exists blueprint compatibles
             local stationTemplate = tags["viidrld-stationTemplate"]
             if stationTemplate then
                 settings.stationTemplate = stationTemplate

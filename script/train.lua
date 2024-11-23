@@ -17,6 +17,29 @@ function trainParseSchedule(train)
 end
 
 ---@param train LuaTrain
+function trainRemoveDeliveryFromSchedule(train)
+    local schedule = train.schedule
+    local changed = false
+    if schedule then
+        for _, rec in ipairs(schedule.records) do
+            if rec.wait_conditions and table_size(rec.wait_conditions) == 1 and rec.station and rec.station ~= "" then
+                local wc = rec.wait_conditions[1]
+                if wc.type == "circuit" and wc.condition and wc.condition.comparator == "="
+                        and wc.condition.first_signal.type == "virtual" and wc.condition.first_signal.name == "viirld-delivery"
+                        and wc.condition.constant then
+                    rec.wait_conditions = {}
+                    changed = true
+                    break
+                end
+            end
+        end
+    end
+    if changed then
+        setTrainScheduleWithPreserveInterrupts(train, schedule)
+    end
+end
+
+---@param train LuaTrain
 ---@param delivery DeliveryClass
 ---@param depotName string|nil
 function trainUpdateSchedule(train, delivery, depotName)
@@ -154,17 +177,16 @@ end
 function trainUpdateStation(train, forceRemove)
     local exists = storage.trainStation[train.id]
 
-    if forceRemove or not train.station or (exists and train.station ~= exists.station) then
-        if exists then
-            if exists.text then
-                exists.text.destroy()
-            end
-            storage.trainStation[train.id] = nil
-            trainDeparted(train, exists.station)
+    if exists and (forceRemove or not train.station or train.station ~= exists.station) then
+        if exists.text then
+            exists.text.destroy()
         end
+        storage.trainStation[train.id] = nil
+        --log("trainDeparted " .. var_dump(train.id))
+        trainDeparted(train, exists.station)
     end
 
-    if train.station and not forceRemove then
+    if not forceRemove and train.station and not exists then
         storage.trainStation[train.id] = {
             station = train.station,
             text = debugMode and rendering.draw_text {
@@ -174,6 +196,7 @@ function trainUpdateStation(train, forceRemove)
                 color = { 255, 255, 255 },
             } or nil,
         }
+        --log("trainArrived " .. var_dump(train.id))
         trainArrived(train)
     end
 end
@@ -263,8 +286,10 @@ function trainArrived(train)
                 end
                 disp.deliveries[deli.uid] = nil
                 storage.deliveries[deli.uid] = nil
+                trainRemoveDeliveryFromSchedule(train)
             end
         elseif disp.settings.modeEndpoint then
+            --log("Unknown delivery on train "..var_dump(train))
             disp.entity.force.print({ "viirld.ERR_MSG-UNKNOWN_DELIVERY", deliveryUid, disp.stopEntity.unit_number })
         end
     end

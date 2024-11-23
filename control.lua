@@ -183,22 +183,6 @@ script.on_event(
         end
 )
 
----@param event OnPlayerSetupBlueprint
-script.on_event(
-        defines.events.on_player_setup_blueprint,
-        function(event)
-            local stack = event.stack
-            if stack then
-                for index, entity in pairs(event.mapping.get()) do
-                    if entity.name == "viirld-dispatcher" then
-                        stack.set_blueprint_entity_tag(index, "viidrld-stationTemplate", entity.combinator_description)
-                    end
-                end
-            end
-        end
-)
-
-
 ---@param event OnForceCreated
 script.on_event(
         defines.events.on_force_created,
@@ -256,7 +240,7 @@ guiSetup()
 script.on_event(
         defines.events.on_train_changed_state,
         function(event)
-            -- [[DEBUG]]log("on_train_changed_state: train " .. var_dump(event.train.id) .. ": " .. var_dump(event))
+            --log(var_dump(game.tick) ..": on_train_changed_state: train " .. var_dump(event.train.id) .. " state " .. var_dump(train_state_string[event.old_state]) .. " -> " .. var_dump(train_state_string[event.train.state]) .. " at st " .. var_dump(event.train.station))
             local train = event.train
             trainUpdateStation(train)
             --if train.state == defines.train_state.wait_station and train.station then
@@ -275,10 +259,12 @@ script.on_event(
                     or (event.old_train_id_2 and storage.trainStation[event.old_train_id_2])
             if trainOnStation then
                 if trainOnStation.station.valid then
-                    local disp = storage.disps[trainOnStation.station.unit_number]
                     local train = event.train
-                    disp.stoppedTrain = train
-                    disp.stoppedTrainType = getTrainType(train)
+                    local disp = storage.disps[trainOnStation.station.unit_number]
+                    if disp then
+                        disp.stoppedTrain = train
+                        disp.stoppedTrainType = getTrainType(train)
+                    end
                     if event.old_train_id_1 then
                         storage.trainStation[event.old_train_id_1] = nil
                     end

@@ -198,11 +198,25 @@ function rqFormatQueue(disp, tnq, result)
     if not requestQueue or table_size(requestQueue.queuedDisps) == 0 then
         return { "viirld.RQ-no" }
     end
+    local limit = 30
     local index = 1
     result = result or {}
+    local text = {}
     for _, qDisp in pairs(requestQueue.queuedDisps) do
-        result[#result + 1] = { (disp == qDisp) and "viirld.RQ-line_me" or "viirld.RQ-line", index, qDisp.stopName }
+        if index >= limit + 1 then
+            text[#text + 1] = "\n... (" .. (table_size(requestQueue.queuedDisps) - limit) .. ")"
+            break
+        end
+        text[#text + 1] = "\n" .. index .. ". " .. qDisp.stopName -- localization is not possible
+        if disp == qDisp then
+            result[#result + 1] = table.concat(text)
+            result[#result + 1] = { "viirld.RQ-me" }
+            text = {}
+        end
         index = index + 1
+    end
+    if table_size(text) > 0 then
+        result[#result + 1] = table.concat(text)
     end
     return result
 end
@@ -414,15 +428,8 @@ end
 
 local setTrainScheduleWithPreserveInterrupts__shown = false
 
----@param train LuaTrain
----@param schedule TrainSchedule
-function setTrainScheduleWithPreserveInterrupts(train, schedule)
-    if not useHackToSaveInterrupts then
-        setTrainScheduleWithPreserveInterrupts__shown = false
-        train.schedule = schedule
-        return
-    end
-
+---@return LuaSurface
+function getHelperSurface()
     ---@type LuaSurface
     local helperSurface = storage.scheduleHelperSurface
     if not helperSurface then
@@ -444,6 +451,20 @@ function setTrainScheduleWithPreserveInterrupts(train, schedule)
         end
         storage.scheduleHelperSurface = helperSurface
     end
+    return helperSurface
+end
+
+---@param train LuaTrain
+---@param schedule TrainSchedule
+function setTrainScheduleWithPreserveInterrupts(train, schedule)
+    if not useHackToSaveInterrupts then
+        setTrainScheduleWithPreserveInterrupts__shown = false
+        train.schedule = schedule
+        return
+    end
+
+    local helperSurface = getHelperSurface()
+
     ---@type LuaEntity
     local helperBlueprint = storage.scheduleHelperBlueprint
     if not helperBlueprint then
@@ -547,5 +568,52 @@ function setTrainScheduleWithPreserveInterrupts(train, schedule)
             setTrainScheduleWithPreserveInterrupts__shown = true
         end
         train.schedule = schedule
+    end
+end
+
+---@param entity LuaEntity
+---@return string
+function getCombinatorDescription(entity)
+    if entity.name == "viirld-dispatcher" then
+        return entity.combinator_description
+    elseif entity.type == "entity-ghost" and entity.ghost_name == "viirld-dispatcher" then
+        local helperSurface = getHelperSurface()
+
+        ---@type LuaEntity
+        local helperCombinator = storage.helperCombinator
+        if not helperCombinator then
+            helperCombinator = helperSurface.create_entity({
+                name = "decider-combinator",
+                position = { -16, -16 },
+            })
+            storage.helperCombinator = helperCombinator
+        end
+
+        helperCombinator.copy_settings(entity)
+        return helperCombinator.combinator_description
+    end
+end
+
+---@param entity LuaEntity
+---@param description string
+function setCombinatorDescription(entity, description)
+    if entity.name == "viirld-dispatcher" then
+        entity.combinator_description = description
+    elseif entity.type == "entity-ghost" and entity.ghost_name == "viirld-dispatcher" then
+        local helperSurface = getHelperSurface()
+
+        ---@type LuaEntity
+        local helperCombinator = storage.helperCombinator
+        if not helperCombinator then
+            helperCombinator = helperSurface.create_entity({
+                name = "decider-combinator",
+                position = { -16, -16 },
+            })
+            storage.helperCombinator = helperCombinator
+        end
+
+        helperCombinator.copy_settings(entity)
+        helperCombinator.combinator_description = description
+        entity.copy_settings(helperCombinator)
     end
 end

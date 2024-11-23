@@ -54,7 +54,7 @@ data:extend({
   {
     type = "bool-setting",
     name = "viirld-debug",
-    order = "aj",
+    order = "az",
     setting_type = "runtime-global",
     default_value = false
   },
