@@ -552,57 +552,58 @@ local function entityHandleBuiltDispatcher(entity, tags)
     _dispUpdateOutPort(disp)
 end
 
----@param entity LuaEntity
-local function entityHandleRemoveDispatcher(entity)
-    ---@type DispClass
-    local disp = storage.disps[entity.unit_number]
-    if disp then
-        if disp.gui then
-            DispGuiLua.close(disp.gui, true)
+---@param disp DispClass
+function removeDisp(disp)
+    if disp.gui then
+        DispGuiLua.close(disp.gui, true)
+    end
+    --todo may be calculate
+    for k, d in pairs(storage.disps) do
+        if d == disp then
+            storage.disps[k] = nil
         end
-        storage.disps[disp.uid] = nil
-        storage.activeDisps[disp.uid] = nil
-        disp.org.disps[disp.uid] = nil
-        disp.org.depotDisps[disp.uid] = nil
-        for _, disps in pairs(disp.org.depotReadyDisps) do
+    end
+    storage.activeDisps[disp.uid] = nil
+    disp.org.disps[disp.uid] = nil
+    disp.org.depotDisps[disp.uid] = nil
+    for _, disps in pairs(disp.org.depotReadyDisps) do
+        disps[disp.uid] = nil
+    end
+    for _, network in pairs(disp.org.provide) do
+        for _, disps in pairs(network) do
             disps[disp.uid] = nil
         end
-        for _, network in pairs(disp.org.provide) do
-            for _, disps in pairs(network) do
-                disps[disp.uid] = nil
-            end
+    end
+    rqRemoveFromAllQueues(disp)
+    for _, deli in pairs(disp.deliveries) do
+        if deli.provider then
+            deli.provider.deliveries[deli.uid] = nil
         end
-        rqRemoveFromAllQueues(disp)
-        for _, deli in pairs(disp.deliveries) do
-            if deli.provider then
-                deli.provider.deliveries[deli.uid] = nil
-            end
-            if deli.requester then
-                deli.requester.deliveries[deli.uid] = nil
-            end
-            storage.deliveries[deli.uid] = nil
-            disp.org.force.print({ "viirld.ERR-DELETED_DELIVERY", deli.uid, deli.provider and deli.provider.stopEntity and deli.provider.stopEntity.unit_number or "?", deli.requester and deli.requester.stopEntity and deli.requester.stopEntity.unit_number or "?" })
+        if deli.requester then
+            deli.requester.deliveries[deli.uid] = nil
         end
+        storage.deliveries[deli.uid] = nil
+        disp.org.force.print({ "viirld.ERR-DELETED_DELIVERY", deli.uid, deli.provider and deli.provider.stopEntity and deli.provider.stopEntity.unit_number or "?", deli.requester and deli.requester.stopEntity and deli.requester.stopEntity.unit_number or "?" })
+    end
 
-        if disp.stopEntity then
-            dispDisconnectStop(disp)
-        end
-        local stops = disp.entity.surface.find_entities_filtered({
-            type = "train-stop",
-            position = disp.entity.position,
-            radius = 2,
-        })
-        for _, stop in pairs(stops) do
-            if stop.valid then
-                local dispatchers = disp.entity.surface.find_entities_filtered({
-                    name = "viirld-dispatcher",
-                    position = stop.position,
-                    radius = 2,
-                })
-                for _, d in pairs(dispatchers) do
-                    if d.valid and d ~= entity then
-                        dispUpdateStop(storage.disps[d.unit_number])
-                    end
+    if disp.stopEntity then
+        dispDisconnectStop(disp)
+    end
+    local stops = disp.entity.surface.find_entities_filtered({
+        type = "train-stop",
+        position = disp.entity.position,
+        radius = 2,
+    })
+    for _, stop in pairs(stops) do
+        if stop.valid then
+            local dispatchers = disp.entity.surface.find_entities_filtered({
+                name = "viirld-dispatcher",
+                position = stop.position,
+                radius = 2,
+            })
+            for _, d in pairs(dispatchers) do
+                if d.valid and d ~= disp.entity then
+                    dispUpdateStop(storage.disps[d.unit_number])
                 end
             end
         end
@@ -653,7 +654,11 @@ end
 
 function entityHandleRemoved(entity)
     if entity.name == "viirld-dispatcher" then
-        entityHandleRemoveDispatcher(entity)
+        ---@type DispClass
+        local disp = storage.disps[entity.unit_number]
+        if disp then
+            removeDisp(disp)
+        end
     elseif entity.type == "train-stop" then
         entityHandleRemoveStop(entity)
     end
@@ -1447,21 +1452,15 @@ function dispUpdateTransit(disp, correctSignals)
 end
 
 function globalTick()
-    --if nextTickCb then -- todo remove
-    --    nextTickCb()
-    --    nextTickCb = nil
-    --end
-    --if table_size(nextTickUpdates) > 0 then
-    --    for uid, disp in pairs(nextTickUpdates) do
-    --        if game.tick > disp._globalUpdateNextTick then
-    --            disp._globalUpdateNextTick = nil
-    --            if storage.activeDisps[uid] then
-    --                disp:update(true)
-    --            end
-    --            nextTickUpdates[uid] = nil
-    --        end
-    --    end
-    --end
+    --[[DEBUG_BEGIN]]
+    for _, disp in pairs(storage.disps) do
+        if not disp.entity.valid then
+            game.print("INVALID DISP "..var_dump(disp.uid))
+            helpers.write_file("invalid.disp."..var_dump(disp.uid)..".lua", "disp="..var_dump(disp))
+        end
+    end
+    --[[DEBUG_END]]
+
     local i = math.max(math.min(table_size(storage.activeDisps), 1), 32)
     local tick = game.tick
     while i > 0 do
@@ -1469,11 +1468,16 @@ function globalTick()
         storage.dispKey = next(storage.activeDisps, storage.dispKey and storage.activeDisps[storage.dispKey] and storage.dispKey)
         if storage.dispKey then
             local disp = storage.activeDisps[storage.dispKey]
-            if not disp.lastUpdateTick or tick - disp.lastUpdateTick > 60 then
-                i = i - dispUpdate(disp, true)
-                if disp.settings.modeEndpoint then
-                    break
+            if disp.entity.valid then
+                if not disp.lastUpdateTick or tick - disp.lastUpdateTick > 60 then
+                    i = i - dispUpdate(disp, true)
+                    if disp.settings.modeEndpoint then
+                        break
+                    end
                 end
+            else
+                log("ViiRLD: removed invalid disp "..var_dump(disp.uid))
+                removeDisp(disp)
             end
         end
     end

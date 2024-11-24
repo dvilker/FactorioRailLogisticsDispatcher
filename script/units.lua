@@ -1,5 +1,3 @@
-
-
 ---@alias UnitCode number
 ---@alias UnitCombinatorCode ">" | "<" | "=" | "≥" | "≤" | "≠"
 
@@ -13,8 +11,8 @@
 ---@field combinatorCode  UnitCombinatorCode
 
 ---@class CountWithUnits
-    ---@field count number
-    ---@field unit UnitCode
+---@field count number
+---@field unit UnitCode
 
 ---@type table<UnitCode, CountUnit>
 local countUnits0
@@ -279,14 +277,13 @@ function getUnitByCombinatorCode(combinatorCode, type)
     return nil
 end
 
-
 ---@param count number
 ---@param type "item"|"fluid"
 ---@param name string
 ---@return LocalisedString
 function getUnitReverseTooltip(count, type, name)
     local units = getCountUnits()
-    local result = {""}
+    local result = { "" }
     if type == "item" then
         for code, unit in pairs(units) do
             if code < FLUID_INDEX_FROM then

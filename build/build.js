@@ -41,6 +41,8 @@ const fileList = [
 
     'graphics/connector.png',
 
+    'migrations/00020_removeOutPort.lua',
+
     'script/config.lua',
     'script/const.lua',
     'script/entity.lua',

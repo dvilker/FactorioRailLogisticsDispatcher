@@ -161,23 +161,8 @@ script.on_event(
                 if org then
                     forceOrg[event.surface_index] = nil
                     for _, disp in pairs(org.disps) do
-                        storage.disps[disp.stopEntity and disp.stopEntity.valid and disp.stopEntity.unit_number or -1] = nil
-                        storage.disps[disp.entity and disp.entity.valid and disp.entity.unit_number or -1] = nil
-                        storage.disps[disp.uid] = nil
-                        storage.activeDisps[disp.uid] = nil
-                        for uid, d in pairs(storage.disps) do
-                            if d == disp then
-                                storage.disps[uid] = nil
-                            end
-                        end
+                        removeDisp(disp)
                     end
-                end
-            end
-            for k, delivery in pairs(storage.deliveries) do
-                if delivery.provider and delivery.provider.org.surface.index == event.surface_index
-                        or delivery.requester and delivery.requester.org.surface.index == event.surface_index
-                then
-                    storage.deliveries[k] = nil
                 end
             end
         end
