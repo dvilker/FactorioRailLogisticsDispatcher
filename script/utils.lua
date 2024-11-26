@@ -433,8 +433,20 @@ function getHelperSurface()
     ---@type LuaSurface
     local helperSurface = storage.scheduleHelperSurface
     if not helperSurface then
+        local i = 1
+        local name = "RLD Helper"
+        while true do
+            helperSurface = game.get_surface(name)
+            if not helperSurface then
+                break
+            end
+            game.delete_surface(helperSurface)
+            i = i + 1
+            name = "RLD Helper " .. i
+        end
+
         helperSurface = game.create_surface(
-                "RLD Helper",
+                name,
                 {
                     default_enable_all_autoplace_controls = false,
                     width = 64,
