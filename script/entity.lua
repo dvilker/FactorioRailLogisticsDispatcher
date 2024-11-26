@@ -667,6 +667,7 @@ end
 ---@param disp DispClass
 ---@param settings DispSettings
 function dispSetSettings(disp, settings)
+    local oldNetwork = disp.settings.network
     dispSettingsToCombinator(settings, disp.entity)
 
     local newSettings, err = dispCombinatorToSettings(disp.entity)
@@ -680,6 +681,16 @@ function dispSetSettings(disp, settings)
     disp.settings = newSettings
     if not disp.settings.modeEndpoint then
         disp._isPausedByUser = nil
+    end
+
+    if disp.settings.network ~= oldNetwork then
+        local oldNetworkProvide = disp.org.provide[oldNetwork]
+        if oldNetworkProvide then
+            for _, disps in pairs(oldNetworkProvide) do
+                disps[disp.uid] = nil
+            end
+        end
+        rqRemoveFromAllQueues(disp)
     end
 
     dispUpdateStopName(disp)
