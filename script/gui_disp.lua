@@ -741,6 +741,19 @@ function DispGuiLua.updateDispInfo(gui)
                 end
             end
         end
+        if disp.org.depotDisps[disp.uid] then
+            debugLines[#debugLines + 1] = "IN org.depotDisps"
+        end
+        if disp.org.depotReadyDisps[disp.uid] then
+            debugLines[#debugLines + 1] = "IN org.depotReadyDisps"
+        end
+        if disp.stoppedTrain then
+            debugLines[#debugLines + 1] = "stoppedTrain: " .. var_dump(disp.stoppedTrain)
+        end
+        if disp.stoppedTrainType then
+            debugLines[#debugLines + 1] = "stoppedTrainType: " .. var_dump(disp.stoppedTrainType)
+            debugLines[#debugLines + 1] = "stoppedTrainType (info): " .. var_dump(storage.trainTypes[disp.stoppedTrainType])
+        end
         named[EL_DEBUG].caption = table.concat(debugLines, "\n")
     end
 end
