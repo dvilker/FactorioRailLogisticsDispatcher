@@ -34,20 +34,14 @@ do
     local item = table.deepcopy(data.raw["item"]["train-stop"])
     item.name = name
     item.place_result = name
-    item.icon = data.raw["item"]["small-lamp"].icon
-    item.icon_size = data.raw["item"]["small-lamp"].icon_size
-    item.icon_mipmaps = data.raw["item"]["small-lamp"].icon_mipmaps
+    item.icon = "__base__/graphics/icons/small-lamp.png"
     item.icons = {
         {
-            icon = data.raw["item"]["train-stop"].icon,
-            icon_size = data.raw["item"]["train-stop"].icon_size,
-            icon_mipmaps = data.raw["item"]["train-stop"].icon_mipmaps,
+            icon = "__base__/graphics/icons/train-stop.png",
             scale = .7,
         },
         {
-            icon = data.raw["item"]["small-lamp"].icon,
-            icon_size = data.raw["item"]["small-lamp"].icon_size,
-            icon_mipmaps = data.raw["item"]["small-lamp"].icon_mipmaps,
+            icon = "__base__/graphics/icons/small-lamp.png",
             scale = .35,
             shift = { -5, 9 }
         },
@@ -209,14 +203,10 @@ do
         hidden = true,
         icons = {
             {
-                icon = data.raw["virtual-signal"]["signal-white"].icon,
-                icon_size = data.raw["virtual-signal"]["signal-white"].icon_size,
-                icon_mipmaps = data.raw["virtual-signal"]["signal-white"].icon_mipmaps,
+                icon = "__base__/graphics/icons/signal/signal_white.png",
             },
             {
-                icon = data.raw["item"]["train-stop"].icon,
-                icon_size = data.raw["item"]["train-stop"].icon_size,
-                icon_mipmaps = data.raw["item"]["train-stop"].icon_mipmaps,
+                icon = "__base__/graphics/icons/train-stop.png",
                 scale = .25,
             },
         }
@@ -229,14 +219,10 @@ do
         name = "viirld-delivery-pause",
         icons = {
             {
-                icon = data.raw["virtual-signal"]["signal-yellow"].icon,
-                icon_size = data.raw["virtual-signal"]["signal-yellow"].icon_size,
-                icon_mipmaps = data.raw["virtual-signal"]["signal-yellow"].icon_mipmaps,
+                icon = "__base__/graphics/icons/signal/signal_yellow.png",
             },
             {
-                icon = data.raw["item"]["train-stop"].icon,
-                icon_size = data.raw["item"]["train-stop"].icon_size,
-                icon_mipmaps = data.raw["item"]["train-stop"].icon_mipmaps,
+                icon = "__base__/graphics/icons/train-stop.png",
                 scale = .35,
             },
         }

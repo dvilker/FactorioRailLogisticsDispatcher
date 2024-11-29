@@ -61,6 +61,10 @@ local function dispUpdateStop(disp, removingStop)
             dispDisconnectStop(anotherDisp)
         else
             dispConnectStop(disp, foundStopEntity)
+            local stoppedTrain = disp.stopEntity and disp.stopEntity.get_stopped_train()
+            if stoppedTrain then
+                trainArrived(stoppedTrain)
+            end
         end
     end
 end
@@ -550,6 +554,11 @@ local function entityHandleBuiltDispatcher(entity, tags)
     dispUpdateStop(disp)
     _dispUpdateActive(disp)
     _dispUpdateOutPort(disp)
+
+    local stoppedTrain = disp.stopEntity and disp.stopEntity.get_stopped_train()
+    if stoppedTrain then
+        trainArrived(stoppedTrain)
+    end
 end
 
 ---@param disp DispClass
@@ -565,7 +574,6 @@ function removeDisp(disp)
     end
     storage.activeDisps[disp.uid] = nil
     disp.org.disps[disp.uid] = nil
-    disp.org.depotDisps[disp.uid] = nil
     for _, disps in pairs(disp.org.depotReadyDisps) do
         disps[disp.uid] = nil
     end
@@ -1409,6 +1417,9 @@ function dispMakeDelivery(tnq, requester, provider, trainTypeInfo)
 
     dispUpdateTransit(provider, true)
     dispUpdateTransit(requester, true)
+
+    bestDepot.readyTrainTypeDepot = nil
+    depots[bestDepot.uid] = nil
 
     trainUpdateSchedule(bestTrain, delivery, bestDepot.stopName)
 

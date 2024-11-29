@@ -170,8 +170,7 @@
 ---@field surface LuaSurface
 ---@field title LocalisedString @ Nauvis or Nauvis-34
 ---@field disps table<DispUid, DispClass> @ All disps
----@field depotDisps table<DispUid, DispClass> @ Depots is common for all networks
----@field depotReadyDisps table<TrainType, table<DispUid, DispClass>> @ Ready for delivery
+---@field depotReadyDisps table<TrainType, table<DispUid, DispClass>> @ Depot with trains and ready for delivery
 ---@field deliveries table<DeliveryUid, DeliveryClass> @ Active deliveries
 ---@field provide table<Network, table<TypeNameQuality, table<DispUid, DispClass>>> @Current provides
 ---@field requestQueue table<Network, table<TypeNameQuality, RequestQueue>> @Current request order

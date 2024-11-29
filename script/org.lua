@@ -22,7 +22,6 @@ function getOrCreateOrg(force, surface)
             surface = surface,
             title = surface.localised_name,
             disps = {},
-            depotDisps = {},
             cleanDisps = {},
             deliveries = {},
             provide = {},

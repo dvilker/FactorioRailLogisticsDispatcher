@@ -331,6 +331,15 @@ function trainDeparted(train, fromStation)
     end
     disp.stoppedTrain = nil
     disp.stoppedTrainType = nil
+
+    if disp.readyTrainTypeDepot then
+        local depots = disp.org.depotReadyDisps[disp.readyTrainTypeDepot]
+        if depots then
+            depots[disp.uid] = nil
+        end
+        disp.readyTrainTypeDepot = nil
+    end
+
     if disp.delivery and disp == disp.delivery.provider then
         local newDeliveryContents = {}
         for _, tnqCount in pairs(train.get_contents()) do

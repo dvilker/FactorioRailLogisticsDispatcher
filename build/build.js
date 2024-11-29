@@ -43,6 +43,7 @@ const fileList = [
 
     'migrations/00020_removeOutPort.lua',
     'migrations/00030_refreshOrgProvides.lua',
+    'migrations/00040_refreshDepots.lua',
 
     'script/config.lua',
     'script/const.lua',

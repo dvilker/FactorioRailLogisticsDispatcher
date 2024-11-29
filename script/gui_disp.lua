@@ -741,11 +741,13 @@ function DispGuiLua.updateDispInfo(gui)
                 end
             end
         end
-        if disp.org.depotDisps[disp.uid] then
-            debugLines[#debugLines + 1] = "IN org.depotDisps"
+        for trainType, disps in pairs(disp.org.depotReadyDisps) do
+            if disps[disp.uid] then
+                debugLines[#debugLines + 1] = "IN org.depotReadyDisps[" .. var_dump(trainType) .. "]"
+            end
         end
-        if disp.org.depotReadyDisps[disp.uid] then
-            debugLines[#debugLines + 1] = "IN org.depotReadyDisps"
+        if disp.readyTrainTypeDepot then
+            debugLines[#debugLines + 1] = "readyTrainTypeDepot: " .. var_dump(disp.readyTrainTypeDepot)
         end
         if disp.stoppedTrain then
             debugLines[#debugLines + 1] = "stoppedTrain: " .. var_dump(disp.stoppedTrain)
