@@ -53,6 +53,20 @@ data:extend({
   },
   {
     type = "bool-setting",
+    name = "viirld-load-or-cond-full",
+    order = "aw",
+    setting_type = "runtime-global",
+    default_value = false
+  },
+  {
+    type = "bool-setting",
+    name = "viirld-unload-or-cond-zeros",
+    order = "aw",
+    setting_type = "runtime-global",
+    default_value = false
+  },
+  {
+    type = "bool-setting",
     name = "viirld-debug",
     order = "az",
     setting_type = "runtime-global",

@@ -940,7 +940,10 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
         end
         if not ready or (disp.readyTrainTypeDepot and disp.readyTrainTypeDepot ~= disp.stoppedTrainType) then
             if disp.readyTrainTypeDepot then
-                disp.org.depotReadyDisps[disp.readyTrainTypeDepot] = nil
+                local depots = disp.org.depotReadyDisps[disp.readyTrainTypeDepot]
+                if depots then
+                    depots[disp.uid] = nil
+                end
             end
             disp.readyTrainTypeDepot = nil
         end
@@ -1239,8 +1242,11 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                                         break -- continue for
                                     end
                                     hasCompatibleProvider = true
-                                    for trainType, _ in pairs(disp.org.depotReadyDisps) do
+                                    for trainType, depots in pairs(disp.org.depotReadyDisps) do
                                         repeat
+                                            if table_size(depots) == 0 then
+                                                break -- continue for
+                                            end
                                             local trainTypeInfo = storage.trainTypes[trainType]
                                             if dispSignal.type == "item" and trainTypeInfo.itemCapacity == 0
                                                     or dispSignal.type == "fluid" and trainTypeInfo.fluidCapacity == 0 then
@@ -1281,7 +1287,11 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                             end
 
                             if bestProviderDisp then
-                                dispMakeDelivery(tnq, disp, bestProviderDisp, bestTrainTypeInfo)
+                                local _, err = dispMakeDelivery(tnq, disp, bestProviderDisp, bestTrainTypeInfo)
+                                if err then
+                                    disp.errors = errorsAdd(disp.errors, tnq, {"", err, "!"})
+                                    break
+                                end
                                 rqRemoveFromQueue(disp, tnq)
                                 madeDeliveries = madeDeliveries + 1
                                 trainsLimit = trainsLimit - 1

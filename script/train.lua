@@ -104,6 +104,12 @@ function trainUpdateSchedule(train, delivery, depotName)
                     }
                 end
             end
+            if loadOrCondFull then
+                wc[#wc + 1] = {
+                    type = "full",
+                    compare_type = "or",
+                }
+            end
         end
         recs[#recs + 1] = {
             station = delivery.provider.stopName,
@@ -134,9 +140,35 @@ function trainUpdateSchedule(train, delivery, depotName)
                 compare_type = "and",
             }
         else
+            if unloadOrCondZeros then
+                for tnq, _ in pairs(delivery.contents) do
+                    local signal = parseTypeNameQuality(tnq)
+                    if signal.type == "item" then
+                        wc[#wc + 1] = {
+                            type = "item_count",
+                            condition = {
+                                first_signal = signal,
+                                comparator = "=",
+                                constant = 0,
+                            },
+                            compare_type = "and",
+                        }
+                    elseif signal.type == "fluid" then
+                        wc[#wc + 1] = {
+                            type = "fluid_count",
+                            condition = {
+                                first_signal = signal,
+                                comparator = "=",
+                                constant = 0,
+                            },
+                            compare_type = "and",
+                        }
+                    end
+                end
+            end
             wc[#wc + 1] = {
                 type = "empty",
-                compare_type = "and",
+                compare_type = "or",
             }
         end
         recs[#recs + 1] = {

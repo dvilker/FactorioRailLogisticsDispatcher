@@ -10,6 +10,9 @@ useHackToSaveInterrupts = true
 setTrainGroup = true
 pauseNewDispatchers = true
 
+loadOrCondFull = false
+unloadOrCondZeros = false
+
 debugMode = false
 
 function configUpdate()
@@ -23,6 +26,9 @@ function configUpdate()
     useHackToSaveInterrupts = settings.global["viirld-use-hack-to-save-interrupts"].value
     setTrainGroup = settings.global["viirld-set-train-group"].value
     pauseNewDispatchers = settings.global["viirld-pauseNewDispatchers"].value
+
+    loadOrCondFull = settings.global["viirld-load-or-cond-full"].value
+    unloadOrCondZeros = settings.global["viirld-unload-or-cond-zeros"].value
 
     if settings.global["viirld-updateTicks"].value ~= updateTicks then
         updateTicks = settings.global["viirld-updateTicks"].value

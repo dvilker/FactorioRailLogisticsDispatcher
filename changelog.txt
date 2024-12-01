@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.21
+Date: 01.12.2024
+  Changes:
+    - Add condition "OR Full load" (enabling in mod settings, not recommended).
+    - Add conditions "OR ? = 0" (enabling in mod settings, not recommended).
+  Bugfixes:
+    - Fixed: Crash with Dectorio mod.
+    - Fixed: Trains stuck in depots (attempt #2).
+---------------------------------------------------------------------------------------------------
 Version: 2.0.20
 Date: 29.11.2024
   Bugfixes:

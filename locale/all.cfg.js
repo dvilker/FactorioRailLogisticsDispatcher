@@ -147,6 +147,41 @@ lang['mod-setting-description.viirld-pauseNewDispatchers'] = {
         `,
 }
 
+lang['mod-setting-name.viirld-load-or-cond-full'] = {
+    ru: `Добавить условие "ИЛИ Полная погрузка"`,
+    en: `Add condition "OR Full load"`,
+}
+lang['mod-setting-description.viirld-load-or-cond-full'] = {
+    ru: `
+        Добавить условие "ИЛИ Полная погрузка" на станции снабжения.
+        
+        Этот параметр идет вразрез с замыслом мода и автор не рекомендует его включать.
+    `,
+    en: `
+        Add condition "OR Full load" on supply stations.
+        
+        This parameter goes against the intention of the mod and the author does not recommend enabling it.
+        `,
+}
+
+lang['mod-setting-name.viirld-unload-or-cond-zeros'] = {
+    ru: `Добавить условия "ИЛИ ? = 0"`,
+    en: `Add conditions "OR ? = 0"`,
+}
+lang['mod-setting-description.viirld-unload-or-cond-zeros'] = {
+    ru: `
+        Добавить условие "ИЛИ ? = 0" для каждого груза на станциях запроса.
+        
+        Этот параметр идет вразрез с замыслом мода и автор не рекомендует его включать.
+        `,
+    en: `
+        Add condition "OR ? = 0" for each item or fluid on request stations.
+        
+        This parameter goes against the intention of the mod and the author does not recommend enabling it.
+        `,
+}
+
+
 // Entities
 
 lang['entity-name.viirld-dispatcher'] = {
