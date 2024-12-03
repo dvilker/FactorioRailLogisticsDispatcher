@@ -708,7 +708,11 @@ end
 
 ---@param disp DispClass
 function dispUpdateStopName(disp)
-    if not disp.stopEntity or not disp.settings.stationTemplate or disp.settings.stationTemplate == "" then
+    if not disp.stopEntity then
+        return
+    end
+    if not disp.settings.stationTemplate or disp.settings.stationTemplate == "" then
+        disp.stopName = disp.stopEntity.backer_name
         return
     end
 
@@ -1183,15 +1187,11 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
             ---@type table<TypeNameQuality, true>
             local requestingTnqs = {}
             if requestTnqCount > 0 and not paused and not notConnected then
-                ---@type number
-                local trainsLimit
-                if disp.stopEntity.trains_limit then
-                    trainsLimit = disp.stopEntity.trains_limit - disp.stopEntity.trains_count
-                end
+                local dispLimited = dispIsLimited(disp)
                 for tnq, dispSignal in pairs(disp.signals) do
                     repeat
                         if dispSignal.requestCount and dispSignal.requestCount > 0 then
-                            if trainsLimit and trainsLimit <= 0 then
+                            if dispLimited then
                                 disp.errors = errorsAdd(disp.errors, tnq, { "viirld.ERR-TNQ-LIMIT" }, { "viirld.ERR-TNQ-LIMIT-tt" })
                                 break
                             end
@@ -1238,7 +1238,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                                     if providerDispSignal.provideCount < dispSignal.requestMin and not providerDisp.settings.flagLiquidation then
                                         break -- continue for
                                     end
-                                    if providerDisp.stopEntity.trains_limit and providerDisp.stopEntity.trains_limit <= providerDisp.stopEntity.trains_count then
+                                    if dispIsLimited(providerDisp) then
                                         break -- continue for
                                     end
                                     hasCompatibleProvider = true
@@ -1289,12 +1289,12 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
                             if bestProviderDisp then
                                 local _, err = dispMakeDelivery(tnq, disp, bestProviderDisp, bestTrainTypeInfo)
                                 if err then
-                                    disp.errors = errorsAdd(disp.errors, tnq, {"", err, "!"})
+                                    disp.errors = errorsAdd(disp.errors, tnq, { "", err, "!" })
                                     break
                                 end
                                 rqRemoveFromQueue(disp, tnq)
                                 madeDeliveries = madeDeliveries + 1
-                                trainsLimit = trainsLimit - 1
+                                dispLimited = dispIsLimited(disp)
                                 updatePort = true
                                 if disp.errors and disp.errors[tnq] then
                                     disp.errors = errorsAdd(disp.errors, tnq, { "viirld.ERR-NEED_CHECK" }, { "viirld.ERR-NEED_CHECK-tt", tnq })
@@ -1487,8 +1487,8 @@ function globalTick()
     --[[DEBUG_BEGIN]]
     for _, disp in pairs(storage.disps) do
         if not disp.entity.valid then
-            game.print("INVALID DISP "..var_dump(disp.uid))
-            helpers.write_file("invalid.disp."..var_dump(disp.uid)..".lua", "disp="..var_dump(disp))
+            game.print("INVALID DISP " .. var_dump(disp.uid))
+            helpers.write_file("invalid.disp." .. var_dump(disp.uid) .. ".lua", "disp=" .. var_dump(disp))
         end
     end
     --[[DEBUG_END]]
@@ -1508,7 +1508,7 @@ function globalTick()
                     end
                 end
             else
-                log("ViiRLD: removed invalid disp "..var_dump(disp.uid))
+                log("ViiRLD: removed invalid disp " .. var_dump(disp.uid))
                 removeDisp(disp)
             end
         end
@@ -1703,4 +1703,11 @@ function dispStatDelivery(disp, atArrival)
             end
         end
     end
+end
+
+---@param disp DispClass
+---@return boolean
+function dispIsLimited(disp)
+    local limit = disp.stopEntity and disp.stopEntity.trains_limit or 1000000000
+    return (table_size(disp.deliveries) >= limit) or ((disp.stopEntity and disp.stopEntity.trains_count) >= limit)
 end
