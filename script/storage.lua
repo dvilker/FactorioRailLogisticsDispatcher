@@ -212,8 +212,31 @@ function storageInit()
     storage.trainStation = storage.trainStation or {}
 
     if table_size(storage.trainTypes) > 0 then
-        for _, tt in pairs(storage.trainTypes) do
-            refreshTrainTypeInfo(tt)
+        for k, tt in pairs(storage.trainTypes) do
+            if not refreshTrainTypeInfo(tt) then
+                storage.trainTypes[k] = nil
+                log("ViiRLD: removed broken train type: " .. var_dump(k) .. ": " .. var_dump(tt))
+            end
+        end
+    end
+
+    for _, orgs in pairs(storage.orgs) do
+        for _, org in pairs(orgs) do
+            for _, disp in pairs(org.disps) do
+                if disp.readyTrainTypeDepot and not storage.trainTypes[disp.readyTrainTypeDepot] then
+                    log("ViiRLD: removed broken train type from disp.readyTrainTypeDepot: " .. var_dump(disp.readyTrainTypeDepot))
+                    disp.readyTrainTypeDepot = nil
+                end
+            end
+            for tt, disps in pairs(org.depotReadyDisps) do
+                if not storage.trainTypes[tt] then
+                    log("ViiRLD: removed broken train type from org.depotReadyDisps: " .. var_dump(tt))
+                    org.depotReadyDisps[tt] = nil
+                    for _, disp in pairs(disps) do
+                        disp.readyTrainTypeDepot = nil
+                    end
+                end
+            end
         end
     end
 end

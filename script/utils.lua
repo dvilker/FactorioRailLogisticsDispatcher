@@ -256,6 +256,17 @@ local wagonSimpleNames = {
     ["fluid-wagon"] = "F",
 }
 
+---@param trainType TrainType
+---@param fallbackTrain LuaTrain
+---@return TrainType, TrainTypeInfo
+function getTrainTypeInfo(trainType, fallbackTrain)
+    local tt = storage.trainTypes[trainType]
+    if tt then
+        return tt.typeName, tt
+    end
+    return getTrainType(fallbackTrain)
+end
+
 ---@param train LuaTrain
 ---@return TrainType, TrainTypeInfo
 function getTrainType(train)
@@ -293,6 +304,7 @@ function getTrainType(train)
 end
 
 ---@param trainTypeInfo TrainTypeInfo
+---@return boolean
 function refreshTrainTypeInfo(trainTypeInfo)
     trainTypeInfo.length = table_size(trainTypeInfo.carriages)
     trainTypeInfo.itemCapacity = 0
@@ -302,21 +314,26 @@ function refreshTrainTypeInfo(trainTypeInfo)
 
     for _, car in pairs(trainTypeInfo.carriages) do
         local proto = prototypes.entity[car]
-        if proto.type == "cargo-wagon" then
-            local stackCount = proto.get_inventory_size(defines.inventory.cargo_wagon)
-            if stackCount and stackCount > 0 then
-                trainTypeInfo.itemWagonCount = trainTypeInfo.itemWagonCount + 1
-                trainTypeInfo.itemCapacity = trainTypeInfo.itemCapacity + stackCount
+        if not proto then
+            return false
+        else
+            if proto.type == "cargo-wagon" then
+                local stackCount = proto.get_inventory_size(defines.inventory.cargo_wagon)
+                if stackCount and stackCount > 0 then
+                    trainTypeInfo.itemWagonCount = trainTypeInfo.itemWagonCount + 1
+                    trainTypeInfo.itemCapacity = trainTypeInfo.itemCapacity + stackCount
+                end
             end
-        end
-        if proto.type == "fluid-wagon" then
-            local fluidCapacity = proto.fluid_capacity
-            if fluidCapacity and fluidCapacity > 0 then
-                trainTypeInfo.fluidCapacity = trainTypeInfo.fluidCapacity + fluidCapacity
-                trainTypeInfo.fluidCapacityPerWagons[#trainTypeInfo.fluidCapacityPerWagons + 1] = fluidCapacity
+            if proto.type == "fluid-wagon" then
+                local fluidCapacity = proto.fluid_capacity
+                if fluidCapacity and fluidCapacity > 0 then
+                    trainTypeInfo.fluidCapacity = trainTypeInfo.fluidCapacity + fluidCapacity
+                    trainTypeInfo.fluidCapacityPerWagons[#trainTypeInfo.fluidCapacityPerWagons + 1] = fluidCapacity
+                end
             end
         end
     end
+    return true
 end
 
 ---@param dispErrors table<string, DispError>

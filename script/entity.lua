@@ -473,11 +473,12 @@ function _dispUpdateOutPort(disp)
 
     outputs[#outputs + 1] = { copy_count_from_input = false, } -- hide another icons
 
-    if disp.stoppedTrain and disp.stoppedTrainType then
-        local tt = storage.trainTypes[disp.stoppedTrainType]
-        outputs[#outputs + 1] = { signal = SIG_L, constant = tt.length, copy_count_from_input = false, }
-        outputs[#outputs + 1] = { signal = SIG_C, constant = tt.itemWagonCount, copy_count_from_input = false, }
-        outputs[#outputs + 1] = { signal = SIG_F, constant = table_size(tt.fluidCapacityPerWagons), copy_count_from_input = false, }
+    if disp.stoppedTrain and disp.stoppedTrain.valid and disp.stoppedTrainType then
+        local tt, ttInfo = getTrainTypeInfo(disp.stoppedTrainType, disp.stoppedTrain)
+        disp.stoppedTrainType = tt
+        outputs[#outputs + 1] = { signal = SIG_L, constant = ttInfo.length, copy_count_from_input = false, }
+        outputs[#outputs + 1] = { signal = SIG_C, constant = ttInfo.itemWagonCount, copy_count_from_input = false, }
+        outputs[#outputs + 1] = { signal = SIG_F, constant = table_size(ttInfo.fluidCapacityPerWagons), copy_count_from_input = false, }
     end
 
     local mul
@@ -930,7 +931,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
 
     if disp.settings.modeDepot then
         local ready = true
-        if disp.stoppedTrain then
+        if disp.stoppedTrain and disp.stoppedTrain.valid then
             if not trainIsEmpty(disp.stoppedTrain) then
                 disp.errors = errorsAdd(disp.errors, "-dirty", { "viirld.ERR--DIRTY" }, { "viirld.ERR--DIRTY-tt" })
                 ready = false
@@ -1002,7 +1003,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
         ---@type table<TypeNameQuality, number>
         local trainContents = {}
         local stoppedTrain = disp.stoppedTrain
-        if stoppedTrain then
+        if stoppedTrain and stoppedTrain.valid then
             for _, s in pairs(stoppedTrain.get_contents()) do
                 trainContents[toTypeNameQuality2("item", s.name, s.quality)] = s.count
             end
@@ -1016,7 +1017,7 @@ function dispUpdate(disp, makeDeliveries, updateTransit, updatePort)
         end
 
         local inserterContents
-        if countingInsertersContent and disp.stoppedTrain and disp.inserters then
+        if countingInsertersContent and disp.stoppedTrain and disp.stoppedTrain.valid and disp.inserters then
             for _, ins in pairs(disp.inserters) do
                 if ins.valid and ins.held_stack.count > 0 then
                     local name = ins.held_stack.name
